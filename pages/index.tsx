@@ -1,402 +1,100 @@
-import React from 'react';
-import { View, Text, Image, ImageBackground, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { createRoute, useNavigation } from '@granite-js/react-native';
+import React from 'react';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-type AppRoutes = '/cards' | '/forge' | '/packs' | '/exchange' | '/about' | '/';
+type AppRoutes = '/cards' | '/forge' | '/packs' | '/exchange';
+type MenuItem = { path: AppRoutes; title: string; description: string; icon: number; accent: string };
 
-export const Route = createRoute('/', {
-  validateParams: (params) => params,
-  component: HomePage,
-});
+export const Route = createRoute('/', { validateParams: (params) => params, component: HomePage });
 
-function HomePage() {
+const menuItems: MenuItem[] = [
+  { path: '/cards', title: '카드 보관함', description: '수집한 원소 카드 확인', icon: require('../assets/images/index/보관함.png'), accent: '#72B6FF' },
+  { path: '/forge', title: '카드 강화소', description: '광고를 보고 카드 강화', icon: require('../assets/images/index/강화소.png'), accent: '#FFAF72' },
+  { path: '/packs', title: '카드 상점', description: '새로운 원소 카드 뽑기', icon: require('../assets/images/cards/dark_magic.png'), accent: '#C497FF' },
+  { path: '/exchange', title: '포인트 교환소', description: '카드와 결정을 포인트로', icon: require('../assets/images/cards/light_unique.png'), accent: '#76CFA3' },
+];
+
+export function HomePage() {
   const navigation = useNavigation();
-
-  const user = {
-    nickname: '모험가',
-    level: 1,
-    crystals: 0,
-    darkAshes: 0,
-  };
-
-  const handleNavigate = (path: AppRoutes) => {
-    navigation.navigate(path as any);
-  };
-
-  const FULL_BACKGROUND_URI =
-    'https://github.com/bluehawhy/card-forge/blob/main/assets/images/background/index.jpg?raw=true';
+  const user = { nickname: '모험가', level: 1, crystals: 0 };
 
   return (
-    // 1. 전체 화면을 감싸는 ImageBackground
-    <ImageBackground
-      source={{ uri: FULL_BACKGROUND_URI }}
-      style={styles.fullBackground}
-      resizeMode="cover"
-    >
-      {/* 2. 가독성을 위해 전체 화면에 살짝 어두운 딤 필터 적용 */}
-      <View style={styles.darkOverlay} />
+    <View style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={styles.eyebrow}>CARD FORGE</Text>
+        <Text style={styles.welcome}>다시 오셨군요, {user.nickname}</Text>
+        <Text style={styles.subtitle}>오늘도 새로운 카드의 힘을 깨워보세요.</Text>
 
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        {/* ========================= 플레이어 메인 카드 ========================= */}
         <View style={styles.playerCard}>
-          {/* 배경 장식 원 */}
-          <View style={styles.backgroundCircleLarge} />
-          <View style={styles.backgroundCircleSmall} />
-
-          {/* 왼쪽 플레이어 정보 */}
+          <View style={styles.glowLarge} /><View style={styles.glowSmall} />
           <View style={styles.playerInfo}>
-            <Text style={styles.gameTitle}>CARD FORGE</Text>
-
-            <Text style={styles.nickname} numberOfLines={1}>
-              {user.nickname ?? '모험가'}
-            </Text>
-
-            <Text style={styles.levelText}>
-              Lv. {user.level} · 카드 수집가
-            </Text>
-
-            {/* 재화 */}
-            <View style={styles.currencyContainer}>
-              <View style={styles.currencyItem}>
-                <Text style={styles.currencyIcon}>💎</Text>
-                <View style={styles.currencyTextWrapper}>
-                  <Text style={styles.currencyLabel} numberOfLines={1}>
-                    보유 결정
-                  </Text>
-                  <Text style={styles.currencyValue} numberOfLines={1}>
-                    {user.crystals?.toLocaleString() ?? 0}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.currencyItem}>
-                <Text style={styles.currencyIcon}>🔥</Text>
-                <View style={styles.currencyTextWrapper}>
-                  <Text style={styles.currencyLabel} numberOfLines={1}>
-                    검은 재
-                  </Text>
-                  <Text style={styles.currencyValue} numberOfLines={1}>
-                    {user.darkAshes?.toLocaleString() ?? 0}
-                  </Text>
-                </View>
-              </View>
+            <Text style={styles.profileLabel}>CARD COLLECTOR</Text>
+            <Text style={styles.nickname}>{user.nickname}</Text>
+            <Text style={styles.levelText}>Lv. {user.level} · 카드 수집가</Text>
+            <View style={styles.currencyCard}>
+              <Text style={styles.crystalIcon}>◆</Text>
+              <View><Text style={styles.currencyLabel}>보유 결정</Text><Text style={styles.currencyValue}>{user.crystals.toLocaleString('ko-KR')}</Text></View>
             </View>
           </View>
-
-          {/* 오른쪽 캐릭터 */}
-          <View style={styles.characterContainer}>
-            <Image
-              source={{
-                uri: 'https://github.com/bluehawhy/card-forge/blob/main/assets/images/characters/rose.jpg?raw=true',
-              }}
-              style={styles.characterImage}
-              resizeMode="cover"
-            />
-
-            {/* 👈 BVLinearGradient 대신 사용할 부드러운 오버레이 띠 */}
-            <View style={styles.leftFadeOverlay} />
-
-            {/* 하단 별 오버레이 */}
-            <View style={styles.starsOverlay}>
-              <Text style={styles.characterStars}>
-                ★ ★ ★ ★ ★
-              </Text>
-            </View>
+          <View style={styles.characterWrap}>
+            <Image source={require('../assets/images/characters/rose.jpg')} style={styles.character} resizeMode="cover" />
+            <View style={styles.characterShade} />
+            <View style={styles.stars}><Text style={styles.starText}>★ ★ ★ ★ ★</Text></View>
           </View>
         </View>
-
-        {/* ========================= 빠른 이동 ========================= */}
-        <Text style={styles.sectionTitle}>빠른 이동</Text>
 
         <View style={styles.grid}>
-          <TouchableOpacity style={styles.menuButton} onPress={() => handleNavigate('/cards')}>
-            <View style={[styles.iconBadge, { backgroundColor: 'transparent' }]}>
-              <Image
-                source={{ uri: 'https://github.com/bluehawhy/card-forge/blob/main/assets/images/index/%EB%B3%B4%EA%B4%80%ED%95%A8.png?raw=true' }}
-                style={styles.menuIconImage}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={styles.menuText}>보관함</Text>
-            <Text style={styles.menuDescription}>내 카드 보기</Text>
-          </TouchableOpacity>
+          {menuItems.map((item) => (
+            <TouchableOpacity key={item.path} accessibilityRole="button" accessibilityLabel={`${item.title} 이동`} activeOpacity={0.82} onPress={() => navigation.navigate(item.path as any)} style={styles.menuCard}>
+              <View style={[styles.iconWrap, { borderColor: item.accent }]}><Image source={item.icon} style={styles.icon} resizeMode="contain" /></View>
+              <View style={styles.menuCopy}><Text style={styles.menuTitle}>{item.title}</Text><Text style={styles.menuDescription}>{item.description}</Text></View>
+              <Text style={[styles.arrow, { color: item.accent }]}>›</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => handleNavigate('/forge')}
-          >
-            <View style={[styles.iconBadge, { backgroundColor: 'transparent' }]}>
-              <Image
-                source={{ uri: 'https://github.com/bluehawhy/card-forge/blob/main/assets/images/index/%EA%B0%95%ED%99%94%EC%86%8C.png?raw=true' }}
-                style={styles.menuIconImage}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={styles.menuText}>강화소</Text>
-            <Text style={styles.menuDescription}>카드 강화</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => handleNavigate('/packs')}
-          >
-            <View style={[styles.iconBadge, { backgroundColor: 'transparent' }]}>
-              <Image
-                source={{ uri: 'https://raw.githubusercontent.com/bluehawhy/card-forge/refs/heads/main/assets/images/index/%EC%B9%B4%EB%93%9C%ED%8C%A9.avif' }}
-                style={styles.menuIconImage}
-                resizeMode="contain"
-              />
-              </View>
-            <Text style={styles.menuText}>카드팩</Text>
-            <Text style={styles.menuDescription}>새로운 카드</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => handleNavigate('/exchange')}
-          >
-            <View style={[styles.iconBadge, { backgroundColor: 'transparent' }]}>
-              <Image
-                source={{ uri: 'https://raw.githubusercontent.com/bluehawhy/card-forge/refs/heads/main/assets/images/index/%EA%B5%90%ED%99%98%EC%86%8C.avif' }}
-                style={styles.menuIconImage}
-                resizeMode="contain"
-              />
-              </View>
-            <Text style={styles.menuText}>교환소</Text>
-            <Text style={styles.menuDescription}>아이템 교환</Text>
-          </TouchableOpacity>
+        <View style={styles.guideCard}>
+          <Text style={styles.guideMark}>✦</Text>
+          <View style={styles.guideCopy}><Text style={styles.guideTitle}>카드를 뽑고 강화해 보세요</Text><Text style={styles.guideText}>수집한 카드는 결정으로 교환하고, 결정은 포인트로 바꿀 수 있어요.</Text></View>
         </View>
       </ScrollView>
-    </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  /* 전체 화면 배경 지정 */
-  fullBackground: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-
-  /* 앱 내 UI 가독성을 확보해 주는 어두운 필터 (투명도 조절 가능) */
-  darkOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(240, 242, 245, 0.65)', // 배경 이미지를 보면서도 흰색 카드들이 떠 보이게 연한 톤 처리
-  },
-
-  container: {
-    flex: 1,
-  },
-
-  content: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-
-  /* =========================
-  플레이어 카드
-  ========================= */
-
-  playerCard: {
-    height: 220,
-    backgroundColor: 'rgba(37, 43, 66, 0.95)', // 전체 배경 위에서 잘 보이도록 불투명도 부여
-    borderRadius: 24,
-    marginBottom: 28,
-    overflow: 'hidden',
-    position: 'relative',
-    flexDirection: 'row',
-  },
-
-  backgroundCircleLarge: {
-    position: 'absolute',
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: '#343D61',
-    left: -50,
-    top: -80,
-  },
-
-  backgroundCircleSmall: {
-    position: 'absolute',
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: '#2F3654',
-    left: 80,
-    bottom: -80,
-  },
-
-  playerInfo: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
-    zIndex: 2,
-  },
-
-  gameTitle: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#AEB8D8',
-    letterSpacing: 2,
-    marginBottom: 6,
-  },
-
-  nickname: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 2,
-  },
-
-  levelText: {
-    fontSize: 12,
-    color: '#B7C0DD',
-    marginBottom: 14,
-  },
-
-  /* =========================
-  재화
-  ========================= */
-
-  currencyContainer: {
-    gap: 6,
-  },
-
-  currencyItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-  },
-
-  currencyIcon: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-
-  currencyTextWrapper: {
-    flex: 1,
-  },
-
-  currencyLabel: {
-    fontSize: 10,
-    color: '#AEB8D8',
-  },
-
-  currencyValue: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-
-  /* =========================
-  캐릭터
-  ========================= */
-
-  characterContainer: {
-    width: '45%',
-    height: '100%',
-    position: 'relative',
-    zIndex: 1,
-  },
-
-  /* LinearGradient 대체용 경계 레이어 */
-  leftFadeOverlay: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 20, // 캐릭터 좌측 경계에만 얇게 배치
-    backgroundColor: 'rgba(37, 43, 66, 0.5)', // 카드 배경색 계열의 반투명 톤
-    zIndex: 2,
-  },
-
-  characterImage: {
-    width: '100%',
-    height: '100%',
-  },
-
-  starsOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    paddingVertical: 6,
-    alignItems: 'center',
-  },
-
-  characterStars: {
-    fontSize: 11,
-    color: '#FFD56A',
-    letterSpacing: 2,
-  },
-
-  /* =========================
-  메뉴
-  ========================= */
-
-  sectionTitle: {
-    fontSize: 21,
-    fontWeight: '800',
-    color: '#191F28',
-    marginBottom: 14,
-  },
-
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  /* Style 수정 */
-  menuButton: {
-    width: '48%',
-    backgroundColor: 'rgba(255, 255, 255, 0.75)', // 반투명 처리
-    paddingVertical: 20,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.6)', // 은은한 흰색 테두리
-
-    // 입체감을 위한 미세한 그림자
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-
-  iconBadge: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-
-  menuIcon: {
-    fontSize: 22,
-  },
-
-  menuText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#191F28',
-    marginBottom: 2,
-  },
-
-  menuIconImage: {
-    width: 24, 
-    height: 24,
-  },
-
-  menuDescription: {
-    fontSize: 12,
-    color: '#6B7684',
-  },
+  screen: { flex: 1, backgroundColor: '#101722' },
+  content: { paddingHorizontal: 20, paddingTop: 32, paddingBottom: 42 },
+  eyebrow: { color: '#D5B87F', fontSize: 11, letterSpacing: 4, fontWeight: '700' },
+  welcome: { color: '#FFF5E3', fontSize: 26, fontWeight: '800', marginTop: 12 },
+  subtitle: { color: '#AAB6C5', fontSize: 14, marginTop: 8 },
+  playerCard: { height: 210, borderRadius: 22, backgroundColor: '#192432', borderWidth: 1, borderColor: '#3A4655', marginTop: 24, overflow: 'hidden', flexDirection: 'row' },
+  glowLarge: { position: 'absolute', width: 250, height: 250, borderRadius: 125, backgroundColor: '#26384B', left: -80, top: -100 },
+  glowSmall: { position: 'absolute', width: 130, height: 130, borderRadius: 65, backgroundColor: '#313443', left: 100, bottom: -80 },
+  playerInfo: { flex: 1, padding: 20, justifyContent: 'center', zIndex: 2 },
+  profileLabel: { color: '#D5B87F', fontSize: 9, letterSpacing: 2, fontWeight: '700' },
+  nickname: { color: '#FFF', fontSize: 25, fontWeight: '800', marginTop: 8 },
+  levelText: { color: '#B0BBC9', fontSize: 12, marginTop: 4 },
+  currencyCard: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 9, backgroundColor: 'rgba(234,198,129,0.1)', borderWidth: 1, borderColor: 'rgba(234,198,129,0.35)', borderRadius: 11, paddingHorizontal: 12, paddingVertical: 8, marginTop: 17 },
+  crystalIcon: { color: '#9DDCEC', fontSize: 17 },
+  currencyLabel: { color: '#AAB6C5', fontSize: 9 },
+  currencyValue: { color: '#F5F1E9', fontSize: 14, fontWeight: '800', marginTop: 1 },
+  characterWrap: { width: '42%', height: '100%' },
+  character: { width: '100%', height: '100%' },
+  characterShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(16,23,34,0.15)' },
+  stars: { position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center', paddingVertical: 7, backgroundColor: 'rgba(8,12,20,0.72)' },
+  starText: { color: '#EAC681', fontSize: 10, letterSpacing: 2 },
+  grid: { gap: 11, marginTop: 22 },
+  menuCard: { minHeight: 82, backgroundColor: '#192432', borderWidth: 1, borderColor: '#344153', borderRadius: 16, padding: 13, flexDirection: 'row', alignItems: 'center' },
+  iconWrap: { width: 54, height: 54, borderRadius: 15, borderWidth: 1, backgroundColor: '#111B28', alignItems: 'center', justifyContent: 'center' },
+  icon: { width: 31, height: 31 },
+  menuCopy: { flex: 1, marginLeft: 14 },
+  menuTitle: { color: '#F5F1E9', fontSize: 16, fontWeight: '700' },
+  menuDescription: { color: '#929FAF', fontSize: 12, marginTop: 5 },
+  arrow: { fontSize: 29, marginHorizontal: 6 },
+  guideCard: { flexDirection: 'row', backgroundColor: '#1B3040', borderRadius: 16, padding: 17, marginTop: 20, alignItems: 'center', gap: 14 },
+  guideMark: { color: '#EAC681', fontSize: 26 },
+  guideCopy: { flex: 1 },
+  guideTitle: { color: '#E9EEF4', fontSize: 14, fontWeight: '700' },
+  guideText: { color: '#A7BCCB', fontSize: 11, lineHeight: 17, marginTop: 5 },
 });
