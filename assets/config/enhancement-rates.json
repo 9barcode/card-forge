@@ -1,0 +1,34 @@
+{
+  "initialLevel": 1,
+  "maxLevel": 10,
+  "rateUnit": "percent",
+  "levels": {
+    "2": {
+      "successRatePercent": 100
+    },
+    "3": {
+      "successRatePercent": 90
+    },
+    "4": {
+      "successRatePercent": 80
+    },
+    "5": {
+      "successRatePercent": 70
+    },
+    "6": {
+      "successRatePercent": 60
+    },
+    "7": {
+      "successRatePercent": 50
+    },
+    "8": {
+      "successRatePercent": 40
+    },
+    "9": {
+      "successRatePercent": 33.13
+    },
+    "10": {
+      "successRatePercent": 20
+    }
+  }
+}

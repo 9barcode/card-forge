@@ -1,0 +1,12 @@
+{
+  "enhancement": { "min": 1, "max": 10 },
+  "grades": {
+    "NORMAL": { "label": "노말", "baseCrystals": 10000 },
+    "MAGIC": { "label": "매직", "baseCrystals": 20000 },
+    "RARE": { "label": "레어", "baseCrystals": 30000 },
+    "SUPER_RARE": { "label": "슈퍼레어", "baseCrystals": 50000 },
+    "UNIQUE": { "label": "유니크", "baseCrystals": 70000 },
+    "LEGENDARY": { "label": "레전더리", "baseCrystals": 100000 }
+  },
+  "crystalsPerPoint": 10000
+}

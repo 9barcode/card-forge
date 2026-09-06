@@ -64,21 +64,20 @@ export class RewardedAdService {
     }
 
     return new Promise((resolve, reject) => {
-      let rewarded = false;
+      let reward: RewardedAdResult | undefined;
       let unregister = () => {};
       unregister = this.gateway.show({
         options: { adGroupId: REWARDED_AD_TEST_ID },
         onEvent: (event) => {
           if (event.type === 'userEarnedReward') {
-            rewarded = true;
-            unregister();
-            resolve(event.data);
+            reward = event.data;
           } else if (event.type === 'failedToShow') {
             unregister();
             reject(new Error('REWARDED_AD_FAILED_TO_SHOW'));
-          } else if (event.type === 'dismissed' && !rewarded) {
+          } else if (event.type === 'dismissed') {
             unregister();
-            reject(new Error('REWARDED_AD_DISMISSED_WITHOUT_REWARD'));
+            if (reward) resolve(reward);
+            else reject(new Error('REWARDED_AD_DISMISSED_WITHOUT_REWARD'));
           }
         },
         onError: (error) => {
