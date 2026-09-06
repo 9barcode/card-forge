@@ -1,17 +1,17 @@
 import { createRoute, useNavigation } from '@granite-js/react-native';
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, type ImageSourcePropType } from 'react-native';
 
 type AppRoutes = '/cards' | '/forge' | '/packs' | '/exchange';
-type MenuItem = { path: AppRoutes; title: string; description: string; icon: number; accent: string };
+type MenuItem = { path: AppRoutes; title: string; description: string; icon: ImageSourcePropType; accent: string };
 
 export const Route = createRoute('/', { validateParams: (params) => params, component: HomePage });
 
 const menuItems: MenuItem[] = [
-  { path: '/cards', title: '카드 보관함', description: '수집한 원소 카드 확인', icon: require('../assets/images/index/보관함.png'), accent: '#72B6FF' },
-  { path: '/forge', title: '카드 강화소', description: '광고를 보고 카드 강화', icon: require('../assets/images/index/강화소.png'), accent: '#FFAF72' },
-  { path: '/packs', title: '카드 상점', description: '새로운 원소 카드 뽑기', icon: require('../assets/images/cards/dark_magic.png'), accent: '#C497FF' },
-  { path: '/exchange', title: '포인트 교환소', description: '카드와 결정을 포인트로', icon: require('../assets/images/cards/light_unique.png'), accent: '#76CFA3' },
+  { path: '/cards', title: '카드 보관함', description: '수집한 원소 카드 확인', icon: { uri: 'https://raw.githubusercontent.com/bluehawhy/card-forge/main/assets/images/index/%EB%B3%B4%EA%B4%80%ED%95%A8.png' }, accent: '#72B6FF' },
+  { path: '/forge', title: '카드 강화소', description: '광고를 보고 카드 강화', icon: { uri: 'https://raw.githubusercontent.com/bluehawhy/card-forge/main/assets/images/index/%EA%B0%95%ED%99%94%EC%86%8C.png' }, accent: '#FFAF72' },
+  { path: '/packs', title: '카드 상점', description: '새로운 원소 카드 뽑기', icon: { uri: 'https://raw.githubusercontent.com/bluehawhy/card-forge/main/assets/images/index/%EC%B9%B4%EB%93%9C%ED%8C%A9.png' }, accent: '#C497FF' },
+  { path: '/exchange', title: '포인트 교환소', description: '카드와 결정을 포인트로', icon: { uri: 'https://raw.githubusercontent.com/bluehawhy/card-forge/main/assets/images/index/%EA%B5%90%ED%99%98%EC%86%8C.png' }, accent: '#76CFA3' },
 ];
 
 export function HomePage() {
@@ -37,7 +37,7 @@ export function HomePage() {
             </View>
           </View>
           <View style={styles.characterWrap}>
-            <Image source={require('../assets/images/characters/rose.jpg')} style={styles.character} resizeMode="cover" />
+            <Image source={{ uri: 'https://github.com/bluehawhy/card-forge/blob/main/assets/images/characters/rose.jpg?raw=true' }} style={styles.character} resizeMode="cover" />
             <View style={styles.characterShade} />
             <View style={styles.stars}><Text style={styles.starText}>★ ★ ★ ★ ★</Text></View>
           </View>
