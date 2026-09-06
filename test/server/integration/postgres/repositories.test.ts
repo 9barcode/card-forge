@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { Pool } from 'pg';
 import { PostgresGameRepository } from '../../../../apps/server/src/cards/postgres-game.repository';
 import type { ServerConfig } from '../../../../apps/server/src/config';
@@ -41,6 +42,7 @@ describe('real PostgreSQL repositories', () => {
       '001_user_membership.sql',
       '002_gameplay_modules.sql',
       '003_game_rules_v2.sql',
+      '004_ad_attempts.sql',
     ]);
     users = new PostgresUserRepository(config);
     game = new PostgresGameRepository(config);
@@ -140,6 +142,18 @@ describe('real PostgreSQL repositories', () => {
       'token-pack',
       new Date(Date.now() + 60_000),
     );
+    await game.createAdAttempt({
+      tokenDigest: 'token-pack',
+      adAttemptId: '33333333-3333-4333-8333-333333333333',
+      purpose: 'PACK',
+      issuedAt: new Date(Date.now() - 10_000),
+      notBefore: new Date(Date.now() - 5_000),
+      expiresAt: new Date(Date.now() + 60_000),
+    });
+    await game.markAdAttemptRewarded({
+      tokenDigest: 'token-pack',
+      adAttemptId: '33333333-3333-4333-8333-333333333333',
+    });
     const input = {
       tokenDigest: 'token-pack',
       requestId: 'pack-request-concurrent',
@@ -147,7 +161,7 @@ describe('real PostgreSQL repositories', () => {
       element: 'FIRE' as const,
       grade: 'NORMAL' as const,
       probabilityVersion: 'postgres-integration-v1',
-      adCompletionId: 'ad-completion-concurrent',
+      adAttemptId: '33333333-3333-4333-8333-333333333333',
     };
     const results = await Promise.all([
       game.openPack(input),
@@ -161,5 +175,73 @@ describe('real PostgreSQL repositories', () => {
       ['digest-pack'],
     );
     expect(Number(cards.rows[0]?.count)).toBe(1);
+  });
+
+  it('광고 시도는 너무 빠른 완료와 같은 목적의 중복 발급을 거절한다', async () => {
+    await users.initializeUser(
+      'digest-ad-guard',
+      'token-ad-guard',
+      new Date(Date.now() + 60_000),
+    );
+    const input = {
+      tokenDigest: 'token-ad-guard',
+      adAttemptId: '44444444-4444-4444-8444-444444444444',
+      purpose: 'PACK' as const,
+      issuedAt: new Date(),
+      notBefore: new Date(Date.now() + 30_000),
+      expiresAt: new Date(Date.now() + 60_000),
+    };
+    await game.createAdAttempt(input);
+    await expect(
+      game.markAdAttemptRewarded({
+        tokenDigest: input.tokenDigest,
+        adAttemptId: input.adAttemptId,
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(
+      game.createAdAttempt({
+        ...input,
+        adAttemptId: '55555555-5555-4555-8555-555555555555',
+      }),
+    ).rejects.toMatchObject({ message: 'ACTIVE_AD_ATTEMPT_ALREADY_EXISTS' });
+  });
+
+  it('다른 목적의 광고 시도로 카드팩을 받을 수 없다', async () => {
+    await users.initializeUser(
+      'digest-ad-purpose',
+      'token-ad-purpose',
+      new Date(Date.now() + 60_000),
+    );
+    const adAttemptId = '66666666-6666-4666-8666-666666666666';
+    await game.createAdAttempt({
+      tokenDigest: 'token-ad-purpose',
+      adAttemptId,
+      purpose: 'ENHANCEMENT',
+      issuedAt: new Date(Date.now() - 10_000),
+      notBefore: new Date(Date.now() - 5_000),
+      expiresAt: new Date(Date.now() + 60_000),
+    });
+    await game.markAdAttemptRewarded({
+      tokenDigest: 'token-ad-purpose',
+      adAttemptId,
+    });
+    await expect(
+      game.openPack({
+        tokenDigest: 'token-ad-purpose',
+        requestId: 'wrong-purpose-pack',
+        packType: 'AD',
+        element: 'FIRE',
+        grade: 'NORMAL',
+        probabilityVersion: 'postgres-integration-v1',
+        adAttemptId,
+      }),
+    ).rejects.toMatchObject({
+      message: 'AD_ATTEMPT_NOT_REWARDED_OR_ALREADY_USED',
+    });
+    const attempt = await adminPool.query<{ status: string }>(
+      'SELECT status FROM ad_attempts WHERE id=$1',
+      [adAttemptId],
+    );
+    expect(attempt.rows[0]?.status).toBe('REWARDED');
   });
 });

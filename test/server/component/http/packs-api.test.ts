@@ -2,10 +2,6 @@ import 'reflect-metadata';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import {
-  AD_REWARD_VERIFIER,
-  type AdRewardVerifier,
-} from '../../../../apps/server/src/ads/ad-reward.verifier';
-import {
   GAME_REPOSITORY,
   type GameRepository,
 } from '../../../../apps/server/src/cards/gameplay.types';
@@ -37,6 +33,8 @@ describe('v2 ad pack HTTP integration', () => {
   let app: INestApplication;
   let baseUrl: string;
   const repository: jest.Mocked<GameRepository> = {
+    createAdAttempt: jest.fn(),
+    markAdAttemptRewarded: jest.fn(),
     listCards: jest.fn(),
     getCard: jest.fn(),
     sellCard: jest.fn(),
@@ -50,9 +48,7 @@ describe('v2 ad pack HTTP integration', () => {
     version: 'pack-test-v2',
     draw: () => ({ element: 'FIRE', grade: 'NORMAL' }),
   };
-  const adVerifier: jest.Mocked<AdRewardVerifier> = {
-    verify: jest.fn(),
-  };
+  const adAttemptId = '33333333-3333-4333-8333-333333333333';
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -62,7 +58,6 @@ describe('v2 ad pack HTTP integration', () => {
         { provide: GAME_REPOSITORY, useValue: repository },
         { provide: SERVER_CONFIG, useValue: config },
         { provide: PACK_REWARD_POLICY, useValue: rewardPolicy },
-        { provide: AD_REWARD_VERIFIER, useValue: adVerifier },
       ],
     }).compile();
     app = module.createNestApplication();
@@ -98,7 +93,6 @@ describe('v2 ad pack HTTP integration', () => {
   });
 
   it('검증된 광고 완료 1건과 idempotency key로 카드 1장을 요청한다', async () => {
-    adVerifier.verify.mockResolvedValue(true);
     repository.openPack.mockResolvedValue({
       card: {
         cardId: '11111111-1111-4111-8111-111111111111',
@@ -121,7 +115,7 @@ describe('v2 ad pack HTTP integration', () => {
         'content-type': 'application/json',
         'idempotency-key': 'ad_pack_1234',
       },
-      body: JSON.stringify({ adCompletionId: 'ad_completion_1234' }),
+      body: JSON.stringify({ adAttemptId }),
     });
 
     expect(response.status).toBe(201);
@@ -132,19 +126,12 @@ describe('v2 ad pack HTTP integration', () => {
         element: 'FIRE',
         grade: 'NORMAL',
         probabilityVersion: 'pack-test-v2',
-        adCompletionId: 'ad_completion_1234',
+        adAttemptId,
       }),
     );
-    expect(adVerifier.verify).toHaveBeenCalledWith({
-      completionId: 'ad_completion_1234',
-      purpose: 'PACK',
-      subjectDigest: expect.stringMatching(/^[a-f0-9]{64}$/),
-    });
   });
 
-  it('광고 완료 검증이 실패하면 카드 지급 저장소를 호출하지 않는다', async () => {
-    adVerifier.verify.mockResolvedValue(false);
-
+  it('잘못된 광고 시도 ID면 카드 지급 저장소를 호출하지 않는다', async () => {
     const response = await fetch(`${baseUrl}/api/v1/pack-openings`, {
       method: 'POST',
       headers: {
@@ -152,10 +139,10 @@ describe('v2 ad pack HTTP integration', () => {
         'content-type': 'application/json',
         'idempotency-key': 'ad_pack_rejected_1234',
       },
-      body: JSON.stringify({ adCompletionId: 'ad_completion_rejected' }),
+      body: JSON.stringify({ adAttemptId: 'not-a-uuid' }),
     });
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(400);
     expect(repository.openPack).not.toHaveBeenCalled();
   });
 });

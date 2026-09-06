@@ -120,12 +120,12 @@ describe('PostgresGameRepository v2 ad pack availability', () => {
         element: 'FIRE',
         grade: 'NORMAL',
         probabilityVersion: 'pack-test-v1',
-        adCompletionId: 'ad_completion_1234',
+        adAttemptId: '33333333-3333-4333-8333-333333333333',
       }),
     ).rejects.toBeInstanceOf(ConflictException);
     expect(query).toHaveBeenCalledWith('ROLLBACK');
     expect(query).not.toHaveBeenCalledWith(
-      expect.stringContaining('INSERT INTO ad_reward_receipts'),
+      expect.stringContaining('UPDATE ad_attempts'),
       expect.anything(),
     );
     expect(client.release).toHaveBeenCalled();

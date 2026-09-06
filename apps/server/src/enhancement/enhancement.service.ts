@@ -2,17 +2,12 @@ import { randomInt } from 'node:crypto';
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import {
-  AD_REWARD_VERIFIER,
-  type AdRewardVerifier,
-  requireAdCompletionId,
-} from '../ads/ad-reward.verifier';
+import { requireAdAttemptId } from '../ads/ad-attempt.service';
 import { readTokenDigest, requireRequestId } from '../cards/game-auth';
 import {
   GAME_RULES_VERSION,
@@ -31,25 +26,24 @@ export class EnhancementService {
   constructor(
     @Inject(GAME_REPOSITORY) private readonly games: GameRepository,
     @Inject(SERVER_CONFIG) private readonly config: ServerConfig,
-    @Inject(AD_REWARD_VERIFIER) private readonly ads: AdRewardVerifier,
   ) {}
 
   async enhance(
     authorization: string | undefined,
     requestIdHeader: string | undefined,
     cardIdValue: unknown,
-    adCompletionIdValue: unknown,
+    adAttemptIdValue: unknown,
   ) {
     if (
       typeof cardIdValue !== 'string' ||
       !/^[0-9a-f-]{36}$/i.test(cardIdValue)
     )
       throw new BadRequestException('INVALID_CARD_ID');
-    let adCompletionId: string;
+    let adAttemptId: string;
     try {
-      adCompletionId = requireAdCompletionId(adCompletionIdValue);
+      adAttemptId = requireAdAttemptId(adAttemptIdValue);
     } catch {
-      throw new BadRequestException('INVALID_AD_COMPLETION_ID');
+      throw new BadRequestException('INVALID_AD_ATTEMPT_ID');
     }
     const tokenDigest = readTokenDigest(authorization, this.config);
     const card = await this.games.getCard(tokenDigest, cardIdValue);
@@ -64,14 +58,6 @@ export class EnhancementService {
       card.enhancementLevel >= MAX_ENHANCEMENT_LEVEL
     )
       throw new ConflictException('MAX_ENHANCEMENT_LEVEL');
-    if (
-      !(await this.ads.verify({
-        completionId: adCompletionId,
-        purpose: 'ENHANCEMENT',
-        subjectDigest: tokenDigest,
-      }))
-    )
-      throw new ForbiddenException('AD_COMPLETION_NOT_VERIFIED');
     const targetLevel = card.enhancementLevel + 1;
     const rate = successRateForTargetLevel(targetLevel);
     const result: EnhancementResult =
@@ -83,7 +69,7 @@ export class EnhancementService {
       expectedLevel: card.enhancementLevel,
       result,
       probabilityVersion: GAME_RULES_VERSION,
-      adCompletionId,
+      adAttemptId,
     });
   }
 }

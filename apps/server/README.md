@@ -5,7 +5,7 @@
 ## 시작 순서
 
 1. `.env.example`의 값을 운영 비밀 저장소에 등록한다.
-2. `migrations/001_user_membership.sql`을 PostgreSQL에 적용한다.
+2. `npm run db:migrate --workspace @card-forge/server`로 모든 마이그레이션을 순서대로 적용한다.
 3. Toss 검증 API용 mTLS 인증서·키 파일을 읽기 전용 secret으로 마운트한다.
    운영체제 기본 CA 대신 별도 CA가 필요한 환경에서만 `TOSS_MTLS_CA_PATH`를 설정한다.
 4. 루트에서 `npm run server:build`, `npm run server:test`로 검증한다.
@@ -48,6 +48,22 @@ npm run server:test:postgres
 - `GET /api/v1/users/me`: 활성·미만료 Bearer token의 현재 회원을 반환한다.
 - `PATCH /api/v1/users/me`: 활성 세션의 닉네임을 NFC 정규화 후 변경한다.
 - `DELETE /api/v1/user-sessions/current`: 현재 opaque session을 즉시 폐기한다.
+
+### 보상형 광고 개발 흐름
+
+앱인토스 공개 SDK의 `userEarnedReward` 이벤트에는 서버에서 검증할 수 있는 `completionId`나 서명 영수증이 없다. 따라서 서버는 존재하지 않는 값을 광고 증명으로 취급하지 않는다. 대신 서버가 UUID 형식의 `adAttemptId`를 먼저 발급하고, 재사용·다른 회원 사용·다른 용도 사용·너무 빠른 완료·만료를 PostgreSQL에서 차단한다.
+
+이 방식도 변조된 클라이언트를 완전히 판별하는 공식 광고 검증은 아니다. 그래서 기본값과 운영 환경은 항상 닫혀 있다. 로컬 또는 QR 테스트에서만 `NODE_ENV=development`, `AD_REWARD_MODE=CLIENT_TEST`를 명시한다. `NODE_ENV=production`에서 이 모드를 지정하면 서버가 시작 전에 오류를 낸다.
+
+개발 순서는 다음과 같다.
+
+1. `POST /api/v1/ad-attempts`에 `{ "purpose": "PACK" }` 또는 `ENHANCEMENT`, `SALE`을 보내 `adAttemptId`를 받는다.
+2. 클라이언트가 앱인토스 보상형 광고를 표시한다.
+3. 광고 SDK의 `userEarnedReward` 이벤트에서만 `POST /api/v1/ad-attempts/{adAttemptId}/complete`에 SDK가 준 `{ "unitType": "...", "unitAmount": 1 }`을 보낸다.
+4. 카드팩/강화 요청에는 `adCompletionId`가 아니라 `{ "adAttemptId": "..." }`를 보낸다.
+5. 서버는 `REWARDED` 상태인 같은 회원·같은 목적의 시도만 카드 지급/강화 트랜잭션 안에서 `CONSUMED`로 바꾼다. 작업이 실패하면 광고 소비도 함께 롤백된다.
+
+한 회원은 목적별로 활성 광고 시도를 하나만 가질 수 있고, 기본 완료 가능 시각은 발급 5초 후, 만료는 발급 10분 후다. 각각 `AD_ATTEMPT_MINIMUM_SECONDS`, `AD_ATTEMPT_TTL_SECONDS`로 개발 환경에서 조정할 수 있다. 토스가 공식 SSV·서명 영수증·조회 API를 제공하면 `complete` 단계만 공식 검증기로 교체하고 나머지 1회 소비 트랜잭션은 그대로 사용한다.
 
 정지·탈퇴·만료·폐기 세션은 조회 쿼리에서 거절한다. 토큰은 짧은 수명으로 유지하며 만료 후 클라이언트가 Toss 식별 절차를 다시 수행한다. 운영 단계에서는 rate limit을 추가한다.
 

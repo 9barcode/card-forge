@@ -14,8 +14,8 @@ export class PacksController {
   @Post() open(
     @Headers('authorization') authorization: string | undefined,
     @Headers('idempotency-key') requestId: string | undefined,
-    @Body() body: { adCompletionId?: unknown },
+    @Body() body: { adAttemptId?: unknown },
   ) {
-    return this.packs.open(authorization, requestId, body.adCompletionId);
+    return this.packs.open(authorization, requestId, body.adAttemptId);
   }
 }

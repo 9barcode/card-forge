@@ -18,6 +18,7 @@ describe('loadServerConfig', () => {
     expect(config.tossMtlsCaPath).toBeUndefined();
     expect(config.tossRequestTimeoutMs).toBe(5_000);
     expect(config.tossRequestMaxRetries).toBe(1);
+    expect(config.adRewardMode).toBe('DISABLED');
   });
 
   it('HTTP 주소와 과도한 재시도 설정을 거절한다', () => {
@@ -33,5 +34,15 @@ describe('loadServerConfig', () => {
         TOSS_REQUEST_MAX_RETRIES: '4',
       }),
     ).toThrow('TOSS_REQUEST_MAX_RETRIES must be an integer from 0 to 3.');
+  });
+
+  it('운영 환경에서는 클라이언트 광고 완료 신고 모드를 거절한다', () => {
+    expect(() =>
+      loadServerConfig({
+        ...requiredEnvironment,
+        NODE_ENV: 'production',
+        AD_REWARD_MODE: 'CLIENT_TEST',
+      }),
+    ).toThrow('AD_REWARD_MODE=CLIENT_TEST is forbidden in production.');
   });
 });

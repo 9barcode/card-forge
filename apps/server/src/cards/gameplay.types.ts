@@ -45,6 +45,18 @@ export interface CardSaleResult {
 }
 
 export interface GameRepository {
+  createAdAttempt(input: {
+    tokenDigest: string;
+    adAttemptId: string;
+    purpose: import('../ads/ad-attempt.types').AdPurpose;
+    issuedAt: Date;
+    notBefore: Date;
+    expiresAt: Date;
+  }): Promise<import('../ads/ad-attempt.types').AdAttempt>;
+  markAdAttemptRewarded(input: {
+    tokenDigest: string;
+    adAttemptId: string;
+  }): Promise<import('../ads/ad-attempt.types').AdAttempt>;
   listCards(tokenDigest: string): Promise<OwnedCard[] | null>;
   getCard(
     tokenDigest: string,
@@ -66,7 +78,7 @@ export interface GameRepository {
     element: Element;
     grade: Grade;
     probabilityVersion: string;
-    adCompletionId: string;
+    adAttemptId: string;
   }): Promise<{ card: OwnedCard; replayed: boolean }>;
   enhance(input: {
     tokenDigest: string;
@@ -75,7 +87,7 @@ export interface GameRepository {
     expectedLevel: number;
     result: EnhancementResult;
     probabilityVersion: string;
-    adCompletionId: string;
+    adAttemptId: string;
   }): Promise<{
     card: OwnedCard | null;
     result: EnhancementResult;

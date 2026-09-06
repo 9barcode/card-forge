@@ -3,7 +3,6 @@ import {
   ConflictException,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import type { AdRewardVerifier } from '../../../apps/server/src/ads/ad-reward.verifier';
 import type {
   GameRepository,
   OwnedCard,
@@ -28,10 +27,12 @@ const config: ServerConfig = {
 
 const authorization = `Bearer ${'a'.repeat(43)}`;
 const requestId = 'request_1234';
-const verifiedAds: AdRewardVerifier = { verify: async () => true };
+const adAttemptId = '33333333-3333-4333-8333-333333333333';
 
 function createRepository(): jest.Mocked<GameRepository> {
   return {
+    createAdAttempt: jest.fn(),
+    markAdAttemptRewarded: jest.fn(),
     listCards: jest.fn(),
     getCard: jest.fn(),
     sellCard: jest.fn(),
@@ -64,11 +65,10 @@ describe('server gameplay modules', () => {
       repository,
       config,
       UNCONFIGURED_PACK_REWARD_POLICY,
-      verifiedAds,
     );
 
     await expect(
-      service.open(authorization, requestId, 'ad_completion_1234'),
+      service.open(authorization, requestId, adAttemptId),
     ).rejects.toBeInstanceOf(ServiceUnavailableException);
     expect(repository.openPack).not.toHaveBeenCalled();
   });
@@ -79,7 +79,6 @@ describe('server gameplay modules', () => {
       repository,
       config,
       UNCONFIGURED_PACK_REWARD_POLICY,
-      verifiedAds,
     );
 
     await expect(
@@ -91,14 +90,14 @@ describe('server gameplay modules', () => {
   it('+10 카드는 난수 판정이나 DB 변경 전에 강화 요청을 거절한다', async () => {
     const repository = createRepository();
     repository.getCard.mockResolvedValue(card(10));
-    const service = new EnhancementService(repository, config, verifiedAds);
+    const service = new EnhancementService(repository, config);
 
     await expect(
       service.enhance(
         authorization,
         requestId,
         '11111111-1111-1111-1111-111111111111',
-        'ad_completion_1234',
+        adAttemptId,
       ),
     ).rejects.toBeInstanceOf(ConflictException);
     expect(repository.enhance).not.toHaveBeenCalled();
@@ -110,14 +109,14 @@ describe('server gameplay modules', () => {
       ...card(4),
       status: 'ENHANCEMENT_LOCKED',
     });
-    const service = new EnhancementService(repository, config, verifiedAds);
+    const service = new EnhancementService(repository, config);
 
     await expect(
       service.enhance(
         authorization,
         requestId,
         '11111111-1111-1111-1111-111111111111',
-        'ad_completion_1234',
+        adAttemptId,
       ),
     ).rejects.toBeInstanceOf(ConflictException);
     expect(repository.enhance).not.toHaveBeenCalled();
@@ -131,13 +130,13 @@ describe('server gameplay modules', () => {
       result: 'SUCCESS',
       replayed: false,
     });
-    const service = new EnhancementService(repository, config, verifiedAds);
+    const service = new EnhancementService(repository, config);
 
     await service.enhance(
       authorization,
       requestId,
       '11111111-1111-1111-1111-111111111111',
-      'ad_completion_1234',
+      adAttemptId,
     );
 
     expect(repository.enhance).toHaveBeenCalledWith(
@@ -145,7 +144,7 @@ describe('server gameplay modules', () => {
         expectedLevel: 1,
         result: 'SUCCESS',
         probabilityVersion: 'card-forge-rules-v2',
-        adCompletionId: 'ad_completion_1234',
+        adAttemptId,
       }),
     );
   });

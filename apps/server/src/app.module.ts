@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
-import {
-  AD_REWARD_VERIFIER,
-  UNCONFIGURED_AD_REWARD_VERIFIER,
-} from './ads/ad-reward.verifier';
+import { AdAttemptController } from './ads/ad-attempt.controller';
+import { AdAttemptService } from './ads/ad-attempt.service';
 import { CardsController } from './cards/cards.controller';
 import { CardsService } from './cards/cards.service';
 import { GAME_REPOSITORY } from './cards/gameplay.types';
@@ -40,6 +38,7 @@ import {
     EnhancementController,
     ExchangeController,
     HealthController,
+    AdAttemptController,
   ],
   providers: [
     {
@@ -53,14 +52,11 @@ import {
     EnhancementService,
     ExchangeService,
     FraudDetectionService,
+    AdAttemptService,
     {
       provide: TOSS_MTLS_HTTP_CLIENT,
       inject: [SERVER_CONFIG],
       useFactory: (config: ServerConfig) => new NodeTossMtlsHttpClient(config),
-    },
-    {
-      provide: AD_REWARD_VERIFIER,
-      useValue: UNCONFIGURED_AD_REWARD_VERIFIER,
     },
     {
       provide: PACK_REWARD_POLICY,

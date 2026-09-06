@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { Pool, type PoolClient } from 'pg';
+import type { AdAttempt } from '../ads/ad-attempt.types';
 import { SERVER_CONFIG, type ServerConfig } from '../config';
 import { CARD_STORAGE_CAPACITY, DAILY_AD_PACK_LIMIT } from './game-rules-v2';
 import type {
@@ -38,6 +39,59 @@ export class PostgresGameRepository implements GameRepository, OnModuleDestroy {
 
   async onModuleDestroy(): Promise<void> {
     await this.pool.end();
+  }
+
+  async createAdAttempt(
+    input: Parameters<GameRepository['createAdAttempt']>[0],
+  ): Promise<AdAttempt> {
+    try {
+      return await this.transaction(async (client) => {
+        const userId = await this.requireUser(client, input.tokenDigest);
+        await client.query(
+          `UPDATE ad_attempts SET status='EXPIRED'
+           WHERE user_id=$1 AND purpose=$2 AND status IN ('PENDING','REWARDED')
+             AND expires_at <= now()`,
+          [userId, input.purpose],
+        );
+        const result = await client.query<AdAttemptRow>(
+          `INSERT INTO ad_attempts (id,user_id,purpose,issued_at,not_before,expires_at)
+           VALUES ($1,$2,$3,$4,$5,$6)
+           RETURNING id,purpose,status,issued_at,not_before,expires_at`,
+          [
+            input.adAttemptId,
+            userId,
+            input.purpose,
+            input.issuedAt,
+            input.notBefore,
+            input.expiresAt,
+          ],
+        );
+        return toAdAttempt(requireAdAttemptRow(result.rows[0]));
+      });
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new ConflictException('ACTIVE_AD_ATTEMPT_ALREADY_EXISTS');
+      }
+      throw error;
+    }
+  }
+
+  async markAdAttemptRewarded(
+    input: Parameters<GameRepository['markAdAttemptRewarded']>[0],
+  ): Promise<AdAttempt> {
+    const userId = await this.resolveUserId(this.pool, input.tokenDigest);
+    if (!userId) throw new UnauthorizedException('INVALID_OR_EXPIRED_SESSION');
+    const result = await this.pool.query<AdAttemptRow>(
+      `UPDATE ad_attempts
+       SET status='REWARDED', rewarded_at=now()
+       WHERE id=$1 AND user_id=$2 AND status='PENDING'
+         AND now() >= not_before AND now() < expires_at
+       RETURNING id,purpose,status,issued_at,not_before,expires_at`,
+      [input.adAttemptId, userId],
+    );
+    const row = result.rows[0];
+    if (!row) throw new ConflictException('AD_ATTEMPT_NOT_COMPLETABLE');
+    return toAdAttempt(row);
   }
 
   async listCards(tokenDigest: string): Promise<OwnedCard[] | null> {
@@ -164,15 +218,13 @@ export class PostgresGameRepository implements GameRepository, OnModuleDestroy {
       );
       if (Number(count.rows[0]?.count ?? 0) >= DAILY_AD_PACK_LIMIT)
         throw new ConflictException('DAILY_PACK_LIMIT_REACHED');
-      const receipt = await client.query<{ id: string }>(
-        `INSERT INTO ad_reward_receipts (user_id,completion_id,purpose,status,consumed_at,request_id)
-         VALUES ($1,$2,'PACK','CONSUMED',now(),$3)
-         ON CONFLICT DO NOTHING RETURNING id`,
-        [userId, input.adCompletionId, input.requestId],
+      await this.consumeAdAttempt(
+        client,
+        userId,
+        input.adAttemptId,
+        'PACK',
+        input.requestId,
       );
-      const adReceiptId = receipt.rows[0]?.id;
-      if (!adReceiptId)
-        throw new ConflictException('AD_COMPLETION_ALREADY_USED');
       const template = await client.query<{ id: string }>(
         'SELECT id FROM card_templates WHERE element=$1 AND grade=$2',
         [input.element, input.grade],
@@ -189,14 +241,14 @@ export class PostgresGameRepository implements GameRepository, OnModuleDestroy {
         inserted.rows[0]?.card_id ?? '',
       );
       await client.query(
-        'INSERT INTO pack_openings (user_id, request_id, pack_type, probability_version, user_card_id, ad_receipt_id) VALUES ($1,$2,$3,$4,$5,$6)',
+        'INSERT INTO pack_openings (user_id, request_id, pack_type, probability_version, user_card_id, ad_attempt_id) VALUES ($1,$2,$3,$4,$5,$6)',
         [
           userId,
           input.requestId,
           input.packType,
           input.probabilityVersion,
           card.cardId,
-          adReceiptId,
+          input.adAttemptId,
         ],
       );
       await this.finishRequest(
@@ -268,15 +320,13 @@ export class PostgresGameRepository implements GameRepository, OnModuleDestroy {
       if (level === undefined) throw new NotFoundException('CARD_NOT_FOUND');
       if (level !== input.expectedLevel)
         throw new ConflictException('CARD_LEVEL_CHANGED');
-      const receipt = await client.query<{ id: string }>(
-        `INSERT INTO ad_reward_receipts (user_id,completion_id,purpose,status,consumed_at,request_id)
-         VALUES ($1,$2,'ENHANCEMENT','CONSUMED',now(),$3)
-         ON CONFLICT DO NOTHING RETURNING id`,
-        [userId, input.adCompletionId, input.requestId],
+      await this.consumeAdAttempt(
+        client,
+        userId,
+        input.adAttemptId,
+        'ENHANCEMENT',
+        input.requestId,
       );
-      const adReceiptId = receipt.rows[0]?.id;
-      if (!adReceiptId)
-        throw new ConflictException('AD_COMPLETION_ALREADY_USED');
       let card: OwnedCard;
       if (input.result === 'SUCCESS') {
         await client.query(
@@ -296,7 +346,7 @@ export class PostgresGameRepository implements GameRepository, OnModuleDestroy {
         card = await this.loadCard(client, userId, input.cardId);
       }
       await client.query(
-        'INSERT INTO enhancement_logs (user_id,user_card_id,request_id,before_level,after_level,result,probability_version,coin_cost,ad_receipt_id) VALUES ($1,$2,$3,$4,$5,$6,$7,0,$8)',
+        'INSERT INTO enhancement_logs (user_id,user_card_id,request_id,before_level,after_level,result,probability_version,coin_cost,ad_attempt_id) VALUES ($1,$2,$3,$4,$5,$6,$7,0,$8)',
         [
           userId,
           input.cardId,
@@ -305,7 +355,7 @@ export class PostgresGameRepository implements GameRepository, OnModuleDestroy {
           card?.enhancementLevel ?? null,
           input.result,
           input.probabilityVersion,
-          adReceiptId,
+          input.adAttemptId,
         ],
       );
       const response = { card, result: input.result };
@@ -499,6 +549,59 @@ export class PostgresGameRepository implements GameRepository, OnModuleDestroy {
       [userId, eventType, requestId, details],
     );
   }
+
+  private async consumeAdAttempt(
+    client: PoolClient,
+    userId: string,
+    adAttemptId: string,
+    purpose: 'PACK' | 'ENHANCEMENT' | 'SALE',
+    requestId: string,
+  ): Promise<void> {
+    const result = await client.query(
+      `UPDATE ad_attempts
+       SET status='CONSUMED', consumed_at=now(), request_id=$4
+       WHERE id=$1 AND user_id=$2 AND purpose=$3 AND status='REWARDED'
+         AND now() < expires_at`,
+      [adAttemptId, userId, purpose, requestId],
+    );
+    if (result.rowCount !== 1) {
+      throw new ConflictException('AD_ATTEMPT_NOT_REWARDED_OR_ALREADY_USED');
+    }
+  }
+}
+
+interface AdAttemptRow {
+  id: string;
+  purpose: AdAttempt['purpose'];
+  status: AdAttempt['status'];
+  issued_at: Date;
+  not_before: Date;
+  expires_at: Date;
+}
+
+function requireAdAttemptRow(row: AdAttemptRow | undefined): AdAttemptRow {
+  if (!row) throw new Error('AD_ATTEMPT_INSERT_FAILED');
+  return row;
+}
+
+function toAdAttempt(row: AdAttemptRow): AdAttempt {
+  return {
+    adAttemptId: row.id,
+    purpose: row.purpose,
+    status: row.status,
+    issuedAt: row.issued_at.toISOString(),
+    notBefore: row.not_before.toISOString(),
+    expiresAt: row.expires_at.toISOString(),
+  };
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === '23505'
+  );
 }
 
 const CARD_SELECT =

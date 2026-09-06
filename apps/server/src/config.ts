@@ -10,6 +10,13 @@ export interface ServerConfig {
   tossMtlsCaPath?: string;
   tossRequestTimeoutMs?: number;
   tossRequestMaxRetries?: number;
+  /**
+   * CLIENT_TEST trusts the client-side userEarnedReward event and must never be
+   * used as proof for production point rewards. The safe default is DISABLED.
+   */
+  adRewardMode?: 'DISABLED' | 'CLIENT_TEST';
+  adAttemptTtlSeconds?: number;
+  adAttemptMinimumSeconds?: number;
 }
 
 export const SERVER_CONFIG = Symbol('SERVER_CONFIG');
@@ -57,7 +64,39 @@ export function loadServerConfig(environment = process.env): ServerConfig {
       0,
       3,
     ),
+    adRewardMode: parseAdRewardMode(
+      environment.AD_REWARD_MODE,
+      environment.NODE_ENV,
+    ),
+    adAttemptTtlSeconds: requireInteger(
+      environment,
+      'AD_ATTEMPT_TTL_SECONDS',
+      600,
+      30,
+      3600,
+    ),
+    adAttemptMinimumSeconds: requireInteger(
+      environment,
+      'AD_ATTEMPT_MINIMUM_SECONDS',
+      5,
+      0,
+      300,
+    ),
   };
+}
+
+function parseAdRewardMode(
+  value: string | undefined,
+  nodeEnvironment: string | undefined,
+): 'DISABLED' | 'CLIENT_TEST' {
+  const mode = value?.trim() || 'DISABLED';
+  if (mode !== 'DISABLED' && mode !== 'CLIENT_TEST') {
+    throw new Error('AD_REWARD_MODE must be DISABLED or CLIENT_TEST.');
+  }
+  if (mode === 'CLIENT_TEST' && nodeEnvironment === 'production') {
+    throw new Error('AD_REWARD_MODE=CLIENT_TEST is forbidden in production.');
+  }
+  return mode;
 }
 
 function requireValue(environment: NodeJS.ProcessEnv, name: string): string {
