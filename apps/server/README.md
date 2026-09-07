@@ -12,7 +12,13 @@
 
 ## PostgreSQL 마이그레이션과 실제 통합 테스트
 
-빌드 후 `DATABASE_URL`을 설정하고 `npm run db:migrate --workspace @card-forge/server`를 실행한다. 적용된 SQL 파일과 SHA-256 checksum은 `schema_migrations`에 기록된다. 이미 적용된 파일이 수정되면 서버가 재적용하지 않고 오류로 중단한다.
+빌드하면 `migrations/*.sql`이 실행 코드와 함께 `dist/migrations`에 복사된다. 따라서 Railway처럼 빌드 산출물로 실행하는 환경에서도 원본 소스 디렉터리에 의존하지 않는다. 빌드 후 `DATABASE_URL`을 설정하고 `npm run db:migrate --workspace @card-forge/server`를 실행한다. 적용된 SQL 파일과 SHA-256 checksum은 `schema_migrations`에 기록된다. 이미 적용된 파일이 수정되면 서버가 재적용하지 않고 오류로 중단한다.
+
+Railway에서는 이 명령을 Pre-deploy Command로 등록한다. 마이그레이션이 실패하면 서버의 새 버전도 시작하지 않아, 새 코드와 이전 DB 구조가 섞이는 일을 막는다.
+
+```text
+npm run db:migrate --workspace @card-forge/server
+```
 
 실제 PostgreSQL 통합 테스트는 일반 Jest 테스트와 분리되어 있다. 테스트 전용 데이터베이스를 만들고 이름을 반드시 `_test`로 끝낸 뒤 다음 명령을 실행한다.
 
