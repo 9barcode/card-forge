@@ -2,7 +2,7 @@ import { styles } from '../assets/sytle/packs.style';
 import { createRoute } from '@granite-js/react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Image, ImageBackground, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { packService, type PackReward } from '../src/services/packService';
+import { packService, type PackAvailability, type PackReward } from '../src/services/packService';
 import { rewardedAdService } from '../src/services/rewardedAdService';
 
 export const Route = createRoute('/packs', {
@@ -15,6 +15,8 @@ export function PacksPage() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [message, setMessage] = useState('');
   const [reward, setReward] = useState<PackReward | null>(null);
+  const [availability, setAvailability] = useState<PackAvailability | null>(null);
+  const [checkingStorage, setCheckingStorage] = useState(true);
   const busy = useRef(false);
   const mounted = useRef(false);
   const animation = useRef(new Animated.Value(0)).current;
@@ -23,6 +25,21 @@ export function PacksPage() {
     mounted.current = true;
     return () => { mounted.current = false; animation.stopAnimation(); };
   }, [animation]);
+
+  useEffect(() => {
+    let active = true;
+    void packService.getAvailability()
+      .then((result) => {
+        if (active) setAvailability(result);
+      })
+      .catch(() => {
+        if (active) setMessage('카드 보관함 정보를 불러오지 못했어요.');
+      })
+      .finally(() => {
+        if (active) setCheckingStorage(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (phase !== 'drawing') return;
@@ -39,11 +56,16 @@ export function PacksPage() {
   }, [phase, animation]);
 
   const draw = async () => {
-    if (busy.current || phase !== 'idle') return;
+    if (busy.current || phase !== 'idle' || checkingStorage || availability?.storageFull) return;
     busy.current = true;
     setMessage('');
     setPhase('loading');
     try {
+      const latestAvailability = await packService.getAvailability();
+      if (!mounted.current) return;
+      setAvailability(latestAvailability);
+      if (latestAvailability.storageFull) throw new Error('CARD_STORAGE_FULL');
+
       await rewardedAdService.load();
       if (!mounted.current) return;
       setPhase('ad');
@@ -54,10 +76,17 @@ export function PacksPage() {
       const card = cards[0];
       if (!card) throw new Error('EMPTY_PACK');
       setReward(card);
+      setAvailability((current) => current ? {
+        ...current,
+        ownedCardCount: current.ownedCardCount + 1,
+        storageFull: current.ownedCardCount + 1 >= current.storageCapacity,
+      } : current);
       setPhase('drawing');
     } catch (error) {
       if (!mounted.current) return;
-      setMessage(error instanceof Error && error.message === 'REWARDED_AD_NOT_SUPPORTED'
+      setMessage(error instanceof Error && error.message === 'CARD_STORAGE_FULL'
+        ? '카드는 최대 5장까지 보유할 수 있어요. 보관함을 정리한 후 다시 시도해 주세요.'
+        : error instanceof Error && error.message === 'REWARDED_AD_NOT_SUPPORTED'
         ? '현재 환경에서는 광고를 재생할 수 없어요. 토스 앱에서 다시 실행해 주세요.'
         : error instanceof Error && error.message === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD'
         ? '광고를 끝까지 시청해야 카드를 뽑을 수 있어요.'
@@ -110,11 +139,15 @@ export function PacksPage() {
             </TouchableOpacity>
           ) : (
             <>
-              <Text style={styles.hint}>광고 시청 완료 후 카드 1장을 뽑아요</Text>
+              <Text style={styles.hint}>{checkingStorage
+                ? '카드 보관함을 확인하고 있어요'
+                : availability?.storageFull
+                ? `보관함이 가득 찼어요 (${availability.ownedCardCount}/${availability.storageCapacity})`
+                : `광고 시청 완료 후 카드 1장을 뽑아요 (${availability?.ownedCardCount ?? 0}/${availability?.storageCapacity ?? 5})`}</Text>
               <TouchableOpacity accessibilityRole="button" accessibilityLabel="카드 뽑기"
-                disabled={phase !== 'idle'}
+                disabled={phase !== 'idle' || checkingStorage || availability?.storageFull}
                 onPress={draw}
-                style={[styles.button, phase !== 'idle' && styles.disabled]}>
+                style={[styles.button, (phase !== 'idle' || checkingStorage || availability?.storageFull) && styles.disabled]}>
                 {phase !== 'idle' && <ActivityIndicator color="#292015" />}
                 <Text style={styles.buttonText}>{phase === 'drawing' ? '카드 뽑는 중' : phase === 'ad' ? '광고 시청 중' : phase === 'loading' ? '광고 준비 중' : '카드 뽑기'}</Text>
               </TouchableOpacity>

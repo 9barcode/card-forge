@@ -10,16 +10,18 @@ jest.mock('../../../src/services/rewardedAdService', () => ({
   rewardedAdService: { load: jest.fn(), show: jest.fn() },
 }));
 jest.mock('../../../src/services/packService', () => ({
-  packService: { openPack: jest.fn() },
+  packService: { getAvailability: jest.fn(), openPack: jest.fn() },
 }));
 
 const load = rewardedAdService.load as jest.Mock;
 const show = rewardedAdService.show as jest.Mock;
+const getAvailability = packService.getAvailability as jest.Mock;
 const openPack = packService.openPack as jest.Mock;
 
 beforeEach(() => {
   jest.clearAllMocks();
   jest.spyOn(Animated, 'sequence').mockReturnValue({ start: jest.fn(), stop: jest.fn(), reset: jest.fn() });
+  getAvailability.mockResolvedValue({ ownedCardCount: 4, storageCapacity: 5, storageFull: false });
   load.mockResolvedValue(undefined);
   show.mockResolvedValue({ unitType: 'card', unitAmount: 1 });
   openPack.mockResolvedValue([{ id: '1', elementLabel: '바람', rarityLabel: '노말', enhanceLevel: 1, image: 1 }]);
@@ -92,4 +94,19 @@ it('광고 로드 실패 후에도 카드 뽑기로 재시도할 수 있다', as
   expect(show).not.toHaveBeenCalled();
   fireEvent.press(screen.getByText('카드 뽑기'));
   await waitFor(() => expect(show).toHaveBeenCalledTimes(1));
+});
+
+
+it('DB 응답의 보유 카드가 5장이면 광고와 카드 뽑기를 모두 막는다', async () => {
+  getAvailability.mockResolvedValue({
+    ownedCardCount: 5,
+    storageCapacity: 5,
+    storageFull: true,
+  });
+  const screen = render(React.createElement(PacksPage));
+  await waitFor(() => expect(screen.getByText('보관함이 가득 찼어요 (5/5)')).toBeTruthy());
+  fireEvent.press(screen.getByLabelText('카드 뽑기'));
+  expect(load).not.toHaveBeenCalled();
+  expect(show).not.toHaveBeenCalled();
+  expect(openPack).not.toHaveBeenCalled();
 });

@@ -72,6 +72,7 @@ describe('PostgresGameRepository v2 ad pack availability', () => {
         rows: [
           {
             used_today: '0',
+            owned_card_count: '5',
             next_reset_at: new Date('2026-08-28T15:00:00.000Z'),
           },
         ],
@@ -87,6 +88,9 @@ describe('PostgresGameRepository v2 ad pack availability', () => {
       dailyLimit: 20,
       usedToday: 0,
       remainingToday: 20,
+      ownedCardCount: 5,
+      storageCapacity: 5,
+      storageFull: true,
       nextResetAt: '2026-08-28T15:00:00.000Z',
     });
     expect(query).toHaveBeenCalledWith(

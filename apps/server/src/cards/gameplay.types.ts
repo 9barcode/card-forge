@@ -16,6 +16,9 @@ export interface PackAvailability {
   dailyLimit: number;
   usedToday: number;
   remainingToday: number;
+  ownedCardCount: number;
+  storageCapacity: number;
+  storageFull: boolean;
   nextResetAt: string;
 }
 

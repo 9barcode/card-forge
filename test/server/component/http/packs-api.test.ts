@@ -84,6 +84,9 @@ describe('v2 ad pack HTTP integration', () => {
       dailyLimit: 20,
       usedToday: 0,
       remainingToday: 20,
+      ownedCardCount: 4,
+      storageCapacity: 5,
+      storageFull: false,
       nextResetAt: '2026-08-28T15:00:00.000Z',
     });
 
@@ -93,7 +96,7 @@ describe('v2 ad pack HTTP integration', () => {
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual(
-      expect.objectContaining({ remainingToday: 20, dailyLimit: 20 }),
+      expect.objectContaining({ remainingToday: 20, dailyLimit: 20, ownedCardCount: 4, storageCapacity: 5, storageFull: false }),
     );
   });
 
