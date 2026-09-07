@@ -19,7 +19,6 @@ const previewCards: UserCard[] = [
   { id: '3', name: '질풍의 정령', element: 'WIND', elementLabel: '바람', rarity: 'RARE', rarityLabel: '레어', enhanceLevel: 4, image: require('../../assets/images/cards/wind_rare.png'), description: '빠르고 날카로운 바람의 카드입니다.' },
   { id: '4', name: '불꽃 드래곤', element: 'FIRE', elementLabel: '불', rarity: 'SUPER_RARE', rarityLabel: '슈퍼레어', enhanceLevel: 6, image: require('../../assets/images/cards/fire_super_rare.png'), description: '뜨거운 화염을 내뿜는 드래곤 카드입니다.' },
   { id: '5', name: '찬란한 심판', element: 'LIGHT', elementLabel: '빛', rarity: 'UNIQUE', rarityLabel: '유니크', enhanceLevel: 8, image: require('../../assets/images/cards/light_unique.png'), description: '찬란한 빛으로 어둠을 가르는 카드입니다.' },
-  { id: '6', name: '심연의 군주', element: 'DARK', elementLabel: '어둠', rarity: 'LEGENDARY', rarityLabel: '레전더리', enhanceLevel: 10, image: require('../../assets/images/cards/dark_legendary.png'), description: '심연의 힘을 지배하는 전설적인 카드입니다.' },
 ];
 
 export const cardService = {
