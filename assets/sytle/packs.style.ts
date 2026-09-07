@@ -1,0 +1,27 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  background: { flex: 1, backgroundColor: '#12151D' },
+  shade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(8, 12, 20, 0.75)' },
+  content: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 36, paddingBottom: 32, alignItems: 'center' },
+  eyebrow: { color: '#D5B87F', fontSize: 11, letterSpacing: 4, fontWeight: '700' },
+  title: { fontSize: 30, color: '#FFF5E3', fontWeight: '800', marginTop: 10 },
+  subtitle: { color: '#CCC8C0', fontSize: 15, marginTop: 10 },
+  stage: { flex: 1, minHeight: 390, width: '100%', alignItems: 'center', justifyContent: 'center', paddingVertical: 32 },
+  sealedCard: { width: 192, height: 270, borderRadius: 14, borderWidth: 2, borderColor: '#D4B16A', backgroundColor: '#192432', alignItems: 'center', justifyContent: 'center', shadowColor: '#EAC681', shadowOpacity: 0.6, shadowRadius: 24, shadowOffset: { width: 0, height: 0 }, elevation: 10 },
+  sparkle: { color: '#EFCE89', fontSize: 62 },
+  cardBackTitle: { color: '#F4E2B8', fontSize: 25, fontWeight: '800', letterSpacing: 4, textAlign: 'center', marginTop: 10 },
+  cardBackCaption: { color: '#AFB5BE', fontSize: 12, marginTop: 20 },
+  stageText: { color: '#E4D9C4', textAlign: 'center', fontSize: 14, marginTop: 30 },
+  resultTitle: { color: '#F5D390', fontSize: 25, fontWeight: '800', marginBottom: 20 },
+  rewardCard: { width: 192, height: 270 },
+  cardImage: { width: '100%', height: '100%' },
+  enhancement: { position: 'absolute', bottom: 27, alignSelf: 'center', color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
+  resultName: { color: '#FFF5E3', fontSize: 17, marginTop: 18 },
+  actions: { width: '100%', maxWidth: 420, gap: 12 },
+  hint: { color: '#C6C6CB', fontSize: 13, textAlign: 'center' },
+  button: { backgroundColor: '#EAC681', minHeight: 58, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 10, padding: 14 },
+  buttonText: { color: '#292015', fontSize: 18, fontWeight: '800' },
+  disabled: { opacity: 0.65 },
+  message: { color: '#F1C6AD', textAlign: 'center', fontSize: 13, lineHeight: 20 },
+});
