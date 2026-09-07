@@ -29,9 +29,15 @@ beforeEach(() => {
 
 afterEach(() => jest.restoreAllMocks());
 
+async function renderReady() {
+  const screen = await renderReady();
+  await waitFor(() => expect(screen.getByText('광고 시청 완료 후 카드 1장을 뽑아요 (4/5)')).toBeTruthy());
+  return screen;
+}
+
 it('광고 미지원 환경에서는 토스 앱 실행을 안내하고 보상을 지급하지 않는다', async () => {
   load.mockRejectedValueOnce(new Error('REWARDED_AD_NOT_SUPPORTED'));
-  const screen = render(React.createElement(PacksPage));
+  const screen = await renderReady();
   fireEvent.press(screen.getByLabelText('카드 뽑기'));
   await waitFor(() => expect(screen.getByText('현재 환경에서는 광고를 재생할 수 없어요. 토스 앱에서 다시 실행해 주세요.')).toBeTruthy());
   expect(show).not.toHaveBeenCalled();
@@ -42,7 +48,7 @@ it('광고 미지원 환경에서는 토스 앱 실행을 안내하고 보상을
 it('진입 시 광고를 로드하지 않고 버튼을 누르면 로드 후 표시한다', async () => {
   let finishLoad = () => {};
   load.mockImplementation(() => new Promise<void>((resolve) => { finishLoad = resolve; }));
-  const screen = render(React.createElement(PacksPage));
+  const screen = await renderReady();
   expect(screen.getByText('카드 뽑기')).toBeTruthy();
   expect(load).not.toHaveBeenCalled();
   expect(show).not.toHaveBeenCalled();
@@ -61,7 +67,7 @@ it('광고 완료 후 이펙트를 실행하고 이펙트 종료 후 당첨 카�
   jest.spyOn(Animated, 'sequence').mockReturnValue({
     start: (callback) => { finishEffect = callback!; }, stop: jest.fn(), reset: jest.fn(),
   });
-  const screen = render(React.createElement(PacksPage));
+  const screen = await renderReady();
   fireEvent.press(screen.getByLabelText('카드 뽑기'));
   await waitFor(() => expect(show).toHaveBeenCalledTimes(1));
   expect(openPack).not.toHaveBeenCalled();
@@ -78,7 +84,7 @@ it('광고 완료 후 이펙트를 실행하고 이펙트 종료 후 당첨 카�
 
 it('광고를 중간에 닫으면 뽑지 않고 카드 뽑기 버튼으로 돌아온다', async () => {
   show.mockRejectedValue(new Error('REWARDED_AD_DISMISSED_WITHOUT_REWARD'));
-  const screen = render(React.createElement(PacksPage));
+  const screen = await renderReady();
   fireEvent.press(screen.getByLabelText('카드 뽑기'));
   await waitFor(() => expect(screen.getByText('광고를 끝까지 시청해야 카드를 뽑을 수 있어요.')).toBeTruthy());
   expect(openPack).not.toHaveBeenCalled();
@@ -88,7 +94,7 @@ it('광고를 중간에 닫으면 뽑지 않고 카드 뽑기 버튼으로 돌�
 
 it('광고 로드 실패 후에도 카드 뽑기로 재시도할 수 있다', async () => {
   load.mockRejectedValueOnce(new Error('NETWORK_ERROR'));
-  const screen = render(React.createElement(PacksPage));
+  const screen = await renderReady();
   fireEvent.press(screen.getByLabelText('카드 뽑기'));
   await waitFor(() => expect(screen.getByText('카드 뽑기를 완료하지 못했어요. 잠시 후 다시 시도해 주세요.')).toBeTruthy());
   expect(show).not.toHaveBeenCalled();
