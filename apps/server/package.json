@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/copy-migrations.cjs",
     "db:migrate": "node dist/database/migrate.js",
     "start": "node dist/main.js",
     "test": "jest --runInBand",

@@ -12,7 +12,7 @@ export interface AppliedMigration {
 
 export async function runMigrations(
   pool: Pool,
-  directory = join(__dirname, '../../migrations'),
+  directory = join(__dirname, '../migrations'),
 ): Promise<AppliedMigration[]> {
   const filenames = (await readdir(directory))
     .filter((filename) => /^\d+_[a-z0-9_]+\.sql$/i.test(filename))
