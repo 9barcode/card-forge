@@ -14,6 +14,7 @@ export function CardsPage() {
   const navigation = useNavigation();
   const [cards, setCards] = useState<UserCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const cardColumns = cards.length === 4 ? 2 : 3;
 
   useEffect(() => {
     let active = true;
@@ -38,15 +39,20 @@ export function CardsPage() {
 
         {loading ? <View style={styles.center}><ActivityIndicator color="#EAC681" /><Text style={styles.loading}>카드를 불러오고 있어요</Text></View> : (
           <FlatList
+            key={`cards-${cardColumns}`}
             data={cards}
             keyExtractor={(item) => item.id}
-            numColumns={2}
+            numColumns={cardColumns}
             columnWrapperStyle={styles.row}
             contentContainerStyle={styles.list}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={<View style={styles.center}><Text style={styles.emptyTitle}>아직 보유한 카드가 없어요</Text><Text style={styles.loading}>카드 상점에서 첫 카드를 뽑아보세요.</Text></View>}
             renderItem={({ item }) => (
-              <TouchableOpacity accessibilityRole="button" accessibilityLabel={`${item.elementLabel} ${item.rarityLabel} ${item.enhanceLevel}강 카드 상세 보기`} activeOpacity={0.82} onPress={() => navigation.navigate('/card-detail' as any, { id: item.id })} style={[styles.cardItem, { borderColor: rarityColors[item.rarity] }]}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={`${item.elementLabel} ${item.rarityLabel} ${item.enhanceLevel}강 카드 상세 보기`} activeOpacity={0.82} onPress={() => navigation.navigate('/card-detail' as any, { id: item.id })} style={[
+                styles.cardItem,
+                cardColumns === 2 ? styles.twoColumnCard : styles.threeColumnCard,
+                { borderColor: rarityColors[item.rarity] },
+              ]}>
                 <View style={[styles.rarityBadge, { backgroundColor: rarityColors[item.rarity] }]}><Text style={styles.rarityText}>{item.rarityLabel}</Text></View>
                 <View style={styles.imageWrap}>
                   <Image source={item.image} style={styles.cardImage} resizeMode="contain" />
