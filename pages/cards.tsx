@@ -18,7 +18,7 @@ export function CardsPage() {
 
   useEffect(() => {
     let active = true;
-    void cardService.getUserCards().then((items) => { if (active) setCards(items); }).finally(() => { if (active) setLoading(false); });
+    void cardService.getUserCards().then((items) => { if (active) setCards(items.slice(0, 5)); }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);
 
