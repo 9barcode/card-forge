@@ -24,6 +24,8 @@ const appsInTossGateway: FullScreenAdGateway = {
 export interface RewardedAdResult {
   unitType: string;
   unitAmount: number;
+  /** 서버 검증용 식별자가 SDK에서 제공될 때만 존재합니다. */
+  completionId?: string;
 }
 
 export class RewardedAdService {

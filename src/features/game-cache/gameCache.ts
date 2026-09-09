@@ -33,6 +33,15 @@ export interface CachedOwnedCard {
   acquiredAt: string;
 }
 
+export interface CachedCollectionEntry {
+  templateId: string;
+  name: string;
+  element: CardElement;
+  grade: CardGrade;
+  imageKey: string;
+  highestEnhancementLevel: number;
+}
+
 export interface CachedPackAvailability {
   packType: string;
   dailyLimit: number;
@@ -63,6 +72,7 @@ export interface GameCacheError {
 
 export interface ServerGameSnapshot {
   cards: readonly CachedOwnedCard[];
+  collection?: readonly CachedCollectionEntry[];
   crystalBalance: number;
   packAvailability: CachedPackAvailability;
   syncedAt?: string;
@@ -96,6 +106,7 @@ export interface ServerPointExchangeResult {
 export interface GameCacheSnapshot {
   status: 'idle' | 'loading' | 'ready' | 'error';
   cards: readonly CachedOwnedCard[];
+  collection: readonly CachedCollectionEntry[];
   crystalBalance: number | null;
   packAvailability: CachedPackAvailability | null;
   pendingAction: PendingGameAction | null;
@@ -109,6 +120,7 @@ type GameCacheListener = (snapshot: GameCacheSnapshot) => void;
 const createInitialSnapshot = (): GameCacheSnapshot => ({
   status: 'idle',
   cards: [],
+  collection: [],
   crystalBalance: null,
   packAvailability: null,
   pendingAction: null,
@@ -119,6 +131,9 @@ const createInitialSnapshot = (): GameCacheSnapshot => ({
 
 const copyServerSnapshot = (snapshot: ServerGameSnapshot) => ({
   cards: snapshot.cards.map((card) => ({ ...card })),
+  collection: (
+    snapshot.collection ?? snapshot.cards.map(toCollectionEntry)
+  ).map((entry) => ({ ...entry })),
   crystalBalance: snapshot.crystalBalance,
   packAvailability: { ...snapshot.packAvailability },
   lastSyncedAt: snapshot.syncedAt ?? new Date().toISOString(),
@@ -223,11 +238,16 @@ export const createGameCache = () => {
       } else {
         cards[existingCardIndex] = { ...result.card };
       }
+      const collection = mergeCollectionEntry(
+        current.collection,
+        toCollectionEntry(result.card),
+      );
 
       publish({
         ...current,
         status: 'ready',
         cards,
+        collection,
         packAvailability: { ...result.packAvailability },
         pendingAction: null,
         error: null,
@@ -249,6 +269,10 @@ export const createGameCache = () => {
         status: 'ready',
         cards: current.cards.map((card, index) =>
           index === cardIndex ? { ...result.card } : { ...card },
+        ),
+        collection: mergeCollectionEntry(
+          current.collection,
+          toCollectionEntry(result.card),
         ),
         pendingAction: null,
         error: null,
@@ -322,3 +346,36 @@ export const createGameCache = () => {
 export type GameCache = ReturnType<typeof createGameCache>;
 
 export const gameCache = createGameCache();
+
+function toCollectionEntry(card: CachedOwnedCard): CachedCollectionEntry {
+  return {
+    templateId: card.templateId,
+    name: card.name,
+    element: card.element,
+    grade: card.grade,
+    imageKey: card.imageKey,
+    highestEnhancementLevel: card.enhancementLevel,
+  };
+}
+
+function mergeCollectionEntry(
+  collection: readonly CachedCollectionEntry[],
+  incoming: CachedCollectionEntry,
+): CachedCollectionEntry[] {
+  const existing = collection.find(
+    (entry) => entry.templateId === incoming.templateId,
+  );
+  if (!existing)
+    return [...collection.map((entry) => ({ ...entry })), incoming];
+  return collection.map((entry) =>
+    entry.templateId === incoming.templateId
+      ? {
+          ...entry,
+          highestEnhancementLevel: Math.max(
+            entry.highestEnhancementLevel,
+            incoming.highestEnhancementLevel,
+          ),
+        }
+      : { ...entry },
+  );
+}
