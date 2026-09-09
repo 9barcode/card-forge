@@ -8,9 +8,9 @@ import { rewardedAdService } from '../src/services/rewardedAdService';
 export const Route = createRoute('/forge', { validateParams: (params) => params, component: ForgePage });
 
 const initialCards = [
-  { id: 'preview-earth', name: '땅 · 노말', level: 1, image: require('../assets/images/cards/earth_normal.png') },
-  { id: 'preview-water', name: '물 · 레어', level: 5, image: require('../assets/images/cards/water_rare.png') },
-  { id: 'preview-fire', name: '불 · 레전더리', level: 9, image: require('../assets/images/cards/fire_legendary.png') },
+  { id: 'preview-earth', name: '땅 · 노말', level: 1, image: require('../assets/images/cards/earth_guardian.png') },
+  { id: 'preview-water', name: '물 · 레어', level: 5, image: require('../assets/images/cards/frost_witch.png') },
+  { id: 'preview-fire', name: '불 · 레전더리', level: 9, image: require('../assets/images/cards/apocalypse_flame_dragon.png') },
 ];
 type Phase = 'idle' | 'loading' | 'ad' | 'effect' | 'result';
 

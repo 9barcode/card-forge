@@ -11,9 +11,9 @@ export const Route = createRoute('/exchange', {
 
 // UI 확인용 카드입니다. 실제 보유 카드와 잔액은 서버 연동 시 대체합니다.
 const previewCards: { id: string; element: string; grade: CardGrade; level: number; image: number }[] = [
-  { id: 'earth', element: '땅', grade: 'NORMAL', level: 1, image: require('../assets/images/cards/earth_normal.png') },
-  { id: 'water', element: '물', grade: 'RARE', level: 3, image: require('../assets/images/cards/water_rare.png') },
-  { id: 'fire', element: '불', grade: 'LEGENDARY', level: 10, image: require('../assets/images/cards/fire_legendary.png') },
+  { id: 'earth', element: '땅', grade: 'NORMAL', level: 1, image: require('../assets/images/cards/earth_guardian.png') },
+  { id: 'water', element: '물', grade: 'RARE', level: 3, image: require('../assets/images/cards/frost_witch.png') },
+  { id: 'fire', element: '불', grade: 'LEGENDARY', level: 10, image: require('../assets/images/cards/apocalypse_flame_dragon.png') },
 ];
 const format = (value: number) => value.toLocaleString('ko-KR');
 

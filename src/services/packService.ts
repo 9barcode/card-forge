@@ -47,7 +47,7 @@ export const packService = {
       rarity: 'NORMAL',
       rarityLabel: '노말',
       enhanceLevel: 1,
-      image: require('../../assets/images/cards/wind_normal.png'),
+      image: require('../../assets/images/cards/wind_archer.png'),
     }];
   },
 };
