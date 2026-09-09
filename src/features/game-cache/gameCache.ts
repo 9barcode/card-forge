@@ -79,7 +79,7 @@ export interface ServerEnhancementResult {
 }
 
 export interface ServerCardSaleResult {
-  soldCardId: string;
+  soldCardIds: readonly string[];
   crystalReward: number;
   crystalBalance: number;
   packAvailability: CachedPackAvailability;
@@ -259,11 +259,26 @@ export const createGameCache = () => {
 
     commitCardSale(requestId: string, result: ServerCardSaleResult) {
       requirePendingActionKind(requestId, 'CARD_SALE');
+      const soldCardIds = new Set(result.soldCardIds);
+      if (
+        result.soldCardIds.length < 1 ||
+        result.soldCardIds.length > 5 ||
+        soldCardIds.size !== result.soldCardIds.length
+      ) {
+        throw new Error('INVALID_CARD_SALE_RESULT');
+      }
+      if (
+        result.soldCardIds.some(
+          (cardId) => !current.cards.some((card) => card.cardId === cardId),
+        )
+      ) {
+        throw new Error('GAME_CACHE_CARD_NOT_FOUND');
+      }
       publish({
         ...current,
         status: 'ready',
         cards: current.cards
-          .filter((card) => card.cardId !== result.soldCardId)
+          .filter((card) => !soldCardIds.has(card.cardId))
           .map((card) => ({ ...card })),
         crystalBalance: result.crystalBalance,
         packAvailability: { ...result.packAvailability },
