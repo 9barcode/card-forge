@@ -1,9 +1,12 @@
+import { createRoute } from '@granite-js/react-native';
+import React from 'react';
+import { FlatList, Text, View } from 'react-native';
 import { styles } from '../assets/sytle/collection.style';
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList } from 'react-native';
-import { createRoute, useNavigation } from '@granite-js/react-native';
-// TODO: cardService 등 수집 데이터 서비스가 있다면 import
-// import { cardService } from '../src/services/cardService';
+import {
+  elementLabels,
+  gradeLabels,
+  useGameCache,
+} from '../src/features/game-cache';
 
 export const Route = createRoute('/collection', {
   validateParams: (params) => params,
@@ -11,29 +14,23 @@ export const Route = createRoute('/collection', {
 });
 
 function CollectionPage() {
-  const navigation = useNavigation();
-  const [collections, setCollections] = useState<any[]>([]);
-
-  useEffect(() => {
-    // TODO: 수집 도감 목록 데이터 로드 로직 구현
-    // cardService.getCollections().then(setCollections);
-  }, []);
+  const game = useGameCache();
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>📜 원소 도감</Text>
-      
+
       <FlatList
-        data={collections}
-        keyExtractor={(item) => item.id.toString()}
+        data={game.collection}
+        keyExtractor={(item) => item.templateId}
         renderItem={({ item }) => (
           <View style={styles.item}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={[
-              styles.status, 
-              item.isCollected && styles.collectedStatus
-            ]}>
-              {item.isCollected ? '수집 완료' : '미수집'}
+            <Text style={styles.name}>
+              {item.name} · {elementLabels[item.element]} ·{' '}
+              {gradeLabels[item.grade]}
+            </Text>
+            <Text style={[styles.status, styles.collectedStatus]}>
+              수집 완료 · 최고 {item.highestEnhancementLevel}강
             </Text>
           </View>
         )}

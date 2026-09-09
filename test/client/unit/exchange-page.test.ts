@@ -1,32 +1,46 @@
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import React from 'react';
 import { Alert } from 'react-native';
-import { fireEvent, render } from '@testing-library/react-native';
 import { ExchangePage } from '../../../pages/exchange';
+import { gameCache } from '../../../src/features/game-cache';
+import { rewardedAdService } from '../../../src/services/rewardedAdService';
+import { configureTestRuntime } from './game-runtime.fixture';
 
 jest.mock('@granite-js/react-native', () => ({ createRoute: jest.fn() }));
+jest.mock('../../../src/services/rewardedAdService', () => ({
+  rewardedAdService: { load: jest.fn(), show: jest.fn() },
+}));
+
+beforeEach(async () => {
+  jest.clearAllMocks();
+  await configureTestRuntime();
+  jest.mocked(rewardedAdService.load).mockResolvedValue(undefined);
+  jest.mocked(rewardedAdService.show).mockResolvedValue({
+    unitType: 'card',
+    unitAmount: 1,
+    completionId: 'proof-1234',
+  });
+  jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+});
 afterEach(() => jest.restoreAllMocks());
 
-it('선택한 카드 가치의 합계를 JSON 기준으로 보여준다', () => {
+it('선택한 1~5장만 판매하고 결정과 보관함을 캐시에 반영한다', async () => {
   const screen = render(React.createElement(ExchangePage));
   fireEvent.press(screen.getByLabelText('땅 노말 1강'));
   fireEvent.press(screen.getByLabelText('물 레어 3강'));
-  expect(screen.getByText('2장 선택')).toBeTruthy();
-  const alert = jest.spyOn(Alert, 'alert');
-  fireEvent.press(screen.getByText('결정으로 교환'));
-  expect(alert).toHaveBeenCalledWith('교환 미리보기', expect.stringContaining('100,000결정'));
-  fireEvent.press(screen.getByLabelText('땅 노말 1강'));
-  expect(screen.getByText('1장 선택')).toBeTruthy();
+  fireEvent.press(screen.getByText('선택 카드 판매'));
+  await waitFor(() => expect(gameCache.getSnapshot().cards).toHaveLength(1));
+  expect(gameCache.getSnapshot().crystalBalance).toBe(1_100_000);
+  expect(screen.getByText('0장 선택')).toBeTruthy();
 });
 
-it('결정 수량을 입력하면 포인트와 소모하지 않을 잔여 수량을 보여준다', () => {
+it('보유 결정을 포인트로 교환하면 캐시 잔액이 감소한다', async () => {
   const screen = render(React.createElement(ExchangePage));
   fireEvent.press(screen.getByText('결정 → 포인트'));
-  fireEvent.changeText(screen.getByLabelText('교환할 결정 수량'), '25000');
-  expect(screen.getByText('사용 결정 20,000개')).toBeTruthy();
-  expect(screen.getByText('입력 수량 중 교환하지 않는 결정 5,000개')).toBeTruthy();
-  const alert = jest.spyOn(Alert, 'alert');
+  fireEvent.changeText(screen.getByLabelText('교환할 결정 수량'), '20000');
   fireEvent.press(screen.getByText('포인트로 교환'));
-  expect(alert).toHaveBeenCalledWith('교환 미리보기', expect.stringContaining('2포인트'));
-  fireEvent.changeText(screen.getByLabelText('교환할 결정 수량'), '-10');
-  expect(screen.getByText('0 이상의 정수로 입력해 주세요.')).toBeTruthy();
+  await waitFor(() =>
+    expect(gameCache.getSnapshot().crystalBalance).toBe(980_000),
+  );
+  expect(screen.getByText('보유 결정 980,000개')).toBeTruthy();
 });
