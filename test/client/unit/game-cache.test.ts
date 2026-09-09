@@ -179,7 +179,7 @@ describe('gameCache', () => {
     cache.beginAction({ ...action, kind: 'CARD_SALE' });
 
     cache.commitCardSale('request-1', {
-      soldCardId: 'card-3',
+      soldCardIds: ['card-3'],
       crystalReward: 10_000,
       crystalBalance: 20_000,
       packAvailability: {
@@ -199,6 +199,65 @@ describe('gameCache', () => {
       'card-2',
       'card-4',
       'card-5',
+    ]);
+  });
+
+  it('선택한 카드 5장을 한 번에 판매한 결과도 반영한다', () => {
+    const cache = createGameCache();
+    const fiveCards = Array.from({ length: 5 }, (_, index) => ({
+      ...cachedCard,
+      cardId: `card-${index + 1}`,
+    }));
+    cache.replaceFromServer({ ...serverSnapshot, cards: fiveCards });
+    cache.beginAction({ ...action, kind: 'CARD_SALE' });
+
+    cache.commitCardSale('request-1', {
+      soldCardIds: fiveCards.map((card) => card.cardId),
+      crystalReward: 50_000,
+      crystalBalance: 60_000,
+      packAvailability: {
+        ...serverSnapshot.packAvailability,
+        ownedCardCount: 0,
+        storageFull: false,
+      },
+    });
+
+    expect(cache.getSnapshot()).toMatchObject({
+      cards: [],
+      crystalBalance: 60_000,
+      packAvailability: { ownedCardCount: 0 },
+    });
+  });
+
+  it('판매 결과는 중복 없이 1~5장이어야 한다', () => {
+    const cache = createGameCache();
+    cache.replaceFromServer(serverSnapshot);
+    cache.beginAction({ ...action, kind: 'CARD_SALE' });
+
+    expect(() =>
+      cache.commitCardSale('request-1', {
+        soldCardIds: [],
+        crystalReward: 0,
+        crystalBalance: 10_000,
+        packAvailability: serverSnapshot.packAvailability,
+      }),
+    ).toThrow('INVALID_CARD_SALE_RESULT');
+  });
+
+  it('강화는 한 카드의 결과만 반영한다', () => {
+    const cache = createGameCache();
+    const cards = [cachedCard, { ...cachedCard, cardId: 'card-2' }];
+    cache.replaceFromServer({ ...serverSnapshot, cards });
+    cache.beginAction({ ...action, kind: 'ENHANCEMENT' });
+
+    cache.commitEnhancement('request-1', {
+      card: { ...cachedCard, enhancementLevel: 2 },
+      result: 'SUCCESS',
+    });
+
+    expect(cache.getSnapshot().cards).toEqual([
+      { ...cachedCard, enhancementLevel: 2 },
+      cards[1],
     ]);
   });
 
