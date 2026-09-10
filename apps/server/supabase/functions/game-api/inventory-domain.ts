@@ -49,7 +49,7 @@ function parseCard(value: unknown): InventoryCard {
     name: text(source.name, 'INVALID_CARD_NAME'),
     element,
     grade,
-    imageKey: text(source.imageKey, 'INVALID_CARD_IMAGE'),
+    imageKey: storageCardKey(source.imageKey),
     enhancementLevel: safeNonnegativeInteger(
       source.enhancementLevel,
       'INVALID_ENHANCEMENT_LEVEL',
@@ -71,6 +71,14 @@ function positiveId(value: unknown, code: string): string {
 function text(value: unknown, code: string): string {
   if (typeof value !== 'string') throw new Error(code);
   return value;
+}
+
+function storageCardKey(value: unknown): string {
+  const result = text(value, 'INVALID_CARD_IMAGE');
+  if (result !== '' && (!result.startsWith('cards/') || result.includes('..'))) {
+    throw new Error('INVALID_CARD_IMAGE');
+  }
+  return result;
 }
 
 function safeNonnegativeInteger(value: unknown, code: string): number {

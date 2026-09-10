@@ -49,6 +49,19 @@ npx supabase link --project-ref nmbdwukrvwfaxpasbppj
 서명과 만료만 검증한 뒤 해당 내부 사용자 ID의 데이터만 조회합니다. 따라서 mTLS 연결은
 회원 초기화 경계에만 추가하면 되고 보관함 쿼리와 응답 구조는 바뀌지 않습니다.
 
+## 이미지 Storage 규칙
+
+- 공개 버킷 이름: `game-assets`
+- 카드 객체 키: `cards/<파일명>` 또는 `cards/<원소>/<파일명>`
+- 캐릭터 객체 키: `characters/<파일명>`
+- `cards.image_path`에는 전체 URL이나 `/`로 시작하는 로컬 경로가 아니라 카드 객체 키만 저장합니다.
+- 보관함 API의 `imageKey`도 같은 객체 키입니다. 앱은 버킷의 public URL과 이 키를 조합해 표시합니다.
+- 캐릭터 이미지는 카드 행에 속하지 않으므로 `cards` 테이블에 넣지 않고 정해진
+  `characters/` 키를 앱 설정에서 참조합니다.
+
+Storage에는 공개 이미지 파일만 저장합니다. 사용자 소유권, 강화 단계, 결정 수는 이미지
+메타데이터로 관리하지 않고 기존 세 DB 테이블과 서버 API에서 계속 검증합니다.
+
 `TOSS_USER_VERIFICATION_URL`과 관련 mTLS 구성이 없는 환경에서는 회원 초기화를
 성공 처리하지 않고 `503 TOSS_VERIFICATION_NOT_CONFIGURED`로 거절합니다.
 

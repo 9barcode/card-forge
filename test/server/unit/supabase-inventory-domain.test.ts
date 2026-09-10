@@ -12,7 +12,7 @@ describe('Supabase inventory response', () => {
         name: '불꽃 기사',
         element: 'FIRE',
         grade: 'NORMAL',
-        imageKey: '/cards/flame_knight.png',
+        imageKey: 'cards/flame_knight.png',
         enhancementLevel: 2,
       }],
     })).toEqual({
@@ -25,7 +25,7 @@ describe('Supabase inventory response', () => {
         name: '불꽃 기사',
         element: 'FIRE',
         grade: 'NORMAL',
-        imageKey: '/cards/flame_knight.png',
+        imageKey: 'cards/flame_knight.png',
         enhancementLevel: 2,
       }],
     });
@@ -60,5 +60,19 @@ describe('Supabase inventory response', () => {
       }],
     };
     expect(() => parseGameInventory(base)).toThrow('INVALID_CARD_ELEMENT');
+  });
+
+  it('로컬 절대경로나 상위 폴더 이동을 Storage 객체 키로 인정하지 않는다', () => {
+    const inventory = {
+      userId: '7', crystalBalance: '0', totalCrystalsEarned: '0',
+      cards: [{
+        cardId: '11', templateId: '4', name: '불꽃 기사',
+        element: 'FIRE', grade: 'NORMAL',
+        imageKey: '/cards/flame_knight.png', enhancementLevel: 1,
+      }],
+    };
+    expect(() => parseGameInventory(inventory)).toThrow('INVALID_CARD_IMAGE');
+    inventory.cards[0]!.imageKey = 'cards/../private.png';
+    expect(() => parseGameInventory(inventory)).toThrow('INVALID_CARD_IMAGE');
   });
 });
