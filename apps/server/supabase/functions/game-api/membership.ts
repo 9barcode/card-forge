@@ -45,7 +45,7 @@ async function getCurrentUser(request: Request): Promise<Response> {
   return json(profile(userId));
 }
 
-async function requireSessionUser(request: Request): Promise<string> {
+export async function requireSessionUser(request: Request): Promise<string> {
   const match = /^Bearer (v1\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)$/.exec(
     request.headers.get('authorization') ?? '',
   );

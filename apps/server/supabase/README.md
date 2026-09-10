@@ -30,6 +30,7 @@ npx supabase link --project-ref nmbdwukrvwfaxpasbppj
 - 별도 세션 테이블이 필요 없는 서명형 단기 세션 토큰
 - 회원 초기화·조회 DB 함수
 - 회원 API 경로와 입력·세션 검증
+- mTLS 인증과 분리된 보관함 조회 DB 함수 및 API
 
 결정 저장 컬럼은 준비됐지만 카드 판매, 결정 증감 트랜잭션과 포인트 교환 API는
 아직 구현하지 않았습니다. 이후 작업에서도 이 세 테이블 안에서 DB 함수로 구현합니다.
@@ -42,6 +43,11 @@ npx supabase link --project-ref nmbdwukrvwfaxpasbppj
 | `GET` | `/functions/v1/game-api/api/v1/users/me` | 현재 회원 조회 |
 | `PATCH` | `/functions/v1/game-api/api/v1/users/me` | 현재 DB 문서에 프로필 컬럼이 없어 501 응답 |
 | `DELETE` | `/functions/v1/game-api/api/v1/user-sessions/current` | 토큰 검증 후 로그아웃(앱이 토큰 삭제) |
+| `GET` | `/functions/v1/game-api/api/v1/inventory` | 현재/누적 결정과 보유 카드 조회 |
+
+보관함 API는 토스 식별키 검증 방법을 알지 못합니다. 앞 단계에서 발급한 게임 세션의
+서명과 만료만 검증한 뒤 해당 내부 사용자 ID의 데이터만 조회합니다. 따라서 mTLS 연결은
+회원 초기화 경계에만 추가하면 되고 보관함 쿼리와 응답 구조는 바뀌지 않습니다.
 
 `TOSS_USER_VERIFICATION_URL`과 관련 mTLS 구성이 없는 환경에서는 회원 초기화를
 성공 처리하지 않고 `503 TOSS_VERIFICATION_NOT_CONFIGURED`로 거절합니다.
