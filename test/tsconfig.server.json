@@ -5,5 +5,9 @@
     "rootDir": "..",
     "types": ["node", "jest"]
   },
-  "include": ["../apps/server/src/**/*.ts", "server/**/*.ts"]
+  "include": [
+    "../apps/server/src/**/*.ts",
+    "../apps/server/supabase/functions/game-api/inventory-domain.ts",
+    "server/**/*.ts"
+  ]
 }

@@ -1,4 +1,5 @@
 import { corsHeaders, json } from '../_shared/http.ts';
+import { handleInventory } from './inventory.ts';
 import { errorResponse, handleMembership } from './membership.ts';
 
 /**
@@ -19,6 +20,8 @@ Deno.serve(async (request: Request) => {
   try {
     const membershipResponse = await handleMembership(request, pathname);
     if (membershipResponse) return membershipResponse;
+    const inventoryResponse = await handleInventory(request, pathname);
+    if (inventoryResponse) return inventoryResponse;
   } catch (error) {
     return errorResponse(error);
   }
