@@ -11,10 +11,8 @@ import {
 } from 'react-native';
 import { styles } from '../assets/sytle/forge.style';
 import {
-  elementLabels,
   gameRuntime,
   getCardImage,
-  gradeLabels,
   requireAdCompletionId,
   useGameCache,
 } from '../src/features/game-cache';
@@ -23,6 +21,7 @@ import {
   getEnhancementSuccessRate,
 } from '../src/services/enhancementService';
 import { rewardedAdService } from '../src/services/rewardedAdService';
+import { CardPicker } from '../src/components/card-picker';
 
 export const Route = createRoute('/forge', {
   validateParams: (params) => params,
@@ -144,38 +143,16 @@ export function ForgePage() {
                       : '아래 보유 카드 중 원하는 카드 한 장을 골라주세요.'}
           </Text>
         </View>
-        <View style={styles.picker}>
-          {game.cards.map((card) => (
-            <TouchableOpacity
-              key={card.cardId}
-              accessibilityRole="radio"
-              accessibilityLabel={`${elementLabels[card.element]} ${gradeLabels[card.grade]} 선택`}
-              accessibilityState={{
-                selected: selectedId === card.cardId,
-                disabled: phase !== 'idle',
-              }}
-              disabled={phase !== 'idle'}
-              style={[
-                styles.option,
-                selectedId === card.cardId && styles.selectedOption,
-              ]}
-              onPress={() => {
-                setSelectedId(card.cardId);
-                setError('');
-                setResult(null);
-              }}
-            >
-              <Image
-                source={getCardImage(card.imageKey)}
-                style={styles.thumbnail}
-              />
-              <Text style={styles.optionName}>
-                {elementLabels[card.element]} · {gradeLabels[card.grade]}
-              </Text>
-              <Text style={styles.optionLevel}>{card.enhancementLevel}강</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <CardPicker
+          cards={game.cards}
+          selectedId={selectedId}
+          disabled={phase !== 'idle'}
+          onSelect={(cardId) => {
+            setSelectedId(cardId);
+            setError('');
+            setResult(null);
+          }}
+        />
         <View style={styles.actions}>
           {!!error && (
             <Text accessibilityRole="alert" style={styles.error}>
