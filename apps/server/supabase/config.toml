@@ -1,0 +1,27 @@
+# Supabase CLI가 로컬 개발 환경을 구분하는 이름입니다.
+# 실제 원격 프로젝트 연결은 `supabase link --project-ref ...`가 별도로 관리합니다.
+project_id = "card-forge"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1"
+
+[functions.game-api]
+enabled = true
+# 앱인토스 회원 세션은 Supabase Auth JWT가 아니므로 Edge Gateway의 JWT
+# 검사는 끕니다. 실제 게임 API는 함수 내부에서 Bearer 세션을 반드시 검증합니다.
+verify_jwt = false
+entrypoint = "./functions/game-api/index.ts"
