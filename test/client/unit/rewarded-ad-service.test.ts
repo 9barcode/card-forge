@@ -8,10 +8,14 @@ jest.mock('@apps-in-toss/framework', () => ({
 }));
 
 import {
+  type ShowFullScreenAdParams,
+  loadFullScreenAd,
+  showFullScreenAd,
+} from '@apps-in-toss/framework';
+import {
   REWARDED_AD_TEST_ID,
   RewardedAdService,
 } from '../../../src/services/rewardedAdService';
-import { loadFullScreenAd, showFullScreenAd } from '@apps-in-toss/framework';
 
 function createGateway() {
   return {
@@ -23,6 +27,9 @@ function createGateway() {
 }
 
 describe('RewardedAdService', () => {
+  it('현재 공식 개발용 보상형 광고 ID를 사용한다', () => {
+    expect(REWARDED_AD_TEST_ID).toBe('ait.dev.43daa14da3ae487b');
+  });
   it('기본 서비스가 실제 SDK의 로드·표시 API에 같은 광고 ID를 전달한다', async () => {
     const sdkLoad = jest.mocked(loadFullScreenAd);
     const sdkShow = jest.mocked(showFullScreenAd);
@@ -31,17 +38,25 @@ describe('RewardedAdService', () => {
       return jest.fn();
     });
     sdkShow.mockImplementation(({ onEvent }) => {
-      onEvent({ type: 'userEarnedReward', data: { unitType: 'card', unitAmount: 1 } });
+      onEvent({
+        type: 'userEarnedReward',
+        data: { unitType: 'card', unitAmount: 1 },
+      });
       onEvent({ type: 'dismissed' });
       return jest.fn();
     });
     const service = new RewardedAdService();
     await service.load();
-    await expect(service.show()).resolves.toEqual({ unitType: 'card', unitAmount: 1 });
+    await expect(service.show()).resolves.toEqual({
+      unitType: 'card',
+      unitAmount: 1,
+    });
     for (const sdk of [sdkLoad, sdkShow]) {
-      expect(sdk).toHaveBeenCalledWith(expect.objectContaining({
-        options: { adGroupId: REWARDED_AD_TEST_ID },
-      }));
+      expect(sdk).toHaveBeenCalledWith(
+        expect.objectContaining({
+          options: { adGroupId: REWARDED_AD_TEST_ID },
+        }),
+      );
     }
   });
 
@@ -105,14 +120,17 @@ describe('RewardedAdService', () => {
 
   it('보상 이벤트 후에도 광고가 닫히기 전에는 뽑기를 시작하지 않는다', async () => {
     const gateway = createGateway();
-    let emit: (event: any) => void = () => {};
+    let emit: ShowFullScreenAdParams['onEvent'] = () => {};
     gateway.show.mockImplementation(({ onEvent }) => {
       emit = onEvent;
       return jest.fn();
     });
     const completed = jest.fn();
     const pending = new RewardedAdService(gateway).show().then(completed);
-    emit({ type: 'userEarnedReward', data: { unitType: 'card', unitAmount: 1 } });
+    emit({
+      type: 'userEarnedReward',
+      data: { unitType: 'card', unitAmount: 1 },
+    });
     await Promise.resolve();
     expect(completed).not.toHaveBeenCalled();
     emit({ type: 'dismissed' });
@@ -126,6 +144,8 @@ describe('RewardedAdService', () => {
       onEvent({ type: 'failedToShow' });
       return jest.fn();
     });
-    await expect(new RewardedAdService(gateway).show()).rejects.toThrow('REWARDED_AD_FAILED_TO_SHOW');
+    await expect(new RewardedAdService(gateway).show()).rejects.toThrow(
+      'REWARDED_AD_FAILED_TO_SHOW',
+    );
   });
 });

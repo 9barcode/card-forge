@@ -5,7 +5,8 @@ import {
   showFullScreenAd,
 } from '@apps-in-toss/framework';
 
-export const REWARDED_AD_TEST_ID = 'ait-ad-test-rewarded-id';
+/** 앱인토스 공식 문서의 개발용 보상형 광고 그룹 ID입니다. */
+export const REWARDED_AD_TEST_ID = 'ait.dev.43daa14da3ae487b';
 
 type FullScreenAdGateway = {
   isLoadSupported(): boolean;

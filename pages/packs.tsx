@@ -15,9 +15,9 @@ import {
   type CachedOwnedCard,
   elementLabels,
   gameRuntime,
+  getAdCompletionProof,
   getCardImage,
   gradeLabels,
-  requireAdCompletionId,
   useGameCache,
 } from '../src/features/game-cache';
 import { rewardedAdService } from '../src/services/rewardedAdService';
@@ -34,7 +34,7 @@ export function PacksPage() {
   const [reward, setReward] = useState<CachedOwnedCard | null>(null);
   const game = useGameCache();
   const availability = game.packAvailability;
-  const checkingStorage = game.status === 'idle' || game.status === 'loading';
+  const checkingStorage = game.status !== 'ready';
   const busy = useRef(false);
   const mounted = useRef(false);
   const animation = useRef(new Animated.Value(0)).current;
@@ -96,7 +96,7 @@ export function PacksPage() {
       const result = await gameRuntime.actions.openPack({
         accessToken: gameRuntime.requireAccessToken(),
         requestId: gameRuntime.nextRequestId(),
-        adCompletionId: requireAdCompletionId(ad.completionId),
+        adCompletionId: getAdCompletionProof(ad.completionId),
       });
       setReward(result.card);
       setPhase('drawing');
