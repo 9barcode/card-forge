@@ -105,7 +105,7 @@ export function HomePage() {
           <View style={styles.characterWrap}>
             <Image
               source={{
-                uri: 'https://github.com/bluehawhy/card-forge/blob/main/assets/images/characters/rose.jpg?raw=true',
+                uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/sign/images/characters/night_girl.png?token=eyJraWQiOiJkZjZkMjkwNS02MTg4LTRmMWItOWQxYi1iMTJjYThlODc4YmUiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJpbWFnZXMvY2hhcmFjdGVycy9uaWdodF9naXJsLnBuZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODkwMzgxODYsImV4cCI6MTg4MzY0NjE4Nn0.5FhEqsxsGAjJAYS5hQaFChWchDF2Hs9_VQKx7yeME3Fu8mBN1SYMZlUy9TGxEb26VSFGnJ9wTJG7Ma5OQl06gg',
               }}
               style={styles.character}
               resizeMode="cover"
