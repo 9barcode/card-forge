@@ -1,6 +1,7 @@
 import { corsHeaders, json } from '../_shared/http.ts';
 import { handleInventory } from './inventory.ts';
 import { errorResponse, handleMembership } from './membership.ts';
+import { handlePacks } from './packs.ts';
 
 /**
  * Supabase 게임 API의 단일 진입점입니다.
@@ -22,6 +23,8 @@ Deno.serve(async (request: Request) => {
     if (membershipResponse) return membershipResponse;
     const inventoryResponse = await handleInventory(request, pathname);
     if (inventoryResponse) return inventoryResponse;
+    const packsResponse = await handlePacks(request, pathname);
+    if (packsResponse) return packsResponse;
   } catch (error) {
     return errorResponse(error);
   }
