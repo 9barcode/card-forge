@@ -25,6 +25,22 @@ npx supabase link --project-ref nmbdwukrvwfaxpasbppj
 - `데이터베이스_구조.md` 기준 최초 DB 마이그레이션
 - `users`, `cards`, `user_cards` 3개 테이블과 카드 36종 초기 데이터
 - 앱의 직접 테이블 접근을 막는 RLS 및 권한 회수
+- 만료·폐기가 가능한 게임 전용 회원 세션
+- 세션 토큰과 토스 식별값의 HMAC digest 저장
+- 회원 초기화·조회·닉네임 수정·로그아웃 DB 함수
+- 회원 API 경로와 입력·세션 검증
 
 카드 판매, 결정 증감과 포인트 교환은 현재 DB 구조 문서의 제외 범위이므로
 별도 설계 확정 후 후속 마이그레이션에서 구현합니다.
+
+## 회원 API
+
+| 메서드 | 경로 | 역할 |
+| --- | --- | --- |
+| `POST` | `/functions/v1/game-api/api/v1/user-sessions` | 토스 검증 후 회원과 세션 초기화 |
+| `GET` | `/functions/v1/game-api/api/v1/users/me` | 현재 회원 조회 |
+| `PATCH` | `/functions/v1/game-api/api/v1/users/me` | 닉네임 변경 |
+| `DELETE` | `/functions/v1/game-api/api/v1/user-sessions/current` | 현재 세션 폐기 |
+
+`TOSS_USER_VERIFICATION_URL`과 관련 mTLS 구성이 없는 환경에서는 회원 초기화를
+성공 처리하지 않고 `503 TOSS_VERIFICATION_NOT_CONFIGURED`로 거절합니다.
