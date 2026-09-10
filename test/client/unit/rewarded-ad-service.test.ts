@@ -13,6 +13,7 @@ import {
   showFullScreenAd,
 } from '@apps-in-toss/framework';
 import {
+  REWARDED_AD_LEGACY_TEST_ID,
   REWARDED_AD_TEST_ID,
   RewardedAdService,
 } from '../../../src/services/rewardedAdService';
@@ -157,6 +158,43 @@ describe('RewardedAdService', () => {
     });
     await expect(new RewardedAdService(gateway).load()).rejects.toThrow(
       'REWARDED_AD_LOAD_FAILED: {"code":"NO_FILL"}',
+    );
+  });
+
+  it('통합 테스트 ID 로드 실패 시 보상형 전용 테스트 ID로 한 번 재시도한다', async () => {
+    const gateway = createGateway();
+    gateway.load
+      .mockImplementationOnce(({ onError }) => {
+        onError({ code: 1017 });
+        return jest.fn();
+      })
+      .mockImplementationOnce(({ onEvent }) => {
+        onEvent({ type: 'loaded' });
+        return jest.fn();
+      });
+    gateway.show.mockImplementation(({ onEvent }) => {
+      onEvent({
+        type: 'userEarnedReward',
+        data: { unitType: 'card', unitAmount: 1 },
+      });
+      onEvent({ type: 'dismissed' });
+      return jest.fn();
+    });
+
+    const service = new RewardedAdService(gateway);
+    await service.load();
+    await service.show();
+
+    expect(gateway.load).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        options: { adGroupId: REWARDED_AD_LEGACY_TEST_ID },
+      }),
+    );
+    expect(gateway.show).toHaveBeenCalledWith(
+      expect.objectContaining({
+        options: { adGroupId: REWARDED_AD_LEGACY_TEST_ID },
+      }),
     );
   });
 });
