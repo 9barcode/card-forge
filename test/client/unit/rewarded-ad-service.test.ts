@@ -13,7 +13,7 @@ import {
   showFullScreenAd,
 } from '@apps-in-toss/framework';
 import {
-  REWARDED_AD_LEGACY_TEST_ID,
+  REWARDED_AD_INTEGRATED_TEST_ID,
   REWARDED_AD_TEST_ID,
   RewardedAdService,
 } from '../../../src/services/rewardedAdService';
@@ -29,7 +29,7 @@ function createGateway() {
 
 describe('RewardedAdService', () => {
   it('현재 공식 개발용 보상형 광고 ID를 사용한다', () => {
-    expect(REWARDED_AD_TEST_ID).toBe('ait.dev.43daa14da3ae487b');
+    expect(REWARDED_AD_TEST_ID).toBe('ait-ad-test-rewarded-id');
   });
   it('기본 서비스가 실제 SDK의 로드·표시 API에 같은 광고 ID를 전달한다', async () => {
     const sdkLoad = jest.mocked(loadFullScreenAd);
@@ -161,7 +161,7 @@ describe('RewardedAdService', () => {
     );
   });
 
-  it('통합 테스트 ID 로드 실패 시 보상형 전용 테스트 ID로 한 번 재시도한다', async () => {
+  it('보상형 전용 테스트 ID 로드 실패 시 통합 테스트 ID로 한 번 재시도한다', async () => {
     const gateway = createGateway();
     gateway.load
       .mockImplementationOnce(({ onError }) => {
@@ -188,12 +188,12 @@ describe('RewardedAdService', () => {
     expect(gateway.load).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
-        options: { adGroupId: REWARDED_AD_LEGACY_TEST_ID },
+        options: { adGroupId: REWARDED_AD_INTEGRATED_TEST_ID },
       }),
     );
     expect(gateway.show).toHaveBeenCalledWith(
       expect.objectContaining({
-        options: { adGroupId: REWARDED_AD_LEGACY_TEST_ID },
+        options: { adGroupId: REWARDED_AD_INTEGRATED_TEST_ID },
       }),
     );
   });
