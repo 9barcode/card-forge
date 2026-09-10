@@ -55,7 +55,7 @@ export class RewardedAdService {
         },
         onError: (error) => {
           unregister();
-          reject(error);
+          reject(adError('REWARDED_AD_LOAD_FAILED', error));
         },
       });
     });
@@ -85,7 +85,7 @@ export class RewardedAdService {
         },
         onError: (error) => {
           unregister();
-          reject(error);
+          reject(adError('REWARDED_AD_SHOW_FAILED', error));
         },
       });
     });
@@ -93,3 +93,21 @@ export class RewardedAdService {
 }
 
 export const rewardedAdService = new RewardedAdService();
+
+function adError(code: string, cause: unknown): Error {
+  const detail = readableError(cause);
+  return new Error(detail ? `${code}: ${detail}` : code);
+}
+
+function readableError(value: unknown): string {
+  if (value instanceof Error) return value.message;
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+  return value == null ? '' : String(value);
+}

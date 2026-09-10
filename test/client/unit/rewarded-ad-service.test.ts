@@ -148,4 +148,15 @@ describe('RewardedAdService', () => {
       'REWARDED_AD_FAILED_TO_SHOW',
     );
   });
+
+  it('광고 로드 SDK 오류의 상세 내용을 보존한다', async () => {
+    const gateway = createGateway();
+    gateway.load.mockImplementation(({ onError }) => {
+      onError({ code: 'NO_FILL' });
+      return jest.fn();
+    });
+    await expect(new RewardedAdService(gateway).load()).rejects.toThrow(
+      'REWARDED_AD_LOAD_FAILED: {"code":"NO_FILL"}',
+    );
+  });
 });
