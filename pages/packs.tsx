@@ -15,9 +15,9 @@ import {
   type CachedOwnedCard,
   elementLabels,
   gameRuntime,
+  getAdCompletionProof,
   getCardImage,
   gradeLabels,
-  requireAdCompletionId,
   useGameCache,
 } from '../src/features/game-cache';
 import { rewardedAdService } from '../src/services/rewardedAdService';
@@ -34,7 +34,7 @@ export function PacksPage() {
   const [reward, setReward] = useState<CachedOwnedCard | null>(null);
   const game = useGameCache();
   const availability = game.packAvailability;
-  const checkingStorage = game.status === 'idle' || game.status === 'loading';
+  const checkingStorage = game.status !== 'ready';
   const busy = useRef(false);
   const mounted = useRef(false);
   const animation = useRef(new Animated.Value(0)).current;
@@ -96,27 +96,30 @@ export function PacksPage() {
       const result = await gameRuntime.actions.openPack({
         accessToken: gameRuntime.requireAccessToken(),
         requestId: gameRuntime.nextRequestId(),
-        adCompletionId: requireAdCompletionId(ad.completionId),
+        adCompletionId: getAdCompletionProof(ad.completionId),
       });
       setReward(result.card);
       setPhase('drawing');
     } catch (error) {
       if (!mounted.current) return;
+      const errorCode = error instanceof Error ? error.message : '';
       setMessage(
-        error instanceof Error && error.message === 'CARD_STORAGE_FULL'
+        errorCode === 'CARD_STORAGE_FULL'
           ? '카드는 최대 5장까지 보유할 수 있어요. 보관함을 정리한 후 다시 시도해 주세요.'
-          : error instanceof Error &&
-              (error.message === 'GAME_SESSION_NOT_INITIALIZED' ||
-                error.message === 'GAME_SERVER_NOT_CONFIGURED' ||
-                error.message === 'AD_COMPLETION_PROOF_UNAVAILABLE')
+          : errorCode === 'GAME_SESSION_NOT_INITIALIZED' ||
+              errorCode === 'GAME_SERVER_NOT_CONFIGURED' ||
+              errorCode === 'AD_COMPLETION_PROOF_UNAVAILABLE'
             ? '서버 연결과 광고 완료 검증 설정이 필요해요.'
-            : error instanceof Error &&
-                error.message === 'REWARDED_AD_NOT_SUPPORTED'
-              ? '현재 환경에서는 광고를 재생할 수 없어요. 토스 앱에서 다시 실행해 주세요.'
-              : error instanceof Error &&
-                  error.message === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD'
+            : errorCode === 'REWARDED_AD_NOT_SUPPORTED'
+              ? '현재 환경에서는 광고를 재생할 수 없어요. 토스 앱을 최신 버전으로 업데이트해 주세요.'
+              : errorCode === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD'
                 ? '광고를 끝까지 시청해야 카드를 뽑을 수 있어요.'
-                : '카드 뽑기를 완료하지 못했어요. 잠시 후 다시 시도해 주세요.',
+                : errorCode.startsWith('REWARDED_AD_LOAD_FAILED')
+                  ? `광고 로드 실패: ${errorCode.slice('REWARDED_AD_LOAD_FAILED:'.length).trim() || '상세 정보 없음'}`
+                  : errorCode.startsWith('REWARDED_AD_SHOW_FAILED') ||
+                      errorCode === 'REWARDED_AD_FAILED_TO_SHOW'
+                    ? `광고 표시 실패: ${errorCode}`
+                    : `카드 뽑기 실패: ${errorCode || '알 수 없는 오류'}`,
       );
       setPhase('idle');
       busy.current = false;

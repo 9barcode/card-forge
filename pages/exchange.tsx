@@ -13,9 +13,9 @@ import { styles } from '../assets/sytle/exchange.style';
 import {
   elementLabels,
   gameRuntime,
+  getAdCompletionProof,
   getCardImage,
   gradeLabels,
-  requireAdCompletionId,
   useGameCache,
 } from '../src/features/game-cache';
 import {
@@ -64,7 +64,7 @@ export function ExchangePage() {
           accessToken: gameRuntime.requireAccessToken(),
           requestId: gameRuntime.nextRequestId(),
           cardIds: selectedIds,
-          adCompletionId: requireAdCompletionId(ad.completionId),
+          adCompletionId: getAdCompletionProof(ad.completionId),
         });
         setSelectedIds([]);
         Alert.alert(

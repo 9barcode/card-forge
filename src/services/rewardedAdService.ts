@@ -5,7 +5,10 @@ import {
   showFullScreenAd,
 } from '@apps-in-toss/framework';
 
+/** 이 프로젝트에서 실제 동작이 확인됐던 보상형 전용 테스트 광고 그룹 ID입니다. */
 export const REWARDED_AD_TEST_ID = 'ait-ad-test-rewarded-id';
+/** 최신 통합 광고 문서의 개발용 광고 그룹 ID입니다. */
+export const REWARDED_AD_INTEGRATED_TEST_ID = 'ait.dev.43daa14da3ae487b';
 
 type FullScreenAdGateway = {
   isLoadSupported(): boolean;
@@ -29,6 +32,8 @@ export interface RewardedAdResult {
 }
 
 export class RewardedAdService {
+  private loadedAdGroupId: string | null = null;
+
   constructor(
     private readonly gateway: FullScreenAdGateway = appsInTossGateway,
   ) {}
@@ -42,19 +47,36 @@ export class RewardedAdService {
       return Promise.reject(new Error('REWARDED_AD_NOT_SUPPORTED'));
     }
 
+    this.loadedAdGroupId = null;
+    return this.loadWithFallback([
+      REWARDED_AD_TEST_ID,
+      REWARDED_AD_INTEGRATED_TEST_ID,
+    ]);
+  }
+
+  private loadWithFallback(adGroupIds: readonly string[]): Promise<void> {
+    const [adGroupId, ...fallbacks] = adGroupIds;
+    if (!adGroupId) {
+      return Promise.reject(new Error('REWARDED_AD_LOAD_FAILED'));
+    }
     return new Promise((resolve, reject) => {
       let unregister = () => {};
       unregister = this.gateway.load({
-        options: { adGroupId: REWARDED_AD_TEST_ID },
+        options: { adGroupId },
         onEvent: (event) => {
           if (event.type === 'loaded') {
             unregister();
+            this.loadedAdGroupId = adGroupId;
             resolve();
           }
         },
         onError: (error) => {
           unregister();
-          reject(error);
+          if (fallbacks.length > 0) {
+            this.loadWithFallback(fallbacks).then(resolve, reject);
+          } else {
+            reject(adError('REWARDED_AD_LOAD_FAILED', error));
+          }
         },
       });
     });
@@ -69,7 +91,7 @@ export class RewardedAdService {
       let reward: RewardedAdResult | undefined;
       let unregister = () => {};
       unregister = this.gateway.show({
-        options: { adGroupId: REWARDED_AD_TEST_ID },
+        options: { adGroupId: this.loadedAdGroupId ?? REWARDED_AD_TEST_ID },
         onEvent: (event) => {
           if (event.type === 'userEarnedReward') {
             reward = event.data;
@@ -78,13 +100,14 @@ export class RewardedAdService {
             reject(new Error('REWARDED_AD_FAILED_TO_SHOW'));
           } else if (event.type === 'dismissed') {
             unregister();
+            this.loadedAdGroupId = null;
             if (reward) resolve(reward);
             else reject(new Error('REWARDED_AD_DISMISSED_WITHOUT_REWARD'));
           }
         },
         onError: (error) => {
           unregister();
-          reject(error);
+          reject(adError('REWARDED_AD_SHOW_FAILED', error));
         },
       });
     });
@@ -92,3 +115,21 @@ export class RewardedAdService {
 }
 
 export const rewardedAdService = new RewardedAdService();
+
+function adError(code: string, cause: unknown): Error {
+  const detail = readableError(cause);
+  return new Error(detail ? `${code}: ${detail}` : code);
+}
+
+function readableError(value: unknown): string {
+  if (value instanceof Error) return value.message;
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+  return value == null ? '' : String(value);
+}

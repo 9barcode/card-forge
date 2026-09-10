@@ -10,10 +10,11 @@ import {
   View,
 } from 'react-native';
 import { styles } from '../assets/sytle/forge.style';
+import { CardPicker } from '../src/components/card-picker';
 import {
   gameRuntime,
+  getAdCompletionProof,
   getCardImage,
-  requireAdCompletionId,
   useGameCache,
 } from '../src/features/game-cache';
 import {
@@ -21,7 +22,6 @@ import {
   getEnhancementSuccessRate,
 } from '../src/services/enhancementService';
 import { rewardedAdService } from '../src/services/rewardedAdService';
-import { CardPicker } from '../src/components/card-picker';
 
 export const Route = createRoute('/forge', {
   validateParams: (params) => params,
@@ -64,7 +64,7 @@ export function ForgePage() {
         accessToken: gameRuntime.requireAccessToken(),
         requestId: gameRuntime.nextRequestId(),
         cardId: selected.cardId,
-        adCompletionId: requireAdCompletionId(ad.completionId),
+        adCompletionId: getAdCompletionProof(ad.completionId),
       });
       setResult(outcome.result);
       setPhase('result');

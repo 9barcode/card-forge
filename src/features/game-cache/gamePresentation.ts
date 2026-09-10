@@ -21,6 +21,12 @@ export const gradeLabels: Record<CardGrade, string> = {
 
 const fallbackCardImage: ImageSourcePropType = require('../../../assets/images/cards/earth_guardian.png');
 const cardImages: Record<string, ImageSourcePropType> = {
+  earth_guardian: fallbackCardImage,
+  deep_sea_wave: require('../../../assets/images/cards/deep_sea_wave.png'),
+  gale_spirit: require('../../../assets/images/cards/gale_spirit.png'),
+  flame_dragon: require('../../../assets/images/cards/flame_dragon.png'),
+  radiant_judgment: require('../../../assets/images/cards/radiant_judgment.png'),
+  abyss_lord: require('../../../assets/images/cards/abyss_lord.png'),
   earth_normal: fallbackCardImage,
   water_rare: require('../../../assets/images/cards/frost_witch.png'),
   wind_normal: require('../../../assets/images/cards/wind_archer.png'),
