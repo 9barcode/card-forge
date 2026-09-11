@@ -1,5 +1,6 @@
+import { getOperationalEnvironment, getUserKeyForGame } from '@apps-in-toss/framework';
 import { createRoute, useNavigation } from '@granite-js/react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   type ImageSourcePropType,
@@ -68,6 +69,36 @@ const menuItems: MenuItem[] = [
 export function HomePage() {
   const navigation = useNavigation();
   const game = useGameCache();
+  const [gameUserHash, setGameUserHash] = useState('hash 확인 중...');
+  const environment =
+    getOperationalEnvironment() === 'sandbox' ? '샌드박스' : '디폴트';
+
+  useEffect(() => {
+    let isMounted = true;
+
+    void getUserKeyForGame()
+      .then((result) => {
+        if (!isMounted) return;
+
+        if (
+          typeof result === 'object' &&
+          result !== null &&
+          result.type === 'HASH'
+        ) {
+          setGameUserHash(result.hash);
+          return;
+        }
+
+        setGameUserHash('hash 확인 실패');
+      })
+      .catch(() => {
+        if (isMounted) setGameUserHash('hash 확인 실패');
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   const user = {
     nickname: game.currentUser?.displayName ?? '모험가',
     level: 1,
@@ -81,7 +112,8 @@ export function HomePage() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.eyebrow}>CARD FORGE</Text>
-        <Text style={styles.welcome}>다시 오셨군요, {user.nickname}</Text>
+        <Text style={styles.welcome}>다시 오셨군요, {gameUserHash}</Text>
+        <Text style={styles.subtitle}>실행 환경: {environment}</Text>
         <Text style={styles.subtitle}>
           오늘도 새로운 카드의 힘을 깨워보세요.
         </Text>
