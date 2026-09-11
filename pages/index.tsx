@@ -9,8 +9,8 @@ import {
   View,
 } from 'react-native';
 import { styles } from '../assets/sytle/index.style';
-import { useGameCache } from '../src/features/game-cache';
 import { BannerAd } from '../src/components/banner-ad';
+import { useGameCache } from '../src/features/game-cache';
 
 type AppRoutes = '/cards' | '/forge' | '/packs' | '/exchange';
 type MenuItem = {
@@ -69,7 +69,7 @@ export function HomePage() {
   const navigation = useNavigation();
   const game = useGameCache();
   const user = {
-    nickname: '모험가',
+    nickname: game.currentUser?.displayName ?? '모험가',
     level: 1,
     crystals: game.crystalBalance ?? 0,
   };

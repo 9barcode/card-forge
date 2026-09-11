@@ -42,9 +42,15 @@ export function createHttpUserRepository({
     const responseBody = parseResponseBody(responseText);
 
     if (!response.ok) {
+      const serverCode =
+        isRecord(responseBody) && isNonEmptyString(responseBody.code)
+          ? responseBody.code
+          : undefined;
       throw new UserError(
         'USER_API_REQUEST_FAILED',
         `회원 API 요청에 실패했습니다. (${response.status})`,
+        undefined,
+        { httpStatus: response.status, serverCode },
       );
     }
 

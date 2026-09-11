@@ -7,12 +7,13 @@ import type {
   CardGrade,
   ServerGameSnapshot,
 } from './gameCache';
+import { gameRuntime } from './gameRuntime';
 
 /**
  * 앱인토스 공식 테스트 광고 뒤의 UI/캐시 흐름을 확인하기 위한 로컬 게이트웨이입니다.
  * 실제 포인트 지급이나 운영 데이터 저장에는 사용하면 안 됩니다.
  */
-export const LOCAL_GAMEPLAY_TEST_MODE = true;
+export const ALLOW_LOCAL_GAMEPLAY_TEST_FALLBACK = true;
 
 type TestCardTemplate = {
   name: string;
@@ -181,7 +182,7 @@ export function createLocalGameplayTestGateway(
 }
 
 export function getAdCompletionProof(value: unknown): string {
-  if (LOCAL_GAMEPLAY_TEST_MODE) return `local-test-ad-${Date.now()}`;
+  if (gameRuntime.isLocalTestMode()) return `local-test-ad-${Date.now()}`;
   if (typeof value !== 'string' || value.trim().length === 0) {
     throw new Error('AD_COMPLETION_PROOF_UNAVAILABLE');
   }

@@ -39,6 +39,20 @@ const serverSnapshot: ServerGameSnapshot = {
 };
 
 describe('gameCache', () => {
+  it('로그인한 회원 프로필을 캐시에 저장한다', () => {
+    const cache = createGameCache();
+
+    cache.setCurrentUser({
+      userId: 'user-001',
+      displayName: '초보 대장장이',
+      accountStatus: 'ACTIVE',
+      createdAt: '2026-09-11T00:00:00.000Z',
+      lastSignedInAt: '2026-09-11T00:00:00.000Z',
+    });
+
+    expect(cache.getSnapshot().currentUser?.displayName).toBe('초보 대장장이');
+  });
+
   it('서버 스냅샷을 캐시에 저장하고 구독자에게 알린다', () => {
     const cache = createGameCache();
     const listener = jest.fn();

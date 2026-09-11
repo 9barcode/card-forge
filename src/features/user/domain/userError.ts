@@ -11,11 +11,20 @@ export type UserErrorCode =
 export class UserError extends Error {
   readonly code: UserErrorCode;
   readonly cause?: unknown;
+  readonly httpStatus?: number;
+  readonly serverCode?: string;
 
-  constructor(code: UserErrorCode, message: string, cause?: unknown) {
+  constructor(
+    code: UserErrorCode,
+    message: string,
+    cause?: unknown,
+    details?: { httpStatus?: number; serverCode?: string },
+  ) {
     super(message);
     this.name = 'UserError';
     this.code = code;
     this.cause = cause;
+    this.httpStatus = details?.httpStatus;
+    this.serverCode = details?.serverCode;
   }
 }
