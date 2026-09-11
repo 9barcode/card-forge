@@ -314,3 +314,96 @@ it('강화 결과와 카드 상태가 모순되면 응답을 거절한다', asyn
     }),
   ).rejects.toThrow('INVALID_GAME_API_RESPONSE');
 });
+
+it('선택한 카드와 광고 완료 증명으로 판매를 요청한다', async () => {
+  const fetchImplementation = jest.fn(
+    async () =>
+      new Response(
+        JSON.stringify({
+          soldCardIds: ['8', '9'],
+          crystalReward: '50000',
+          crystalBalance: '70000',
+          packAvailability: {
+            packType: 'AD',
+            dailyLimit: 20,
+            usedToday: 2,
+            remainingToday: 18,
+            ownedCardCount: 1,
+            storageCapacity: 5,
+            storageFull: false,
+            nextResetAt: '2026-09-13T15:00:00.000Z',
+          },
+        }),
+        { status: 200 },
+      ),
+  );
+  const gateway = createHttpGameServerGateway({
+    apiBaseUrl: 'https://example.test',
+    fetchImplementation: fetchImplementation as typeof fetch,
+  });
+
+  const result = await gateway.sellCards({
+    accessToken: 'session-token',
+    requestId: 'sale-request-001',
+    cardIds: ['8', '9'],
+    adCompletionId: 'ad-completion-001',
+  });
+
+  expect(fetchImplementation).toHaveBeenCalledWith(
+    'https://example.test/api/v1/card-sales',
+    {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer session-token',
+        'Content-Type': 'application/json',
+        'Idempotency-Key': 'sale-request-001',
+      },
+      body: JSON.stringify({
+        cardIds: ['8', '9'],
+        adCompletionId: 'ad-completion-001',
+      }),
+    },
+  );
+  expect(result).toEqual(
+    expect.objectContaining({
+      soldCardIds: ['8', '9'],
+      crystalReward: 50000,
+      crystalBalance: 70000,
+      packAvailability: expect.objectContaining({ ownedCardCount: 1 }),
+    }),
+  );
+});
+
+it('판매 응답에 중복 카드 ID가 있으면 캐시에 전달하지 않는다', async () => {
+  const gateway = createHttpGameServerGateway({
+    apiBaseUrl: 'https://example.test',
+    fetchImplementation: (async () =>
+      new Response(
+        JSON.stringify({
+          soldCardIds: ['8', '8'],
+          crystalReward: 20000,
+          crystalBalance: 20000,
+          packAvailability: {
+            packType: 'AD',
+            dailyLimit: 20,
+            usedToday: 0,
+            remainingToday: 20,
+            ownedCardCount: 0,
+            storageCapacity: 5,
+            storageFull: false,
+            nextResetAt: '2026-09-13T15:00:00.000Z',
+          },
+        }),
+        { status: 200 },
+      )) as typeof fetch,
+  });
+
+  await expect(
+    gateway.sellCards({
+      accessToken: 'session-token',
+      requestId: 'sale-request-002',
+      cardIds: ['8'],
+      adCompletionId: 'ad-completion-002',
+    }),
+  ).rejects.toThrow('INVALID_GAME_API_RESPONSE');
+});

@@ -28,7 +28,7 @@ afterEach(() => jest.restoreAllMocks());
 
 it('원하는 카드 한 장을 강화하고 캐시의 해당 카드만 갱신한다', async () => {
   const screen = render(React.createElement(ForgePage));
-  fireEvent.press(screen.getByLabelText('땅 노말 선택'));
+  fireEvent.press(screen.getByLabelText('땅 노말 1강 카드 선택'));
   fireEvent.press(screen.getByLabelText('강화 시도'));
   await waitFor(() => expect(screen.getByText('강화 성공!')).toBeTruthy());
   expect(
@@ -52,7 +52,7 @@ it('강화 실패를 잠금 상태로 캐시에 반영한다', async () => {
     }),
   });
   const screen = render(React.createElement(ForgePage));
-  fireEvent.press(screen.getByLabelText('물 레어 선택'));
+  fireEvent.press(screen.getByLabelText('물 레어 3강 카드 선택'));
   fireEvent.press(screen.getByLabelText('강화 시도'));
   await waitFor(() => expect(screen.getByText('강화 실패')).toBeTruthy());
   expect(
