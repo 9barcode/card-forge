@@ -51,7 +51,7 @@ const menuItems: MenuItem[] = [
     title: '카드 상점',
     description: '새로운 원소 카드 뽑기',
     icon: {
-      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/index/packs.png',
+      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/index/packs.png?v=20260911',
     },
     accent: '#C497FF',
   },
