@@ -57,7 +57,7 @@ export function createUserService({
 
         appLogger.info(
           'USER_SESSION',
-          `회원 서버 세션 생성 성공 - userId=${initializedUserSession.user.id}`,
+          `회원 서버 세션 생성 성공 - userId=${initializedUserSession.user.userId}, isNewUser=${initializedUserSession.isNewUser}`,
         );
 
         if (sessionGeneration === initializationGeneration) {
