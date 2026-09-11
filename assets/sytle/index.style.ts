@@ -3,7 +3,9 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#101722' },
   content: { paddingHorizontal: 20, paddingTop: 32, paddingBottom: 42 },
-  eyebrow: { color: '#D5B87F', fontSize: 11, letterSpacing: 4, fontWeight: '700' },
+  topBar: { height: 28, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  eyebrow: { color: '#D5B87F', fontSize: 11, lineHeight: 28, letterSpacing: 4, fontWeight: '700' },
+  settingButton: { width: 28, height: 28, borderRadius: 8, borderWidth: 1, borderColor: '#3A4655', backgroundColor: '#192432', alignItems: 'center', justifyContent: 'center' },
   welcome: { color: '#FFF5E3', fontSize: 26, fontWeight: '800', marginTop: 12 },
   subtitle: { color: '#AAB6C5', fontSize: 14, marginTop: 8 },
   playerCard: { height: 210, borderRadius: 22, backgroundColor: '#192432', borderWidth: 1, borderColor: '#3A4655', marginTop: 24, overflow: 'hidden', flexDirection: 'row' },
