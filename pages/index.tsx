@@ -156,6 +156,17 @@ export function HomePage() {
             </Text>
           </View>
         </View>
+
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="앱 로그 보기"
+          activeOpacity={0.8}
+          // biome-ignore lint/suspicious/noExplicitAny: Granite generated route types are stale until the next build.
+          onPress={() => navigation.navigate('/debug-logs' as any)}
+          style={styles.debugButton}
+        >
+          <Text style={styles.debugButtonText}>DEV · 앱 로그 보기</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
