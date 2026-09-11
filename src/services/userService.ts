@@ -46,11 +46,9 @@ export function createUserService({
       appLogger.info('USER_SESSION', '사용자 세션 초기화 시작');
 
       try {
-        const tossGameUserHash = await gameUserIdentityProvider.getGameUserHash();
-        appLogger.info(
-          'USER_SESSION',
-          `회원 서버 세션 생성 요청 - hash=${tossGameUserHash}`,
-        );
+        const tossGameUserHash =
+          await gameUserIdentityProvider.getGameUserHash();
+        appLogger.info('USER_SESSION', '회원 서버 세션 생성 요청');
 
         const initializedUserSession =
           await userRepository.initializeUserSession(tossGameUserHash);

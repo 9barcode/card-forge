@@ -5,6 +5,7 @@ import type {
 import type { GameUserIdentityProvider } from '../../../src/features/user/ports/gameUserIdentityProvider';
 import type { UserRepository } from '../../../src/features/user/ports/userRepository';
 import { createUserService } from '../../../src/services/userService';
+import { appLogger } from '../../../src/utils/appLogger';
 
 const initialUser: CurrentUserProfile = {
   userId: 'user-001',
@@ -42,6 +43,10 @@ function createDependencies(): {
 }
 
 describe('userService', () => {
+  beforeEach(() => {
+    appLogger.clear();
+  });
+
   it('앱인토스 게임 사용자 식별키로 현재 회원을 자동 조회하거나 생성한다', async () => {
     const dependencies = createDependencies();
     const userService = createUserService(dependencies);
@@ -52,6 +57,7 @@ describe('userService', () => {
     expect(
       dependencies.userRepository.initializeUserSession,
     ).toHaveBeenCalledWith('toss-game-user-hash-001');
+    expect(appLogger.getText()).not.toContain('toss-game-user-hash-001');
   });
 
   it('동시에 초기화해도 회원 생성 요청은 한 번만 보낸다', async () => {

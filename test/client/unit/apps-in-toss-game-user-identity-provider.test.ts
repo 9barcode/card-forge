@@ -1,5 +1,6 @@
 import { getUserKeyForGame } from '@apps-in-toss/framework';
 import { createAppsInTossGameUserIdentityProvider } from '../../../src/features/user/infrastructure/appsInTossGameUserIdentityProvider';
+import { appLogger } from '../../../src/utils/appLogger';
 
 jest.mock('@apps-in-toss/framework', () => ({
   getUserKeyForGame: jest.fn(),
@@ -10,6 +11,7 @@ const mockedGetUserKeyForGame = jest.mocked(getUserKeyForGame);
 describe('appsInTossGameUserIdentityProvider', () => {
   beforeEach(() => {
     mockedGetUserKeyForGame.mockReset();
+    appLogger.clear();
   });
 
   it('HASH 응답에서 게임 사용자 식별키만 반환한다', async () => {
@@ -22,6 +24,7 @@ describe('appsInTossGameUserIdentityProvider', () => {
     await expect(identityProvider.getGameUserHash()).resolves.toBe(
       'game-user-hash-001',
     );
+    expect(appLogger.getText()).not.toContain('game-user-hash-001');
   });
 
   it('지원하지 않는 토스 앱 버전을 구분한다', async () => {

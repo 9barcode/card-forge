@@ -34,7 +34,10 @@ export function createAppsInTossGameUserIdentityProvider(): GameUserIdentityProv
       }
 
       if (userKeyResult === 'INVALID_CATEGORY') {
-        appLogger.warn('TOSS_USER', 'getUserKeyForGame() 결과: INVALID_CATEGORY');
+        appLogger.warn(
+          'TOSS_USER',
+          'getUserKeyForGame() 결과: INVALID_CATEGORY',
+        );
         throw new UserError(
           'INVALID_MINI_APP_CATEGORY',
           '게임 카테고리 미니앱에서만 사용자 식별키를 발급할 수 있습니다.',
@@ -64,10 +67,7 @@ export function createAppsInTossGameUserIdentityProvider(): GameUserIdentityProv
         );
       }
 
-      appLogger.info(
-        'TOSS_USER',
-        `getUserKeyForGame() 성공 - hash=${userKeyResult.hash}`,
-      );
+      appLogger.info('TOSS_USER', 'getUserKeyForGame() 성공');
 
       return userKeyResult.hash;
     },

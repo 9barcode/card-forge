@@ -26,8 +26,8 @@ export function DebugLogsPage() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>앱 로그</Text>
         <Text style={styles.description}>
-          QR 실기기 테스트용 로그입니다. getUserKeyForGame()에서 받은 hash와
-          회원 세션 생성 결과를 확인할 수 있습니다.
+          QR 실기기 테스트용 로그입니다. 사용자 식별 성공 여부와 회원 세션 생성
+          결과를 확인할 수 있습니다. 사용자 식별키 원문은 표시하지 않습니다.
         </Text>
 
         <View style={styles.actionRow}>
