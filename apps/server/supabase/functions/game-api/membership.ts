@@ -25,10 +25,10 @@ async function initializeSession(request: Request): Promise<Response> {
   }
   const verifiedUserKey = await verifyTossUserHash(tossGameUserHash);
   const pepper = requireSecret('SESSION_PEPPER');
-  const tossDigest = await hmacSha256(`toss:${verifiedUserKey}`, pepper);
+  const hashId = await hmacSha256(`toss:${verifiedUserKey}`, pepper);
   const database = createServerDatabase();
   const { data, error } = await database.rpc('initialize_game_user', {
-    p_toss_user_digest: tossDigest,
+    p_toss_user_digest: hashId,
   });
   if (error) throw new Error('USER_INITIALIZATION_FAILED');
   const user = firstRow(data);
