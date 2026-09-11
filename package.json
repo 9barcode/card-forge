@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check --write",
     "deploy": "ait deploy",
+    "storage:sync": "node scripts/upload-images-to-supabase.ts",
     "server:build": "npm run build --workspace @card-forge/server",
     "server:test": "npm test --workspace @card-forge/server",
     "server:test:component": "npm run test:component --workspace @card-forge/server",
