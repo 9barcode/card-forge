@@ -96,8 +96,10 @@ export function HomePage() {
       isMounted = false;
     };
   }, []);
+
+  const nickname = game.currentUser?.displayName ?? '모험가';
   const user = {
-    nickname: gameUserHash,
+    nickname,
     level: 1,
     crystals: game.crystalBalance ?? 0,
   };
@@ -121,8 +123,9 @@ export function HomePage() {
             <Settings color="#D5B87F" size={16} strokeWidth={2} />
           </TouchableOpacity>
         </View>
-        <Text style={styles.welcome}>다시 오셨군요, {gameUserHash}</Text>
+        <Text style={styles.welcome}>다시 오셨군요, {nickname}</Text>
         <Text style={styles.subtitle}>실행 환경: {environment}</Text>
+        <Text style={styles.subtitle}>HASH: {gameUserHash}</Text>
         <Text style={styles.subtitle}>
           오늘도 새로운 카드의 힘을 깨워보세요.
         </Text>
@@ -183,7 +186,7 @@ export function HomePage() {
                 <Text style={styles.menuTitle}>{item.title}</Text>
                 <Text style={styles.menuDescription}>{item.description}</Text>
               </View>
-              <Text style={[styles.arrow, { color: item.accent }]}>›</Text>
+              <Text style={[styles.arrow, { color: item.accent }]}>{'›'}</Text>
             </TouchableOpacity>
           ))}
         </View>
