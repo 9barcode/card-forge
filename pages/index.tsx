@@ -32,7 +32,7 @@ const menuItems: MenuItem[] = [
     title: '카드 보관함',
     description: '수집한 원소 카드 확인',
     icon: {
-      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/sign/images/index/collection.png?token=eyJraWQiOiJkZjZkMjkwNS02MTg4LTRmMWItOWQxYi1iMTJjYThlODc4YmUiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJpbWFnZXMvaW5kZXgvY29sbGVjdGlvbi5wbmciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzg5MDM4ODA0LCJleHAiOjE4MjA1NzQ4MDR9.PovBccKHyD49HNqqwxUE24GsvdlyHqQBkvdC1wUyOIUXrX2jOUkOpQLkq5tT5i1dKHWXAblJM4_19EtbZRRs-w',
+      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/characters/rose.jpg',
     },
     accent: '#72B6FF',
   },
@@ -41,7 +41,7 @@ const menuItems: MenuItem[] = [
     title: '카드 강화소',
     description: '광고를 보고 카드 강화',
     icon: {
-      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/sign/images/index/forge.png?token=eyJraWQiOiJkZjZkMjkwNS02MTg4LTRmMWItOWQxYi1iMTJjYThlODc4YmUiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJpbWFnZXMvaW5kZXgvZm9yZ2UucG5nIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4OTAzODY3OSwiZXhwIjoxODIwNTc0Njc5fQ.MERMRcjRg5UR0ijB7YCoUMIJoVuET7t3ivs82jd8nYmmMBEa5gahf4dNBFxtkFfNM0laa_NwhH_6zLYU4fefQQ',
+      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/index/forge.png',
     },
     accent: '#FFAF72',
   },
@@ -50,7 +50,7 @@ const menuItems: MenuItem[] = [
     title: '카드 상점',
     description: '새로운 원소 카드 뽑기',
     icon: {
-      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/sign/images/index/cards.png?token=eyJraWQiOiJkZjZkMjkwNS02MTg4LTRmMWItOWQxYi1iMTJjYThlODc4YmUiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJpbWFnZXMvaW5kZXgvY2FyZHMucG5nIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4OTAzODY4OCwiZXhwIjoxODIwNTc0Njg4fQ.7g87pEReNvI8T_xeoLUM9d9V2kpt2MR60SnWUpncQvId5eIwvJbrKZ6ZIoPfa1YO8OEBPbprU-R5UM7Wi-u1uA',
+      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/index/packs.png',
     },
     accent: '#C497FF',
   },
@@ -59,7 +59,7 @@ const menuItems: MenuItem[] = [
     title: '포인트 교환소',
     description: '카드와 결정을 포인트로',
     icon: {
-      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/sign/images/index/exchange.png?token=eyJraWQiOiJkZjZkMjkwNS02MTg4LTRmMWItOWQxYi1iMTJjYThlODc4YmUiLCJhbGciOiJIUzUxMiJ9.eyJ1cmwiOiJpbWFnZXMvaW5kZXgvZXhjaGFuZ2UucG5nIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4OTAzODcwNCwiZXhwIjoxODIwNTc0NzA0fQ.joPOlvxKM5vDzHCHLBKz_NJhOxZTMqPO6WcZBXipsGXCAHytcI4vvrjNmcvaDlHxTzKgOvHKyAXb7bs1dSh__Q',
+      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/index/exchange.png',
     },
     accent: '#76CFA3',
   },
