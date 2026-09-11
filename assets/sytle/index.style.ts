@@ -35,4 +35,6 @@ export const styles = StyleSheet.create({
   guideCopy: { flex: 1 },
   guideTitle: { color: '#E9EEF4', fontSize: 14, fontWeight: '700' },
   guideText: { color: '#A7BCCB', fontSize: 11, lineHeight: 17, marginTop: 5 },
+  debugButton: { marginTop: 16, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: '#44536A', alignItems: 'center', backgroundColor: '#151D29' },
+  debugButtonText: { color: '#B9C4D3', fontSize: 12, fontWeight: '600' },
 });
