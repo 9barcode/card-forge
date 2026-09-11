@@ -1,9 +1,11 @@
 import type { GameServerGateway } from './gameActionService';
 import type {
   CachedOwnedCard,
+  CachedPackAvailability,
   CardElement,
   CardGrade,
   ServerGameSnapshot,
+  ServerPackOpeningResult,
 } from './gameCache';
 
 const elements = new Set<CardElement>([
@@ -45,10 +47,63 @@ export function createHttpGameServerGateway({
         throw new Error(errorCode(data, `GAME_API_${response.status}`));
       return parseSnapshot(data);
     },
-    openPack: notImplemented('PACK_OPENING_API_NOT_IMPLEMENTED'),
+    async openPack(command): Promise<ServerPackOpeningResult> {
+      const response = await fetchImplementation(
+        `${baseUrl}/api/v1/pack-openings`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${command.accessToken}`,
+            'Content-Type': 'application/json',
+            'Idempotency-Key': command.requestId,
+          },
+          body: JSON.stringify({ adCompletionId: command.adCompletionId }),
+        },
+      );
+      const data = await readJson(response);
+      if (!response.ok)
+        throw new Error(errorCode(data, `GAME_API_${response.status}`));
+      return parsePackOpeningResult(data);
+    },
     enhanceCard: notImplemented('ENHANCEMENT_API_NOT_IMPLEMENTED'),
     sellCards: notImplemented('CARD_SALE_API_NOT_IMPLEMENTED'),
     exchangePoints: notImplemented('POINT_EXCHANGE_API_NOT_IMPLEMENTED'),
+  };
+}
+
+function parsePackOpeningResult(value: unknown): ServerPackOpeningResult {
+  const source = record(value);
+  return {
+    card: parseCard(source.card),
+    packAvailability: parsePackAvailability(source.packAvailability),
+  };
+}
+
+function parsePackAvailability(value: unknown): CachedPackAvailability {
+  const source = record(value);
+  const dailyLimit = integer(source.dailyLimit);
+  const usedToday = integer(source.usedToday);
+  const remainingToday = integer(source.remainingToday);
+  const ownedCardCount = integer(source.ownedCardCount);
+  const storageCapacity = integer(source.storageCapacity);
+  const storageFull = boolean(source.storageFull);
+  if (
+    usedToday > dailyLimit ||
+    remainingToday !== dailyLimit - usedToday ||
+    ownedCardCount > storageCapacity ||
+    storageFull !== ownedCardCount >= storageCapacity
+  ) {
+    throw new Error('INVALID_GAME_API_RESPONSE');
+  }
+  return {
+    packType: string(source.packType),
+    dailyLimit,
+    usedToday,
+    remainingToday,
+    ownedCardCount,
+    storageCapacity,
+    storageFull,
+    nextResetAt: isoDate(source.nextResetAt),
   };
 }
 
@@ -92,7 +147,8 @@ function parseCard(value: unknown): CachedOwnedCard {
     imageKey: string(source.imageKey),
     enhancementLevel,
     status: enhancementLevel >= 10 ? 'MAX_LEVEL' : 'ENHANCEABLE',
-    acquiredAt: '',
+    acquiredAt:
+      typeof source.acquiredAt === 'string' ? isoDate(source.acquiredAt) : '',
   };
 }
 
@@ -113,6 +169,19 @@ function integer(value: unknown): number {
     throw new Error('INVALID_GAME_API_RESPONSE');
   }
   return value;
+}
+
+function boolean(value: unknown): boolean {
+  if (typeof value !== 'boolean') throw new Error('INVALID_GAME_API_RESPONSE');
+  return value;
+}
+
+function isoDate(value: unknown): string {
+  const result = string(value);
+  if (Number.isNaN(new Date(result).getTime())) {
+    throw new Error('INVALID_GAME_API_RESPONSE');
+  }
+  return result;
 }
 
 function errorCode(value: unknown, fallback: string): string {
