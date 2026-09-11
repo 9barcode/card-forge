@@ -3,13 +3,12 @@ import { createSessionToken, hmacSha256, verifySessionToken } from '../_shared/c
 import { json } from '../_shared/http.ts';
 
 type GameUserRow = { user_id: number; is_new_user?: boolean };
+type UserProfileRow = { id: number | string; nickname: string };
 
 export async function handleMembership(request: Request, path: string): Promise<Response | null> {
   if (request.method === 'POST' && path.endsWith('/api/v1/user-sessions')) return initializeSession(request);
   if (request.method === 'GET' && path.endsWith('/api/v1/users/me')) return getCurrentUser(request);
-  if (request.method === 'PATCH' && path.endsWith('/api/v1/users/me')) {
-    return json({ code: 'PROFILE_UPDATE_NOT_SUPPORTED' }, 501);
-  }
+  if (request.method === 'PATCH' && path.endsWith('/api/v1/users/me')) return updateCurrentUser(request);
   if (request.method === 'DELETE' && path.endsWith('/api/v1/user-sessions/current')) {
     await requireSessionUser(request);
     return new Response(null, { status: 204, headers: { 'Access-Control-Allow-Origin': '*' } });
@@ -31,18 +30,39 @@ async function initializeSession(request: Request): Promise<Response> {
     p_toss_user_digest: hashId,
   });
   if (error) throw new Error('USER_INITIALIZATION_FAILED');
-  const user = firstRow(data);
-  const accessToken = await createSessionToken(String(user.user_id), readSessionTtl(), pepper);
+  const initializedUser = firstRow(data);
+  const user = await loadUserProfile(String(initializedUser.user_id));
+  const accessToken = await createSessionToken(String(initializedUser.user_id), readSessionTtl(), pepper);
   return json({
     accessToken,
-    user: profile(String(user.user_id)),
-    isNewUser: user.is_new_user === true,
+    user: profile(user),
+    isNewUser: initializedUser.is_new_user === true,
   });
 }
 
 async function getCurrentUser(request: Request): Promise<Response> {
   const userId = await requireSessionUser(request);
-  return json(profile(userId));
+  return json(profile(await loadUserProfile(userId)));
+}
+
+async function updateCurrentUser(request: Request): Promise<Response> {
+  const userId = await requireSessionUser(request);
+  const body = await readJson(request);
+  const displayName = typeof body?.displayName === 'string' ? body.displayName.trim() : '';
+  if (displayName.length < 2 || displayName.length > 12) {
+    return json({ code: 'INVALID_DISPLAY_NAME' }, 400);
+  }
+
+  const database = createServerDatabase();
+  const { data, error } = await database
+    .from('users')
+    .update({ nickname: displayName })
+    .eq('id', userId)
+    .select('id, nickname')
+    .maybeSingle();
+  if (error) throw new Error('USER_PROFILE_UPDATE_FAILED');
+  if (!data) throw new ApiError(404, 'USER_NOT_FOUND');
+  return json(profile(data as UserProfileRow));
 }
 
 export async function requireSessionUser(request: Request): Promise<string> {
@@ -59,6 +79,18 @@ export async function requireSessionUser(request: Request): Promise<string> {
   if (error) throw new Error('USER_LOOKUP_FAILED');
   if (!optionalFirstRow(data)) throw new ApiError(401, 'INVALID_OR_EXPIRED_SESSION');
   return session.userId;
+}
+
+async function loadUserProfile(userId: string): Promise<UserProfileRow> {
+  const database = createServerDatabase();
+  const { data, error } = await database
+    .from('users')
+    .select('id, nickname')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error) throw new Error('USER_PROFILE_LOOKUP_FAILED');
+  if (!data) throw new ApiError(404, 'USER_NOT_FOUND');
+  return data as UserProfileRow;
 }
 
 async function verifyTossUserHash(value: string): Promise<string> {
@@ -121,11 +153,11 @@ function optionalFirstRow(value: unknown): GameUserRow | null {
   return Array.isArray(value) && value.length > 0 ? value[0] as GameUserRow : null;
 }
 
-function profile(userId: string) {
+function profile(user: UserProfileRow) {
   const unavailableTimestamp = '1970-01-01T00:00:00.000Z';
   return {
-    userId,
-    displayName: '모험가',
+    userId: String(user.id),
+    displayName: user.nickname,
     accountStatus: 'ACTIVE',
     createdAt: unavailableTimestamp,
     lastSignedInAt: unavailableTimestamp,
