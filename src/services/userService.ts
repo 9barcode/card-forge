@@ -11,6 +11,7 @@ import { appLogger } from '../utils/appLogger';
 export interface UserServiceDependencies {
   gameUserIdentityProvider: GameUserIdentityProvider;
   userRepository: UserRepository;
+  onCurrentUserChanged?: (user: CurrentUserProfile) => void;
 }
 
 export interface UserService {
@@ -25,6 +26,7 @@ export interface UserService {
 export function createUserService({
   gameUserIdentityProvider,
   userRepository,
+  onCurrentUserChanged,
 }: UserServiceDependencies): UserService {
   let currentUserSession: UserSession | null = null;
   let pendingInitialization: Promise<UserSession> | null = null;
@@ -60,6 +62,7 @@ export function createUserService({
 
         if (sessionGeneration === initializationGeneration) {
           currentUserSession = initializedUserSession;
+          onCurrentUserChanged?.(initializedUserSession.user);
         }
         return initializedUserSession;
       } catch (error) {
@@ -84,6 +87,7 @@ export function createUserService({
       initializedSession.accessToken,
     );
     currentUserSession = { ...initializedSession, user: currentUser };
+    onCurrentUserChanged?.(currentUser);
     return currentUser;
   }
 
@@ -109,6 +113,7 @@ export function createUserService({
     );
 
     currentUserSession = { ...initializedSession, user: updatedUser };
+    onCurrentUserChanged?.(updatedUser);
     return updatedUser;
   }
 
