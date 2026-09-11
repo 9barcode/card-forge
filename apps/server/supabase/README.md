@@ -31,6 +31,8 @@ npx supabase link --project-ref nmbdwukrvwfaxpasbppj
 - 회원 초기화·조회 DB 함수
 - 회원 API 경로와 입력·세션 검증
 - mTLS 인증과 분리된 보관함 조회 DB 함수 및 API
+- 사용자 행 잠금 기반의 원자적 V2 카드팩 뽑기 DB 함수
+- 보관함 5장·하루 20회 제한과 요청 결과 재사용 방식의 중복 지급 방지
 
 결정 저장 컬럼은 준비됐지만 카드 판매, 결정 증감 트랜잭션과 포인트 교환 API는
 아직 구현하지 않았습니다. 이후 작업에서도 이 세 테이블 안에서 DB 함수로 구현합니다.
@@ -44,6 +46,16 @@ npx supabase link --project-ref nmbdwukrvwfaxpasbppj
 | `PATCH` | `/functions/v1/game-api/api/v1/users/me` | 현재 DB 문서에 프로필 컬럼이 없어 501 응답 |
 | `DELETE` | `/functions/v1/game-api/api/v1/user-sessions/current` | 토큰 검증 후 로그아웃(앱이 토큰 삭제) |
 | `GET` | `/functions/v1/game-api/api/v1/inventory` | 현재/누적 결정과 보유 카드 조회 |
+| `POST` | `/functions/v1/game-api/api/v1/pack-openings` | 광고 완료 후 카드 1장 뽑기 |
+
+카드팩 API는 `Authorization: Bearer <게임 세션>`과 8~100자의
+`idempotency-key` 헤더, JSON 본문의 `adCompletionId`를 요구합니다. 현재 SDK 테스트
+광고에는 서버 검증 가능한 완료 ID가 없으므로 `ALLOW_TEST_AD_REWARDS=true`가 설정된
+개발 프로젝트에서만 `local-test-ad-<숫자>`를 허용합니다. 기본값은 거절이며 운영에서는
+이 설정을 켜면 안 됩니다.
+
+일일 뽑기 상태와 최대 20개의 당일 요청 결과는 `users` 행에 저장합니다. 날짜가 바뀌면
+같은 원자적 함수 안에서 초기화되므로 별도 이력 테이블 없이 3개 테이블 원칙을 유지합니다.
 
 보관함 API는 토스 식별키 검증 방법을 알지 못합니다. 앞 단계에서 발급한 게임 세션의
 서명과 만료만 검증한 뒤 해당 내부 사용자 ID의 데이터만 조회합니다. 따라서 mTLS 연결은
