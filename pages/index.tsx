@@ -1,6 +1,7 @@
 import { getOperationalEnvironment, getUserKeyForGame } from '@apps-in-toss/framework';
 import { createRoute, useNavigation } from '@granite-js/react-native';
 import React, { useEffect, useState } from 'react';
+import { Settings } from 'lucide-react-native';
 import {
   Image,
   type ImageSourcePropType,
@@ -111,7 +112,19 @@ export function HomePage() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.eyebrow}>CARD FORGE</Text>
+        <View style={styles.topBar}>
+          <Text style={styles.eyebrow}>CARD FORGE</Text>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="설정 열기"
+            activeOpacity={0.8}
+            // biome-ignore lint/suspicious/noExplicitAny: Granite generated route types are stale until the next build.
+            onPress={() => navigation.navigate('/setting' as any)}
+            style={styles.settingButton}
+          >
+            <Settings color="#D5B87F" size={16} strokeWidth={2} />
+          </TouchableOpacity>
+        </View>
         <Text style={styles.welcome}>다시 오셨군요, {gameUserHash}</Text>
         <Text style={styles.subtitle}>실행 환경: {environment}</Text>
         <Text style={styles.subtitle}>
