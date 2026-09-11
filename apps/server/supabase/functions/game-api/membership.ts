@@ -63,7 +63,13 @@ export async function requireSessionUser(request: Request): Promise<string> {
 
 async function verifyTossUserHash(value: string): Promise<string> {
   const url = Deno.env.get('TOSS_USER_VERIFICATION_URL');
-  if (!url) throw new ApiError(503, 'TOSS_VERIFICATION_NOT_CONFIGURED');
+  const verificationRequired = Deno.env.get('TOSS_USER_VERIFICATION_REQUIRED') === 'true';
+  // getUserKeyForGame()의 식별키만으로도 게임 데이터를 구분할 수 있다.
+  // mTLS 검증 URL은 발급 후 설정하며, 설정된 환경에서만 추가 검증한다.
+  if (!url) {
+    if (verificationRequired) throw new ApiError(503, 'TOSS_VERIFICATION_NOT_CONFIGURED');
+    return value;
+  }
   const response = await fetch(url, { method: 'POST', headers: { 'x-anon-key': value } });
   if (!response.ok) throw new ApiError(401, 'TOSS_USER_VERIFICATION_FAILED');
   const result = await response.json() as { resultType?: unknown; success?: unknown };

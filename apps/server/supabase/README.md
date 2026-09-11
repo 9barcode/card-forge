@@ -41,7 +41,7 @@ npx supabase link --project-ref nmbdwukrvwfaxpasbppj
 
 | 메서드 | 경로 | 역할 |
 | --- | --- | --- |
-| `POST` | `/functions/v1/game-api/api/v1/user-sessions` | 토스 검증 후 회원과 세션 초기화 |
+| `POST` | `/functions/v1/game-api/api/v1/user-sessions` | 게임 사용자 식별키로 회원과 세션 초기화 |
 | `GET` | `/functions/v1/game-api/api/v1/users/me` | 현재 회원 조회 |
 | `PATCH` | `/functions/v1/game-api/api/v1/users/me` | 현재 DB 문서에 프로필 컬럼이 없어 501 응답 |
 | `DELETE` | `/functions/v1/game-api/api/v1/user-sessions/current` | 토큰 검증 후 로그아웃(앱이 토큰 삭제) |
@@ -74,8 +74,18 @@ npx supabase link --project-ref nmbdwukrvwfaxpasbppj
 Storage에는 공개 이미지 파일만 저장합니다. 사용자 소유권, 강화 단계, 결정 수는 이미지
 메타데이터로 관리하지 않고 기존 세 DB 테이블과 서버 API에서 계속 검증합니다.
 
-`TOSS_USER_VERIFICATION_URL`과 관련 mTLS 구성이 없는 환경에서는 회원 초기화를
-성공 처리하지 않고 `503 TOSS_VERIFICATION_NOT_CONFIGURED`로 거절합니다.
+`TOSS_USER_VERIFICATION_URL`이 설정되지 않은 환경에서는 `getUserKeyForGame()`으로
+받은 식별키를 사용해 회원을 초기화합니다. 식별키 원문은 DB에 저장하지 않고
+`SESSION_PEPPER`를 사용한 HMAC-SHA256 digest만 `users.toss_user_id`에 저장합니다.
+이는 mTLS 준비 전 개발·실기기 확인을 위한 임시 모드입니다.
+
+mTLS 인증서를 발급받아 `TOSS_USER_VERIFICATION_URL`을 설정하면 회원 생성 전에
+토스 식별키 검증 API를 추가로 호출합니다. URL이 설정된 뒤 검증 실패나 통신 실패가
+발생하면 회원을 생성하지 않습니다. 토스 포인트 지급 같은 서버 API는 이 선택적 검증과
+별개로 반드시 정식 mTLS 설정을 마친 뒤 활성화해야 합니다.
+운영 배포 전에는 `TOSS_USER_VERIFICATION_REQUIRED=true`도 함께 설정합니다. 이 상태에서
+검증 URL이 누락되면 `503 TOSS_VERIFICATION_NOT_CONFIGURED`로 회원 생성을 차단하므로,
+mTLS 검증을 빠뜨린 채 출시하는 실수를 방지할 수 있습니다.
 
 ## 왜 세션 테이블이 없나요?
 
