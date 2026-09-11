@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">Magic card</title>
+  <defs>
+    <linearGradient id="cardBody" x1="67" y1="32" x2="192" y2="224" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#31485E"/>
+      <stop offset="1" stop-color="#142130"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="78" y1="46" x2="184" y2="211" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF0B5"/>
+      <stop offset="0.5" stop-color="#E5BB67"/>
+      <stop offset="1" stop-color="#9B642C"/>
+    </linearGradient>
+    <linearGradient id="gem" x1="128" y1="83" x2="128" y2="175" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF7D5"/>
+      <stop offset="0.42" stop-color="#FFCB70"/>
+      <stop offset="1" stop-color="#F0794F"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="rotate(-7 128 128)">
+    <rect x="61" y="24" width="134" height="208" rx="20" fill="url(#cardBody)" stroke="url(#gold)" stroke-width="9"/>
+    <rect x="76" y="40" width="104" height="176" rx="12" fill="none" stroke="#F7DFA7" stroke-opacity="0.45" stroke-width="3"/>
+    <path d="m128 69 9 18 20 3-15 14 4 20-18-10-18 10 4-20-15-14 20-3Z" fill="url(#gem)" filter="url(#glow)"/>
+    <path d="M101 151c17-8 37-8 54 0M98 166h60M108 181h40" fill="none" stroke="#8FA5B7" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="128" cy="202" r="5" fill="#EAC681"/>
+  </g>
+  <path d="m202 43 5 11 11 5-11 5-5 11-5-11-11-5 11-5Z" fill="#FFE79C" filter="url(#glow)"/>
+</svg>
