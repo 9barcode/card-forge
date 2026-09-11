@@ -186,3 +186,131 @@ it('서버 카드팩 상태 합계가 맞지 않으면 응답을 거절한다', 
     }),
   ).rejects.toThrow('INVALID_GAME_API_RESPONSE');
 });
+
+it('선택한 카드와 광고 완료 증명으로 강화를 요청한다', async () => {
+  const fetchImplementation = jest.fn(
+    async () =>
+      new Response(
+        JSON.stringify({
+          card: {
+            cardId: '8',
+            templateId: '4',
+            name: '불꽃 기사',
+            element: 'FIRE',
+            grade: 'NORMAL',
+            imageKey: 'cards/flame_knight.png',
+            enhancementLevel: 2,
+            status: 'ENHANCEABLE',
+            acquiredAt: '',
+          },
+          result: 'SUCCESS',
+          replayed: false,
+        }),
+        { status: 200 },
+      ),
+  );
+  const gateway = createHttpGameServerGateway({
+    apiBaseUrl: 'https://example.test',
+    fetchImplementation: fetchImplementation as typeof fetch,
+  });
+
+  const result = await gateway.enhanceCard({
+    accessToken: 'session-token',
+    requestId: 'enhance-request-001',
+    cardId: '8',
+    adCompletionId: 'ad-completion-001',
+  });
+
+  expect(fetchImplementation).toHaveBeenCalledWith(
+    'https://example.test/api/v1/enhancements',
+    {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer session-token',
+        'Content-Type': 'application/json',
+        'Idempotency-Key': 'enhance-request-001',
+      },
+      body: JSON.stringify({
+        cardId: '8',
+        adCompletionId: 'ad-completion-001',
+      }),
+    },
+  );
+  expect(result).toEqual(
+    expect.objectContaining({
+      result: 'SUCCESS',
+      card: expect.objectContaining({ cardId: '8', enhancementLevel: 2 }),
+    }),
+  );
+});
+
+it('강화 실패와 영구 잠금을 서버 결과 그대로 반환한다', async () => {
+  const gateway = createHttpGameServerGateway({
+    apiBaseUrl: 'https://example.test',
+    fetchImplementation: (async () =>
+      new Response(
+        JSON.stringify({
+          card: {
+            cardId: '8',
+            templateId: '4',
+            name: '불꽃 기사',
+            element: 'FIRE',
+            grade: 'NORMAL',
+            imageKey: 'cards/flame_knight.png',
+            enhancementLevel: 2,
+            status: 'ENHANCEMENT_LOCKED',
+            acquiredAt: '',
+          },
+          result: 'FAILURE',
+        }),
+        { status: 200 },
+      )) as typeof fetch,
+  });
+
+  await expect(
+    gateway.enhanceCard({
+      accessToken: 'session-token',
+      requestId: 'enhance-request-002',
+      cardId: '8',
+      adCompletionId: 'ad-completion-002',
+    }),
+  ).resolves.toEqual(
+    expect.objectContaining({
+      result: 'FAILURE',
+      card: expect.objectContaining({ status: 'ENHANCEMENT_LOCKED' }),
+    }),
+  );
+});
+
+it('강화 결과와 카드 상태가 모순되면 응답을 거절한다', async () => {
+  const gateway = createHttpGameServerGateway({
+    apiBaseUrl: 'https://example.test',
+    fetchImplementation: (async () =>
+      new Response(
+        JSON.stringify({
+          card: {
+            cardId: '8',
+            templateId: '4',
+            name: '불꽃 기사',
+            element: 'FIRE',
+            grade: 'NORMAL',
+            imageKey: 'cards/flame_knight.png',
+            enhancementLevel: 2,
+            status: 'ENHANCEMENT_LOCKED',
+            acquiredAt: '',
+          },
+          result: 'SUCCESS',
+        }),
+        { status: 200 },
+      )) as typeof fetch,
+  });
+
+  await expect(
+    gateway.enhanceCard({
+      accessToken: 'session-token',
+      requestId: 'enhance-request-003',
+      cardId: '8',
+      adCompletionId: 'ad-completion-003',
+    }),
+  ).rejects.toThrow('INVALID_GAME_API_RESPONSE');
+});

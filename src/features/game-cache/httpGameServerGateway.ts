@@ -4,6 +4,8 @@ import type {
   CachedPackAvailability,
   CardElement,
   CardGrade,
+  CardStatus,
+  ServerEnhancementResult,
   ServerGameSnapshot,
   ServerPackOpeningResult,
 } from './gameCache';
@@ -65,10 +67,46 @@ export function createHttpGameServerGateway({
         throw new Error(errorCode(data, `GAME_API_${response.status}`));
       return parsePackOpeningResult(data);
     },
-    enhanceCard: notImplemented('ENHANCEMENT_API_NOT_IMPLEMENTED'),
+    async enhanceCard(command): Promise<ServerEnhancementResult> {
+      const response = await fetchImplementation(
+        `${baseUrl}/api/v1/enhancements`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${command.accessToken}`,
+            'Content-Type': 'application/json',
+            'Idempotency-Key': command.requestId,
+          },
+          body: JSON.stringify({
+            cardId: command.cardId,
+            adCompletionId: command.adCompletionId,
+          }),
+        },
+      );
+      const data = await readJson(response);
+      if (!response.ok)
+        throw new Error(errorCode(data, `GAME_API_${response.status}`));
+      return parseEnhancementResult(data);
+    },
     sellCards: notImplemented('CARD_SALE_API_NOT_IMPLEMENTED'),
     exchangePoints: notImplemented('POINT_EXCHANGE_API_NOT_IMPLEMENTED'),
   };
+}
+
+function parseEnhancementResult(value: unknown): ServerEnhancementResult {
+  const source = record(value);
+  const result = string(source.result);
+  if (result !== 'SUCCESS' && result !== 'FAILURE') {
+    throw new Error('INVALID_GAME_API_RESPONSE');
+  }
+  const card = parseCard(source.card);
+  if (
+    (result === 'FAILURE' && card.status !== 'ENHANCEMENT_LOCKED') ||
+    (result === 'SUCCESS' && card.status === 'ENHANCEMENT_LOCKED')
+  ) {
+    throw new Error('INVALID_GAME_API_RESPONSE');
+  }
+  return { card, result };
 }
 
 function parsePackOpeningResult(value: unknown): ServerPackOpeningResult {
@@ -136,6 +174,7 @@ function parseCard(value: unknown): CachedOwnedCard {
   const element = string(source.element) as CardElement;
   const grade = string(source.grade) as CardGrade;
   const enhancementLevel = integer(source.enhancementLevel);
+  const status = parseCardStatus(source.status, enhancementLevel);
   if (!elements.has(element) || !grades.has(grade))
     throw new Error('INVALID_GAME_API_RESPONSE');
   return {
@@ -146,10 +185,32 @@ function parseCard(value: unknown): CachedOwnedCard {
     grade,
     imageKey: string(source.imageKey),
     enhancementLevel,
-    status: enhancementLevel >= 10 ? 'MAX_LEVEL' : 'ENHANCEABLE',
+    status,
     acquiredAt:
-      typeof source.acquiredAt === 'string' ? isoDate(source.acquiredAt) : '',
+      typeof source.acquiredAt === 'string' && source.acquiredAt !== ''
+        ? isoDate(source.acquiredAt)
+        : '',
   };
+}
+
+function parseCardStatus(value: unknown, enhancementLevel: number): CardStatus {
+  if (value === undefined) {
+    return enhancementLevel >= 10 ? 'MAX_LEVEL' : 'ENHANCEABLE';
+  }
+  if (
+    value !== 'ENHANCEABLE' &&
+    value !== 'ENHANCEMENT_LOCKED' &&
+    value !== 'MAX_LEVEL'
+  ) {
+    throw new Error('INVALID_GAME_API_RESPONSE');
+  }
+  if (
+    (value === 'MAX_LEVEL') !== enhancementLevel >= 10 ||
+    (value === 'ENHANCEABLE' && enhancementLevel >= 10)
+  ) {
+    throw new Error('INVALID_GAME_API_RESPONSE');
+  }
+  return value;
 }
 
 function record(value: unknown): Record<string, unknown> {
