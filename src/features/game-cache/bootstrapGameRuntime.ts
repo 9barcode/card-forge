@@ -25,6 +25,7 @@ export function bootstrapGameRuntime(): Promise<void> {
   const users = createUserService({
     gameUserIdentityProvider: createAppsInTossGameUserIdentityProvider(),
     userRepository: createHttpUserRepository({ apiBaseUrl: GAME_API_BASE_URL }),
+    onCurrentUserChanged: (user) => gameCache.setCurrentUser(user),
   });
   gameRuntime.configure(gateway, 'server');
   pending = initializeAuthenticatedRuntime(users).catch((error) => {
