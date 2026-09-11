@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Card Forge</title>
+  <desc id="description">A glowing card above a fantasy forge anvil, surrounded by sparks.</desc>
+  <defs>
+    <linearGradient id="background" x1="80" y1="40" x2="430" y2="472" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#24364A"/>
+      <stop offset="1" stop-color="#101722"/>
+    </linearGradient>
+    <linearGradient id="card" x1="196" y1="93" x2="324" y2="301" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF2C9"/>
+      <stop offset="0.48" stop-color="#EAC681"/>
+      <stop offset="1" stop-color="#B97A36"/>
+    </linearGradient>
+    <linearGradient id="fire" x1="256" y1="208" x2="256" y2="342" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF4B0"/>
+      <stop offset="0.45" stop-color="#FFAF55"/>
+      <stop offset="1" stop-color="#E85C3A"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="147" y1="302" x2="367" y2="418" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DCE9F0"/>
+      <stop offset="0.42" stop-color="#8BA2B3"/>
+      <stop offset="1" stop-color="#40566A"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="18" y="18" width="476" height="476" rx="112" fill="url(#background)"/>
+  <rect x="28" y="28" width="456" height="456" rx="102" fill="none" stroke="#D5B87F" stroke-opacity="0.34" stroke-width="4"/>
+
+  <path d="M138 174 187 126l8 54-31 25Z" fill="#72B6FF" opacity="0.28"/>
+  <path d="m374 174-49-48-8 54 31 25Z" fill="#C497FF" opacity="0.24"/>
+
+  <g transform="rotate(-12 189 236)" opacity="0.58">
+    <rect x="126" y="145" width="126" height="182" rx="18" fill="#192432" stroke="#6D8193" stroke-width="7"/>
+    <path d="m151 294 37-55 39 55Z" fill="#72B6FF" opacity="0.58"/>
+  </g>
+  <g transform="rotate(12 323 236)" opacity="0.58">
+    <rect x="260" y="145" width="126" height="182" rx="18" fill="#192432" stroke="#6D8193" stroke-width="7"/>
+    <path d="m285 294 37-55 39 55Z" fill="#C497FF" opacity="0.58"/>
+  </g>
+
+  <g filter="url(#glow)">
+    <rect x="184" y="88" width="144" height="208" rx="22" fill="#192432" stroke="url(#card)" stroke-width="10"/>
+    <rect x="200" y="104" width="112" height="176" rx="13" fill="none" stroke="#F7DFAC" stroke-opacity="0.46" stroke-width="3"/>
+    <path d="M256 128c-17 34-47 49-47 83 0 29 21 51 47 51s47-22 47-51c0-34-30-49-47-83Z" fill="url(#fire)"/>
+    <path d="M256 169c-8 18-23 27-23 45 0 15 10 27 23 27s23-12 23-27c0-18-15-27-23-45Z" fill="#FFF6CE" opacity="0.9"/>
+  </g>
+
+  <g>
+    <path d="M131 315h250c-4 37-32 57-74 63l-9 19h-84l-9-19c-42-6-70-26-74-63Z" fill="url(#steel)" stroke="#26394B" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M178 309c17-22 44-34 78-34s61 12 78 34Z" fill="#B8CAD5" stroke="#26394B" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M214 397h84l23 35H191Z" fill="#536B7D" stroke="#26394B" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M158 331h196" stroke="#F4D797" stroke-opacity="0.55" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <g fill="#F7D78E" filter="url(#glow)">
+    <path d="m116 264 7 14 15 7-15 7-7 14-7-14-15-7 15-7Z"/>
+    <path d="m396 240 6 12 12 6-12 6-6 12-6-12-12-6 12-6Z"/>
+    <circle cx="147" cy="226" r="5"/>
+    <circle cx="370" cy="294" r="5"/>
+  </g>
+</svg>
