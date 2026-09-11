@@ -5,6 +5,7 @@ import type {
   CardElement,
   CardGrade,
   CardStatus,
+  ServerCardSaleResult,
   ServerEnhancementResult,
   ServerGameSnapshot,
   ServerPackOpeningResult,
@@ -88,8 +89,48 @@ export function createHttpGameServerGateway({
         throw new Error(errorCode(data, `GAME_API_${response.status}`));
       return parseEnhancementResult(data);
     },
-    sellCards: notImplemented('CARD_SALE_API_NOT_IMPLEMENTED'),
+    async sellCards(command): Promise<ServerCardSaleResult> {
+      const response = await fetchImplementation(
+        `${baseUrl}/api/v1/card-sales`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${command.accessToken}`,
+            'Content-Type': 'application/json',
+            'Idempotency-Key': command.requestId,
+          },
+          body: JSON.stringify({
+            cardIds: command.cardIds,
+            adCompletionId: command.adCompletionId,
+          }),
+        },
+      );
+      const data = await readJson(response);
+      if (!response.ok)
+        throw new Error(errorCode(data, `GAME_API_${response.status}`));
+      return parseCardSaleResult(data);
+    },
     exchangePoints: notImplemented('POINT_EXCHANGE_API_NOT_IMPLEMENTED'),
+  };
+}
+
+function parseCardSaleResult(value: unknown): ServerCardSaleResult {
+  const source = record(value);
+  if (!Array.isArray(source.soldCardIds))
+    throw new Error('INVALID_GAME_API_RESPONSE');
+  const soldCardIds = source.soldCardIds.map(string);
+  if (
+    soldCardIds.length < 1 ||
+    soldCardIds.length > 5 ||
+    new Set(soldCardIds).size !== soldCardIds.length
+  ) {
+    throw new Error('INVALID_GAME_API_RESPONSE');
+  }
+  return {
+    soldCardIds,
+    crystalReward: nonnegativeSafeInteger(source.crystalReward),
+    crystalBalance: nonnegativeSafeInteger(source.crystalBalance),
+    packAvailability: parsePackAvailability(source.packAvailability),
   };
 }
 
@@ -230,6 +271,12 @@ function integer(value: unknown): number {
     throw new Error('INVALID_GAME_API_RESPONSE');
   }
   return value;
+}
+
+function nonnegativeSafeInteger(value: unknown): number {
+  const result =
+    typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value;
+  return integer(result);
 }
 
 function boolean(value: unknown): boolean {

@@ -3,6 +3,7 @@ import { handleInventory } from './inventory.ts';
 import { handleEnhancements } from './enhancements.ts';
 import { errorResponse, handleMembership } from './membership.ts';
 import { handlePacks } from './packs.ts';
+import { handleSales } from './sales.ts';
 
 /**
  * Supabase 게임 API의 단일 진입점입니다.
@@ -28,6 +29,8 @@ Deno.serve(async (request: Request) => {
     if (enhancementResponse) return enhancementResponse;
     const packsResponse = await handlePacks(request, pathname);
     if (packsResponse) return packsResponse;
+    const salesResponse = await handleSales(request, pathname);
+    if (salesResponse) return salesResponse;
   } catch (error) {
     return errorResponse(error);
   }
