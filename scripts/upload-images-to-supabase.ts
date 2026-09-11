@@ -239,3 +239,7 @@ main().catch((error) => {
   console.error(error instanceof Error ? error.message : error);
   process.exitCode = 1;
 });
+
+// 사용 방법 (PowerShell)
+// $env:SUPABASE_SECRET_KEY="sb_secret_실제키"
+// npm run storage:sync
