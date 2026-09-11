@@ -29,6 +29,7 @@
     "lucide-react-native": "^1.35.0",
     "react": "19.2.3",
     "react-native": "0.84.0",
+    "react-native-svg": "15.15.5",
     "react-native-linear-gradient": "^2.8.3"
   },
   "devDependencies": {
