@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">Magic exchange beads</title>
+  <defs>
+    <radialGradient id="blue" cx="0" cy="0" r="1" gradientTransform="translate(92 82) rotate(48) scale(48)" gradientUnits="userSpaceOnUse"><stop stop-color="#E9FBFF"/><stop offset="0.35" stop-color="#77D5EA"/><stop offset="1" stop-color="#277C9D"/></radialGradient>
+    <radialGradient id="violet" cx="0" cy="0" r="1" gradientTransform="translate(158 75) rotate(50) scale(50)" gradientUnits="userSpaceOnUse"><stop stop-color="#F7EDFF"/><stop offset="0.38" stop-color="#C497FF"/><stop offset="1" stop-color="#6945A8"/></radialGradient>
+    <radialGradient id="gold" cx="0" cy="0" r="1" gradientTransform="translate(128 145) rotate(53) scale(59)" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF8D9"/><stop offset="0.4" stop-color="#F0C76F"/><stop offset="1" stop-color="#A76C31"/></radialGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <path d="M54 137c8-54 48-91 101-86 34 3 61 23 75 51M202 86l28 16-12 31" fill="none" stroke="#657C90" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M202 119c-8 54-48 91-101 86-34-3-61-23-75-51M54 170l-28-16 12-31" fill="none" stroke="#D5B87F" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="80" cy="88" r="30" fill="url(#blue)" stroke="#BCEFFF" stroke-width="5" filter="url(#glow)"/>
+  <circle cx="176" cy="88" r="30" fill="url(#violet)" stroke="#E6D4FF" stroke-width="5" filter="url(#glow)"/>
+  <circle cx="128" cy="166" r="36" fill="url(#gold)" stroke="#FFE6A6" stroke-width="6" filter="url(#glow)"/>
+  <circle cx="69" cy="78" r="8" fill="#FFF" opacity="0.72"/>
+  <circle cx="165" cy="77" r="8" fill="#FFF" opacity="0.7"/>
+  <circle cx="115" cy="152" r="10" fill="#FFF" opacity="0.72"/>
+  <path d="m128 105 6 13 14 6-14 6-6 14-6-14-14-6 14-6Z" fill="#FFF4BC" filter="url(#glow)"/>
+</svg>
