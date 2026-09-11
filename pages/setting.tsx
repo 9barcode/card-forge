@@ -1,5 +1,5 @@
 import { createRoute, useNavigation } from '@granite-js/react-native';
-import { ChevronLeft, Settings } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, ImageIcon, Pencil } from 'lucide-react-native';
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { styles } from '../assets/sytle/setting.style';
@@ -42,14 +42,34 @@ function SettingPage() {
           <View style={styles.headerSpacer} />
         </View>
 
-        <View style={styles.settingCard}>
-          <View style={styles.iconWrap}>
-            <Settings color="#D5B87F" size={24} strokeWidth={2} />
+        <View style={styles.settingList}>
+          <View style={styles.settingItem}>
+            <View style={styles.itemIcon}>
+              <Pencil color="#D5B87F" size={20} strokeWidth={2} />
+            </View>
+            <View style={styles.itemCopy}>
+              <Text style={styles.itemTitle}>캐릭터 이름변경</Text>
+              <Text style={styles.itemDescription}>
+                (100개 결정이 사용됩니다.)
+              </Text>
+            </View>
+            <ChevronRight color="#7F8B9A" size={20} strokeWidth={2} />
           </View>
-          <Text style={styles.cardTitle}>게임 설정</Text>
-          <Text style={styles.cardDescription}>
-            설정할 수 있는 항목을 준비하고 있습니다.
-          </Text>
+
+          <View style={styles.divider} />
+
+          <View style={styles.settingItem}>
+            <View style={styles.itemIcon}>
+              <ImageIcon color="#D5B87F" size={20} strokeWidth={2} />
+            </View>
+            <View style={styles.itemCopy}>
+              <Text style={styles.itemTitle}>캐릭터 이미지변경</Text>
+              <Text style={styles.itemDescription}>
+                (1000개 결정이 사용됩니다.)
+              </Text>
+            </View>
+            <ChevronRight color="#7F8B9A" size={20} strokeWidth={2} />
+          </View>
         </View>
       </ScrollView>
     </View>
