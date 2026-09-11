@@ -2,9 +2,9 @@ import { getOperationalEnvironment, getUserKeyForGame } from '@apps-in-toss/fram
 import { createRoute, useNavigation } from '@granite-js/react-native';
 import React, { useEffect, useState } from 'react';
 import { Settings } from 'lucide-react-native';
+import { SvgUri } from 'react-native-svg';
 import {
   Image,
-  type ImageSourcePropType,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -19,7 +19,7 @@ type MenuItem = {
   path: AppRoutes;
   title: string;
   description: string;
-  icon: ImageSourcePropType;
+  iconUri: string;
   accent: string;
 };
 
@@ -33,36 +33,32 @@ const menuItems: MenuItem[] = [
     path: '/cards',
     title: '카드 보관함',
     description: '수집한 원소 카드 확인',
-    icon: {
-      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/characters/rose.jpg',
-    },
+    iconUri:
+      'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/icons/collection.svg',
     accent: '#72B6FF',
   },
   {
     path: '/forge',
     title: '카드 강화소',
     description: '광고를 보고 카드 강화',
-    icon: {
-      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/index/forge.png',
-    },
+    iconUri:
+      'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/icons/forge.svg',
     accent: '#FFAF72',
   },
   {
     path: '/packs',
     title: '카드 상점',
     description: '새로운 원소 카드 뽑기',
-    icon: {
-      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/index/packs.png?v=20260911',
-    },
+    iconUri:
+      'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/icons/cards.svg',
     accent: '#C497FF',
   },
   {
     path: '/exchange',
     title: '포인트 교환소',
     description: '카드와 결정을 포인트로',
-    icon: {
-      uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/index/exchange.png',
-    },
+    iconUri:
+      'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/icons/exchange.svg',
     accent: '#76CFA3',
   },
 ];
@@ -177,10 +173,10 @@ export function HomePage() {
               style={styles.menuCard}
             >
               <View style={[styles.iconWrap, { borderColor: item.accent }]}>
-                <Image
-                  source={item.icon}
-                  style={styles.icon}
-                  resizeMode="contain"
+                <SvgUri
+                  uri={item.iconUri}
+                  width={31}
+                  height={31}
                 />
               </View>
               <View style={styles.menuCopy}>
