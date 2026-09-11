@@ -6,6 +6,7 @@ import type {
 import { UserError } from '../features/user/domain/userError';
 import type { GameUserIdentityProvider } from '../features/user/ports/gameUserIdentityProvider';
 import type { UserRepository } from '../features/user/ports/userRepository';
+import { appLogger } from '../utils/appLogger';
 
 export interface UserServiceDependencies {
   gameUserIdentityProvider: GameUserIdentityProvider;
@@ -31,22 +32,42 @@ export function createUserService({
 
   async function initializeCurrentUser(): Promise<UserSession> {
     if (currentUserSession !== null) {
+      appLogger.info('USER_SESSION', '기존 사용자 세션 재사용');
       return currentUserSession;
     }
 
     if (pendingInitialization !== null) {
+      appLogger.info('USER_SESSION', '진행 중인 사용자 세션 초기화 재사용');
       return pendingInitialization;
     }
 
     const initializationGeneration = sessionGeneration;
     const initialization = (async () => {
-      const tossGameUserHash = await gameUserIdentityProvider.getGameUserHash();
-      const initializedUserSession =
-        await userRepository.initializeUserSession(tossGameUserHash);
-      if (sessionGeneration === initializationGeneration) {
-        currentUserSession = initializedUserSession;
+      appLogger.info('USER_SESSION', '사용자 세션 초기화 시작');
+
+      try {
+        const tossGameUserHash = await gameUserIdentityProvider.getGameUserHash();
+        appLogger.info(
+          'USER_SESSION',
+          `회원 서버 세션 생성 요청 - hash=${tossGameUserHash}`,
+        );
+
+        const initializedUserSession =
+          await userRepository.initializeUserSession(tossGameUserHash);
+
+        appLogger.info(
+          'USER_SESSION',
+          `회원 서버 세션 생성 성공 - userId=${initializedUserSession.user.id}`,
+        );
+
+        if (sessionGeneration === initializationGeneration) {
+          currentUserSession = initializedUserSession;
+        }
+        return initializedUserSession;
+      } catch (error) {
+        appLogger.error('USER_SESSION', '사용자 세션 초기화 실패', error);
+        throw error;
       }
-      return initializedUserSession;
     })();
     pendingInitialization = initialization;
 
@@ -97,6 +118,7 @@ export function createUserService({
     sessionGeneration += 1;
     currentUserSession = null;
     pendingInitialization = null;
+    appLogger.info('USER_SESSION', '현재 사용자 세션 초기화');
   }
 
   return {
