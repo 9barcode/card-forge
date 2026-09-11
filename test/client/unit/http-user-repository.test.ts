@@ -91,6 +91,26 @@ describe('httpUserRepository', () => {
     });
   });
 
+  it('mTLS 미설정 오류 코드는 로컬 테스트 전환 판단용으로만 보존한다', async () => {
+    const fetchImplementation = jest
+      .fn()
+      .mockResolvedValue(
+        createJsonResponse({ code: 'TOSS_VERIFICATION_NOT_CONFIGURED' }, 503),
+      );
+    const repository = createHttpUserRepository({
+      apiBaseUrl: 'https://api.card-forge.example',
+      fetchImplementation,
+    });
+
+    await expect(
+      repository.initializeUserSession('toss-game-user-hash-001'),
+    ).rejects.toMatchObject({
+      code: 'USER_API_REQUEST_FAILED',
+      httpStatus: 503,
+      serverCode: 'TOSS_VERIFICATION_NOT_CONFIGURED',
+    });
+  });
+
   it('성공 응답도 회원 세션 형식이 아니면 거절한다', async () => {
     const fetchImplementation = jest
       .fn()

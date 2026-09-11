@@ -1,3 +1,5 @@
+import type { CurrentUserProfile } from '../user';
+
 export type CardElement =
   | 'EARTH'
   | 'WATER'
@@ -105,6 +107,7 @@ export interface ServerPointExchangeResult {
 
 export interface GameCacheSnapshot {
   status: 'idle' | 'loading' | 'ready' | 'error';
+  currentUser: CurrentUserProfile | null;
   cards: readonly CachedOwnedCard[];
   collection: readonly CachedCollectionEntry[];
   crystalBalance: number | null;
@@ -119,6 +122,7 @@ type GameCacheListener = (snapshot: GameCacheSnapshot) => void;
 
 const createInitialSnapshot = (): GameCacheSnapshot => ({
   status: 'idle',
+  currentUser: null,
   cards: [],
   collection: [],
   crystalBalance: null,
@@ -172,6 +176,14 @@ export const createGameCache = () => {
     subscribe(listener: GameCacheListener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
+    },
+
+    setCurrentUser(currentUser: CurrentUserProfile) {
+      publish({
+        ...current,
+        currentUser: { ...currentUser },
+        revision: current.revision + 1,
+      });
     },
 
     beginLoad() {

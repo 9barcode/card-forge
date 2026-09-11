@@ -1,6 +1,29 @@
-import { createLocalGameplayTestGateway } from '../../../src/features/game-cache';
+import {
+  createLocalGameplayTestGateway,
+  gameRuntime,
+  getAdCompletionProof,
+} from '../../../src/features/game-cache';
 
 describe('local gameplay test gateway', () => {
+  afterEach(() => gameRuntime.reset());
+
+  it('실서버 모드에서는 실제 광고 완료 ID만 허용한다', () => {
+    gameRuntime.configure(createLocalGameplayTestGateway(), 'server');
+
+    expect(() => getAdCompletionProof(undefined)).toThrow(
+      'AD_COMPLETION_PROOF_UNAVAILABLE',
+    );
+    expect(getAdCompletionProof('real-completion-id')).toBe(
+      'real-completion-id',
+    );
+  });
+
+  it('로컬 테스트 모드에서만 테스트용 광고 완료 ID를 만든다', () => {
+    gameRuntime.configure(createLocalGameplayTestGateway(), 'local-test');
+
+    expect(getAdCompletionProof(undefined)).toMatch(/^local-test-ad-/);
+  });
+
   it('광고 이후 카드 뽑기, 강화, 판매, 결정 교환 흐름을 캐시용 결과로 만든다', async () => {
     const gateway = createLocalGameplayTestGateway(() => 0);
     const opened = await gateway.openPack({

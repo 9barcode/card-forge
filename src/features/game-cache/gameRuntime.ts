@@ -19,13 +19,18 @@ let actions = createGameActionService({
 });
 let accessToken: string | null = null;
 let sequence = 0;
+let mode: 'uninitialized' | 'server' | 'local-test' = 'uninitialized';
 
 export const gameRuntime = {
   get actions(): GameActionService {
     return actions;
   },
-  configure(gateway: GameServerGateway): void {
+  configure(
+    gateway: GameServerGateway,
+    nextMode: 'server' | 'local-test' = 'server',
+  ): void {
     actions = createGameActionService({ cache: gameCache, gateway });
+    mode = nextMode;
   },
   async initialize(token: string): Promise<void> {
     accessToken = token;
@@ -39,9 +44,13 @@ export const gameRuntime = {
     sequence += 1;
     return `game-${Date.now()}-${sequence}`;
   },
+  isLocalTestMode(): boolean {
+    return mode === 'local-test';
+  },
   reset(): void {
     accessToken = null;
     sequence = 0;
+    mode = 'uninitialized';
     actions = createGameActionService({
       cache: gameCache,
       gateway: unconfiguredGateway,
