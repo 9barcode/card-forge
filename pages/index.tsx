@@ -100,7 +100,7 @@ export function HomePage() {
     };
   }, []);
   const user = {
-    nickname: game.currentUser?.displayName ?? '모험가',
+    nickname: gameUserHash,
     level: 1,
     crystals: game.crystalBalance ?? 0,
   };
