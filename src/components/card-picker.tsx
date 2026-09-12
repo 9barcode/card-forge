@@ -12,6 +12,7 @@ import {
   getCardImage,
   gradeLabels,
 } from '../features/game-cache/gamePresentation';
+import { MaxLevelAura } from './max-level-aura';
 
 interface CardPickerProps {
   cards: readonly CachedOwnedCard[];
@@ -61,9 +62,11 @@ export function CardPicker({
                     : styles.threeColumnCard,
                   { borderColor: rarityColors[card.grade] },
                   selected && styles.selected,
+                  card.enhancementLevel >= 10 && styles.maxLevelCard,
                   disabled && styles.disabled,
                 ]}
               >
+                <MaxLevelAura level={card.enhancementLevel} borderRadius={15} />
                 <View
                   style={[
                     styles.rarityBadge,
@@ -137,6 +140,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     backgroundColor: '#34332E',
   },
+  maxLevelCard: { overflow: 'visible' },
   disabled: { opacity: 0.5 },
   rarityBadge: {
     position: 'absolute',

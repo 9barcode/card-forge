@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { styles } from '../assets/sytle/cards.style';
+import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
   type CardGrade,
   elementLabels,
@@ -108,8 +109,10 @@ export function CardsPage() {
                     ? styles.twoColumnCard
                     : styles.threeColumnCard,
                   { borderColor: rarityColors[item.grade] },
+                  item.enhancementLevel >= 10 && styles.maxLevelCard,
                 ]}
               >
+                <MaxLevelAura level={item.enhancementLevel} borderRadius={15} />
                 <View
                   style={[
                     styles.rarityBadge,

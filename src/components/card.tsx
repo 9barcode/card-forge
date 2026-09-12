@@ -16,6 +16,7 @@ import {
   getCardImage,
   gradeLabels,
 } from '../features/game-cache/gamePresentation';
+import { MaxLevelAura } from './max-level-aura';
 
 export const cardOutlineColors: Record<CardGrade, string> = {
   NORMAL: '#AAB2BD',
@@ -43,8 +44,14 @@ export function Card({ card, imageSource, style }: CardProps) {
       accessible
       accessibilityRole="image"
       accessibilityLabel={`${card.name}, ${gradeLabels[card.grade]}, 강화 ${card.enhancementLevel}`}
-      style={[styles.card, style, { borderColor: outlineColor }]}
+      style={[
+        styles.card,
+        card.enhancementLevel >= 10 && styles.maxLevelCard,
+        style,
+        { borderColor: outlineColor },
+      ]}
     >
+      <MaxLevelAura level={card.enhancementLevel} borderRadius={14} />
       <Image source={source} style={styles.image} resizeMode="cover" />
       <View style={[styles.footer, { borderTopColor: outlineColor }]}>
         <Text style={[styles.grade, { color: outlineColor }]}>
@@ -66,6 +73,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#151C2C',
   },
+  maxLevelCard: { overflow: 'visible' },
   image: {
     width: '100%',
     aspectRatio: 5 / 7,

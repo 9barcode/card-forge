@@ -12,6 +12,7 @@ import {
 import { styles } from '../assets/sytle/exchange.style';
 import { cardOutlineColors } from '../src/components/card';
 import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
+import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
   elementLabels,
   gameRuntime,
@@ -167,8 +168,10 @@ export function ExchangePage() {
                   styles.cardRow,
                   selected && styles.selectedCard,
                   { borderColor: cardOutlineColors[card.grade] },
+                  card.enhancementLevel >= 10 && styles.maxLevelCard,
                 ]}
               >
+                <MaxLevelAura level={card.enhancementLevel} borderRadius={15} />
                 <View style={styles.imageWrap}>
                   <Image
                     source={getCardImage(card.imageKey)}

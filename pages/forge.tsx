@@ -16,6 +16,7 @@ import { styles } from '../assets/sytle/forge.style';
 import { cardOutlineColors } from '../src/components/card';
 import { CardPicker } from '../src/components/card-picker';
 import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
+import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
   gameRuntime,
   getCardImage,
@@ -267,6 +268,10 @@ export function ForgePage() {
                 </>
               )}
               <Animated.View style={[styles.cardGlow, cardImpactStyle]}>
+                <MaxLevelAura
+                  level={displayedLevel ?? 0}
+                  borderRadius={15}
+                />
                 <View
                   style={[
                     styles.cardFrame,

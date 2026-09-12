@@ -14,6 +14,7 @@ export const styles = StyleSheet.create({
   cardBackCaption: { color: '#AFB5BE', fontSize: 12, marginTop: 20 },
   stageText: { color: '#E4D9C4', textAlign: 'center', fontSize: 14, marginTop: 30 },
   resultTitle: { color: '#F5D390', fontSize: 25, fontWeight: '800', marginBottom: 20 },
+  rewardAuraFrame: { borderRadius: 15 },
   rewardCard: {
     width: 192,
     aspectRatio: 512 / 720,

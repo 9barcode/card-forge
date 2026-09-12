@@ -13,6 +13,7 @@ import {
 import { styles } from '../assets/sytle/packs.style';
 import { cardOutlineColors } from '../src/components/card';
 import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
+import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
   type CachedOwnedCard,
   elementLabels,
@@ -168,32 +169,38 @@ export function PacksPage() {
           {phase === 'result' && reward ? (
             <>
               <Text style={styles.resultTitle}>카드 당첨!</Text>
-              <View
-                style={[
-                  styles.rewardCard,
-                  { borderColor: cardOutlineColors[reward.grade] },
-                ]}
-              >
-                <Image
-                  source={getCardImage(reward.imageKey)}
-                  style={styles.cardImage}
-                  resizeMode="cover"
-                  accessibilityLabel={`${reward.name} ${gradeLabels[reward.grade]} ${reward.enhancementLevel}강`}
+              <View style={styles.rewardAuraFrame}>
+                <MaxLevelAura
+                  level={reward.enhancementLevel}
+                  borderRadius={15}
                 />
                 <View
                   style={[
-                    styles.gradeBadge,
-                    { backgroundColor: cardOutlineColors[reward.grade] },
+                    styles.rewardCard,
+                    { borderColor: cardOutlineColors[reward.grade] },
                   ]}
                 >
-                  <Text style={styles.gradeText}>
-                    {gradeLabels[reward.grade]}
-                  </Text>
-                </View>
-                <View style={styles.levelBadge}>
-                  <Text style={styles.levelText}>
-                    {reward.enhancementLevel}강
-                  </Text>
+                  <Image
+                    source={getCardImage(reward.imageKey)}
+                    style={styles.cardImage}
+                    resizeMode="cover"
+                    accessibilityLabel={`${reward.name} ${gradeLabels[reward.grade]} ${reward.enhancementLevel}강`}
+                  />
+                  <View
+                    style={[
+                      styles.gradeBadge,
+                      { backgroundColor: cardOutlineColors[reward.grade] },
+                    ]}
+                  >
+                    <Text style={styles.gradeText}>
+                      {gradeLabels[reward.grade]}
+                    </Text>
+                  </View>
+                  <View style={styles.levelBadge}>
+                    <Text style={styles.levelText}>
+                      {reward.enhancementLevel}강
+                    </Text>
+                  </View>
                 </View>
               </View>
               <Text style={styles.resultName}>{reward.name}</Text>

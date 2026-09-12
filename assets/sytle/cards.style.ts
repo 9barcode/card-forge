@@ -14,6 +14,7 @@ export const styles = StyleSheet.create({
   list: { paddingTop: 18, paddingBottom: 36 },
   row: { gap: 12, marginBottom: 12, justifyContent: 'center' },
   cardItem: { flexGrow: 0, backgroundColor: 'rgba(25, 36, 50, 0.96)', borderWidth: 1.5, borderRadius: 15, padding: 10, overflow: 'hidden' },
+  maxLevelCard: { overflow: 'visible' },
   twoColumnCard: { width: '48%' },
   threeColumnCard: { width: '30.5%' },
   rarityBadge: { position: 'absolute', top: 9, right: 9, zIndex: 2, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },

@@ -18,6 +18,7 @@ export const styles = StyleSheet.create({
   muted: { color: '#A3B1C3', fontSize: 13, lineHeight: 20 },
   cardRow: { flexDirection: 'row', gap: 16, padding: 14, backgroundColor: '#1A2432', borderRadius: 15, borderWidth: 1, borderColor: '#2D3A4D', alignItems: 'center' },
   selectedCard: { borderWidth: 3, backgroundColor: '#29303A' },
+  maxLevelCard: { overflow: 'visible' },
   imageWrap: { width: 64, height: 90, position: 'relative' },
   cardImage: { width: '100%', height: '100%', resizeMode: 'contain' },
   rarityBadge: { position: 'absolute', top: 2, right: 2, paddingHorizontal: 2, paddingVertical: 1, borderRadius: 3 },
