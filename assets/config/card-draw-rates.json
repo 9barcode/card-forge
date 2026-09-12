@@ -1,0 +1,37 @@
+{
+  "version": "card-forge-pack-v2",
+  "rateUnit": "percent",
+  "probabilityScale": 10000,
+  "grades": {
+    "NORMAL": {
+      "label": "노말",
+      "weight": 6000,
+      "drawRatePercent": 60
+    },
+    "MAGIC": {
+      "label": "매직",
+      "weight": 3313,
+      "drawRatePercent": 33.13
+    },
+    "RARE": {
+      "label": "레어",
+      "weight": 600,
+      "drawRatePercent": 6
+    },
+    "SUPER_RARE": {
+      "label": "슈퍼레어",
+      "weight": 43,
+      "drawRatePercent": 0.43
+    },
+    "UNIQUE": {
+      "label": "유니크",
+      "weight": 33,
+      "drawRatePercent": 0.33
+    },
+    "LEGENDARY": {
+      "label": "레전더리",
+      "weight": 11,
+      "drawRatePercent": 0.11
+    }
+  }
+}
