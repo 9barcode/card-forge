@@ -12,6 +12,12 @@ export interface AuthorizedCommand {
   accessToken: string;
   requestId: string;
 }
+export interface PackOpeningReservation {
+  imageKey: string;
+  startedAt: string;
+  nextAvailableAt: string;
+  replayed: boolean;
+}
 export type OpenPackCommand = AuthorizedCommand;
 export interface EnhanceCardCommand extends AuthorizedCommand {
   cardId: string;
@@ -27,7 +33,9 @@ export interface ExchangePointsCommand extends AuthorizedCommand {
 /** 서버가 DB 저장까지 끝낸 확정 결과만 반환하는 경계입니다. */
 export interface GameServerGateway {
   loadGame(accessToken: string): Promise<ServerGameSnapshot>;
-  reservePackOpening(command: AuthorizedCommand): Promise<void>;
+  reservePackOpening(
+    command: AuthorizedCommand,
+  ): Promise<PackOpeningReservation>;
   openPack(command: OpenPackCommand): Promise<ServerPackOpeningResult>;
   enhanceCard(command: EnhanceCardCommand): Promise<ServerEnhancementResult>;
   sellCards(command: SellCardsCommand): Promise<ServerCardSaleResult>;
@@ -76,7 +84,9 @@ export function createGameActionService({
         throw error;
       }
     },
-    reservePackOpening(command: AuthorizedCommand): Promise<void> {
+    reservePackOpening(
+      command: AuthorizedCommand,
+    ): Promise<PackOpeningReservation> {
       return gateway.reservePackOpening(command);
     },
     openPack(command: OpenPackCommand): Promise<ServerPackOpeningResult> {

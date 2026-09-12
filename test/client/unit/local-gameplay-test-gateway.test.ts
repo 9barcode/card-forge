@@ -24,28 +24,23 @@ describe('local gameplay test gateway', () => {
     expect(getAdCompletionProof(undefined)).toMatch(/^local-test-ad-/);
   });
 
-  it('광고 시작 시점부터 1분 동안 다음 예약을 막는다', async () => {
+  it('광고를 중단하고 다시 예약해도 같은 카드를 유지한다', async () => {
     const now = jest.spyOn(Date, 'now').mockReturnValue(1_000_000);
-    const gateway = createLocalGameplayTestGateway();
+    const random = jest.fn().mockReturnValueOnce(0).mockReturnValueOnce(0.9999);
+    const gateway = createLocalGameplayTestGateway(random);
 
-    await gateway.reservePackOpening({
+    const first = await gateway.reservePackOpening({
       accessToken: 'local',
       requestId: 'reserve-1',
     });
-    await expect(
-      gateway.reservePackOpening({
-        accessToken: 'local',
-        requestId: 'reserve-2',
-      }),
-    ).rejects.toThrow('PACK_OPEN_COOLDOWN_ACTIVE');
+    const retry = await gateway.reservePackOpening({
+      accessToken: 'local',
+      requestId: 'reserve-2',
+    });
 
-    now.mockReturnValue(1_060_000);
-    await expect(
-      gateway.reservePackOpening({
-        accessToken: 'local',
-        requestId: 'reserve-3',
-      }),
-    ).resolves.toBeUndefined();
+    expect(retry.imageKey).toBe(first.imageKey);
+    expect(retry.replayed).toBe(true);
+    expect(random).toHaveBeenCalledTimes(1);
     now.mockRestore();
   });
 
@@ -59,7 +54,13 @@ describe('local gameplay test gateway', () => {
   ])(
     'JSON 카드 뽑기 확률에서 %s 티켓을 %s 등급으로 판정한다',
     async (randomValue, expectedGrade) => {
-      const gateway = createLocalGameplayTestGateway(() => randomValue as number);
+      const gateway = createLocalGameplayTestGateway(
+        () => randomValue as number,
+      );
+      await gateway.reservePackOpening({
+        accessToken: 'local',
+        requestId: `reserve-${expectedGrade}`,
+      });
       const opened = await gateway.openPack({
         accessToken: 'local',
         requestId: `draw-${expectedGrade}`,
@@ -70,6 +71,10 @@ describe('local gameplay test gateway', () => {
 
   it('광고 이후 카드 뽑기, 강화, 판매, 결정 교환 흐름을 캐시용 결과로 만든다', async () => {
     const gateway = createLocalGameplayTestGateway(() => 0);
+    await gateway.reservePackOpening({
+      accessToken: 'local',
+      requestId: 'open-1',
+    });
     const opened = await gateway.openPack({
       accessToken: 'local',
       requestId: 'open-1',

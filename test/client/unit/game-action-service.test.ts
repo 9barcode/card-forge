@@ -10,7 +10,12 @@ function gateway(
 ): GameServerGateway {
   return {
     loadGame: async () => initialGameSnapshot,
-    reservePackOpening: async () => {},
+    reservePackOpening: async () => ({
+      imageKey: 'wind_normal',
+      startedAt: '2026-09-10T00:00:00.000Z',
+      nextAvailableAt: '2026-09-10T00:01:00.000Z',
+      replayed: false,
+    }),
     openPack: async () => Promise.reject(new Error('NOT_IMPLEMENTED')),
     enhanceCard: async () => Promise.reject(new Error('NOT_IMPLEMENTED')),
     sellCards: async () => Promise.reject(new Error('NOT_IMPLEMENTED')),
