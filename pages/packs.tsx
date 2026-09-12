@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { styles } from '../assets/sytle/packs.style';
+import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
 import {
   type CachedOwnedCard,
   elementLabels,
@@ -34,6 +35,7 @@ export function PacksPage() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [message, setMessage] = useState('');
   const [reward, setReward] = useState<CachedOwnedCard | null>(null);
+  const [devUserEarnedReward, setDevUserEarnedReward] = useState(true);
   const game = useGameCache();
   const availability = game.packAvailability;
   const checkingStorage = game.status !== 'ready';
@@ -93,7 +95,7 @@ export function PacksPage() {
       await rewardedAdService.load();
       if (!mounted.current) return;
       setPhase('ad');
-      const ad = await rewardedAdService.show();
+      const ad = await rewardedAdService.show(devUserEarnedReward);
       if (!mounted.current) return;
 
       const rewardSuccess = isRewardedAdSuccess(ad);
@@ -233,6 +235,11 @@ export function PacksPage() {
                     ? `보관함이 가득 찼어요 (${availability.ownedCardCount}/${availability.storageCapacity})`
                     : `광고 시청 완료 후 카드 1장을 뽑아요 (${availability?.ownedCardCount ?? 0}/${availability?.storageCapacity ?? 5})`}
               </Text>
+              <DevRewardedAdToggle
+                value={devUserEarnedReward}
+                disabled={phase !== 'idle'}
+                onChange={setDevUserEarnedReward}
+              />
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="카드 뽑기"
