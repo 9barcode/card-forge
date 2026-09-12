@@ -25,7 +25,6 @@ import {
   getPointQuote,
 } from '../src/services/cardValues';
 import {
-  createDevAdCompletionId,
   isRewardedAdSuccess,
   rewardedAdService,
 } from '../src/services/rewardedAdService';
@@ -74,7 +73,6 @@ export function ExchangePage() {
           accessToken: gameRuntime.requireAccessToken(),
           requestId: gameRuntime.nextRequestId(),
           cardIds: selectedIds,
-          adCompletionId: createDevAdCompletionId(),
         });
         setSelectedIds([]);
         Alert.alert(
