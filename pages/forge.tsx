@@ -305,8 +305,7 @@ export function ForgePage() {
             <View style={styles.emptyCard}>
               <Text style={styles.emptyIcon}>✦</Text>
               <Text style={styles.emptyText}>
-                강화할 카드를{'
-'}선택해 주세요
+                강화할 카드를{'\n'}선택해 주세요
               </Text>
             </View>
           )}
