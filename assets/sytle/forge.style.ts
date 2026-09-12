@@ -58,7 +58,7 @@ export const styles = StyleSheet.create({
   failedCardFrame: { backgroundColor: '#686D76' },
   heroCard: { width: '100%', height: '100%' },
   failedImageGrayscale: {
-    filter: [{ grayscale: 1 }],
+    filter: 'grayscale(1)',
     opacity: 0.62,
   },
   failedImageIos: { opacity: 0.28 },
