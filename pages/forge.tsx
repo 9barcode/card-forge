@@ -13,7 +13,6 @@ import { styles } from '../assets/sytle/forge.style';
 import { CardPicker } from '../src/components/card-picker';
 import {
   gameRuntime,
-  getAdCompletionProof,
   getCardImage,
   useGameCache,
 } from '../src/features/game-cache';
@@ -21,7 +20,10 @@ import {
   MAX_ENHANCEMENT_LEVEL,
   getEnhancementSuccessRate,
 } from '../src/services/enhancementService';
-import { rewardedAdService } from '../src/services/rewardedAdService';
+import {
+  isRewardedAdSuccess,
+  rewardedAdService,
+} from '../src/services/rewardedAdService';
 
 export const Route = createRoute('/forge', {
   validateParams: (params) => params,
@@ -60,11 +62,15 @@ export function ForgePage() {
       await rewardedAdService.load();
       setPhase('ad');
       const ad = await rewardedAdService.show();
+      const rewardSuccess = isRewardedAdSuccess(ad);
+      if (!rewardSuccess) {
+        throw new Error('REWARDED_AD_REWARD_FAILED');
+      }
+
       const outcome = await gameRuntime.actions.enhanceCard({
         accessToken: gameRuntime.requireAccessToken(),
         requestId: gameRuntime.nextRequestId(),
         cardId: selected.cardId,
-        adCompletionId: getAdCompletionProof(ad.completionId),
       });
       setResult(outcome.result);
       setPhase('result');
@@ -73,7 +79,8 @@ export function ForgePage() {
       setError(
         code === 'REWARDED_AD_NOT_SUPPORTED'
           ? '현재 환경에서는 광고를 재생할 수 없어요. 토스 앱에서 다시 실행해 주세요.'
-          : code === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD'
+          : code === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD' ||
+              code === 'REWARDED_AD_REWARD_FAILED'
             ? '광고를 끝까지 시청해야 강화를 시도할 수 있어요.'
             : '강화를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.',
       );
