@@ -87,35 +87,36 @@ export function ForgePage() {
       const animation = Animated.sequence([
         Animated.timing(hammerProgress, {
           toValue: 1,
-          duration: 120,
+          duration: 260,
           easing: Easing.in(Easing.quad),
           useNativeDriver: true,
         }),
         Animated.parallel([
           Animated.timing(impactProgress, {
             toValue: 1,
-            duration: 55,
+            duration: 70,
             useNativeDriver: true,
           }),
           Animated.timing(hammerProgress, {
             toValue: 0.72,
-            duration: 55,
+            duration: 70,
             useNativeDriver: true,
           }),
         ]),
         Animated.parallel([
           Animated.timing(hammerProgress, {
             toValue: 0,
-            duration: 120,
+            duration: 220,
             easing: Easing.out(Easing.quad),
             useNativeDriver: true,
           }),
           Animated.timing(impactProgress, {
             toValue: 0,
-            duration: 120,
+            duration: 220,
             useNativeDriver: true,
           }),
         ]),
+        Animated.delay(140),
       ]);
       activeStrike.current = animation;
       animation.start(({ finished }) => {
@@ -181,19 +182,19 @@ export function ForgePage() {
   const hammerStyle = {
     opacity: hammerProgress.interpolate({
       inputRange: [0, 0.05, 1],
-      outputRange: [0.75, 1, 1],
+      outputRange: [0.82, 1, 1],
     }),
     transform: [
       {
         translateY: hammerProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [-32, 28],
+          outputRange: [-150, 20],
         }),
       },
       {
         rotate: hammerProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: ['-32deg', '12deg'],
+          outputRange: ['-38deg', '8deg'],
         }),
       },
     ],
@@ -204,17 +205,17 @@ export function ForgePage() {
       {
         scale: impactProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [0.35, 1.25],
+          outputRange: [0.5, 1.35],
         }),
       },
     ],
   };
-  const cardImpactStyle = {
+  const overlayShakeStyle = {
     transform: [
       {
-        scale: impactProgress.interpolate({
-          inputRange: [0, 1],
-          outputRange: [1, 0.96],
+        translateX: impactProgress.interpolate({
+          inputRange: [0, 0.35, 0.7, 1],
+          outputRange: [0, -7, 6, 0],
         }),
       },
     ],
@@ -253,24 +254,7 @@ export function ForgePage() {
           )}
           {selected ? (
             <View style={styles.strikeScene}>
-              {phase === 'striking' && (
-                <>
-                  <Animated.View
-                    accessible
-                    accessibilityLabel={`모루 타격 ${strikeCount}/3`}
-                    style={[styles.hammer, hammerStyle]}
-                  >
-                    <Text style={styles.hammerIcon}>🔨</Text>
-                  </Animated.View>
-                  <Animated.View
-                    pointerEvents="none"
-                    style={[styles.impactFlash, impactStyle]}
-                  >
-                    <Text style={styles.impactIcon}>✦</Text>
-                  </Animated.View>
-                </>
-              )}
-              <Animated.View style={[styles.cardGlow, cardImpactStyle]}>
+              <View style={styles.cardGlow}>
                 <MaxLevelAura
                   level={displayedLevel ?? 0}
                   borderRadius={15}
@@ -307,7 +291,7 @@ export function ForgePage() {
                     </Text>
                   </View>
                 </View>
-              </Animated.View>
+              </View>
             </View>
           ) : (
             <View style={styles.emptyCard}>
@@ -401,6 +385,44 @@ export function ForgePage() {
           )}
         </View>
       </ScrollView>
+      {phase === 'striking' && selected && (
+        <Animated.View
+          accessible
+          accessibilityLabel={`카드 강화 중, 모루 타격 ${strikeCount}/3`}
+          style={[styles.strikeOverlay, overlayShakeStyle]}
+        >
+          <Image
+            source={getCardImage(selected.imageKey)}
+            style={styles.strikeBackdrop}
+            resizeMode="cover"
+            blurRadius={18}
+          />
+          <View style={styles.strikeBackdropShade} />
+          <View style={styles.forgeVignette} />
+          <Text style={styles.forgeCaption}>CARD ENHANCEMENT</Text>
+          <View style={styles.fullForgeScene}>
+            <Animated.View style={[styles.fullHammer, hammerStyle]}>
+              <Text style={styles.fullHammerIcon}>🔨</Text>
+            </Animated.View>
+            <View style={styles.anvil}>
+              <View style={styles.anvilTop} />
+              <View style={styles.heatedMetal} />
+              <View style={styles.anvilStem} />
+              <View style={styles.anvilBase} />
+            </View>
+            <Animated.View
+              pointerEvents="none"
+              style={[styles.fullImpact, impactStyle]}
+            >
+              <Text style={styles.sparkText}>✦  ✦  ✦</Text>
+              <Text style={styles.bangText}>탕!</Text>
+            </Animated.View>
+          </View>
+          <Text style={styles.strikeProgress}>
+            강화 중 · {strikeCount}/3
+          </Text>
+        </Animated.View>
+      )}
     </ImageBackground>
   );
 }
