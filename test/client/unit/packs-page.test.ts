@@ -45,7 +45,10 @@ it('광고 완료 후 카드팩 결과를 캐시에 추가하고 화면에 표�
   expect(gameCache.getSnapshot().cards).toHaveLength(4);
   act(() => finishEffect({ finished: true }));
   expect(screen.getByText('카드 당첨!')).toBeTruthy();
-  expect(screen.getByText('바람 · 노말')).toBeTruthy();
+  expect(screen.getByText('바람의 궁수')).toBeTruthy();
+  expect(screen.getByText('노말')).toBeTruthy();
+  expect(screen.getByText('1강')).toBeTruthy();
+  expect(screen.getByText('바람 원소')).toBeTruthy();
 });
 
 it('광고 중단 시 캐시를 변경하지 않는다', async () => {
