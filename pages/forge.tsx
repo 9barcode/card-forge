@@ -1,20 +1,25 @@
 import { createRoute } from '@granite-js/react-native';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
+  Easing,
   Image,
   ImageBackground,
+  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { styles } from '../assets/sytle/forge.style';
+import { cardOutlineColors } from '../src/components/card';
 import { CardPicker } from '../src/components/card-picker';
 import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
 import {
   gameRuntime,
   getCardImage,
+  gradeLabels,
   useGameCache,
 } from '../src/features/game-cache';
 import {
@@ -30,7 +35,8 @@ export const Route = createRoute('/forge', {
   validateParams: (params) => params,
   component: ForgePage,
 });
-type Phase = 'idle' | 'loading' | 'ad' | 'result';
+
+type Phase = 'idle' | 'loading' | 'ad' | 'striking' | 'result';
 
 export function ForgePage() {
   const game = useGameCache();
@@ -41,9 +47,14 @@ export function ForgePage() {
   );
   const [phase, setPhase] = useState<Phase>('idle');
   const [result, setResult] = useState<'SUCCESS' | 'FAILURE' | null>(null);
+  const [attemptedLevel, setAttemptedLevel] = useState<number | null>(null);
+  const [strikeCount, setStrikeCount] = useState(0);
   const [error, setError] = useState('');
   const [devUserEarnedReward, setDevUserEarnedReward] = useState(true);
   const busy = useRef(false);
+  const activeStrike = useRef<Animated.CompositeAnimation | null>(null);
+  const hammerProgress = useRef(new Animated.Value(0)).current;
+  const impactProgress = useRef(new Animated.Value(0)).current;
   const selected = game.cards.find((card) => card.cardId === selectedId);
   const unavailable =
     !selected ||
@@ -53,12 +64,83 @@ export function ForgePage() {
     selected && !unavailable
       ? getEnhancementSuccessRate(selected.enhancementLevel)
       : null;
+  const displayedLevel =
+    phase === 'striking' && attemptedLevel !== null
+      ? attemptedLevel
+      : selected?.enhancementLevel;
+  const failed = phase === 'result' && result === 'FAILURE';
+
+  useEffect(() => {
+    if (phase !== 'striking') return;
+
+    let cancelled = false;
+    const runStrike = (count: number) => {
+      if (cancelled) return;
+      setStrikeCount(count);
+      hammerProgress.setValue(0);
+      impactProgress.setValue(0);
+
+      const animation = Animated.sequence([
+        Animated.timing(hammerProgress, {
+          toValue: 1,
+          duration: 120,
+          easing: Easing.in(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.parallel([
+          Animated.timing(impactProgress, {
+            toValue: 1,
+            duration: 55,
+            useNativeDriver: true,
+          }),
+          Animated.timing(hammerProgress, {
+            toValue: 0.72,
+            duration: 55,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(hammerProgress, {
+            toValue: 0,
+            duration: 120,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(impactProgress, {
+            toValue: 0,
+            duration: 120,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]);
+      activeStrike.current = animation;
+      animation.start(({ finished }) => {
+        if (!finished || cancelled) return;
+        if (count < 3) {
+          runStrike(count + 1);
+          return;
+        }
+        activeStrike.current = null;
+        setStrikeCount(0);
+        setPhase('result');
+        busy.current = false;
+      });
+    };
+
+    runStrike(1);
+    return () => {
+      cancelled = true;
+      activeStrike.current?.stop();
+      activeStrike.current = null;
+    };
+  }, [hammerProgress, impactProgress, phase]);
 
   const enhance = async () => {
     if (!selected || unavailable || busy.current || phase !== 'idle') return;
     busy.current = true;
     setError('');
     setResult(null);
+    setAttemptedLevel(selected.enhancementLevel);
     setPhase('loading');
     try {
       await rewardedAdService.load();
@@ -75,7 +157,7 @@ export function ForgePage() {
         cardId: selected.cardId,
       });
       setResult(outcome.result);
-      setPhase('result');
+      setPhase('striking');
     } catch (reason) {
       const code = reason instanceof Error ? reason.message : '';
       setError(
@@ -86,11 +168,57 @@ export function ForgePage() {
             ? '광고를 끝까지 시청해야 강화를 시도할 수 있어요.'
             : '강화를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.',
       );
+      setAttemptedLevel(null);
       setPhase('idle');
-    } finally {
       busy.current = false;
     }
   };
+
+  const hammerStyle = {
+    opacity: hammerProgress.interpolate({
+      inputRange: [0, 0.05, 1],
+      outputRange: [0.75, 1, 1],
+    }),
+    transform: [
+      {
+        translateY: hammerProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [-32, 28],
+        }),
+      },
+      {
+        rotate: hammerProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: ['-32deg', '12deg'],
+        }),
+      },
+    ],
+  };
+  const impactStyle = {
+    opacity: impactProgress,
+    transform: [
+      {
+        scale: impactProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0.35, 1.25],
+        }),
+      },
+    ],
+  };
+  const cardImpactStyle = {
+    transform: [
+      {
+        scale: impactProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [1, 0.96],
+        }),
+      },
+    ],
+  };
+  const failedImageStyle =
+    Platform.OS === 'ios'
+      ? styles.failedImageIos
+      : styles.failedImageGrayscale;
 
   return (
     <ImageBackground
@@ -120,36 +248,84 @@ export function ForgePage() {
             </Text>
           )}
           {selected ? (
-            <View style={styles.cardFrame}>
-              <Image
-                source={getCardImage(selected.imageKey)}
-                style={styles.heroCard}
-                accessibilityLabel={`${selected.name} ${selected.enhancementLevel}강`}
-              />
-              <Text style={styles.level}>[{selected.enhancementLevel}강]</Text>
+            <View style={styles.strikeScene}>
+              {phase === 'striking' && (
+                <>
+                  <Animated.View
+                    accessible
+                    accessibilityLabel={`모루 타격 ${strikeCount}/3`}
+                    style={[styles.hammer, hammerStyle]}
+                  >
+                    <Text style={styles.hammerIcon}>🔨</Text>
+                  </Animated.View>
+                  <Animated.View
+                    pointerEvents="none"
+                    style={[styles.impactFlash, impactStyle]}
+                  >
+                    <Text style={styles.impactIcon}>✦</Text>
+                  </Animated.View>
+                </>
+              )}
+              <Animated.View style={[styles.cardGlow, cardImpactStyle]}>
+                <View
+                  style={[
+                    styles.cardFrame,
+                    { borderColor: cardOutlineColors[selected.grade] },
+                    failed && styles.failedCardFrame,
+                  ]}
+                >
+                  <Image
+                    source={getCardImage(selected.imageKey)}
+                    style={[styles.heroCard, failed && failedImageStyle]}
+                    resizeMode="cover"
+                    accessibilityLabel={`${selected.name} ${gradeLabels[selected.grade]} ${displayedLevel}강`}
+                  />
+                  {failed && Platform.OS === 'ios' && (
+                    <View pointerEvents="none" style={styles.failedShade} />
+                  )}
+                  <View
+                    style={[
+                      styles.gradeBadge,
+                      { backgroundColor: cardOutlineColors[selected.grade] },
+                    ]}
+                  >
+                    <Text style={styles.gradeText}>
+                      {gradeLabels[selected.grade]}
+                    </Text>
+                  </View>
+                  <View style={styles.heroLevelBadge}>
+                    <Text style={styles.heroLevelText}>
+                      {displayedLevel}강
+                    </Text>
+                  </View>
+                </View>
+              </Animated.View>
             </View>
           ) : (
             <View style={styles.emptyCard}>
               <Text style={styles.emptyIcon}>✦</Text>
               <Text style={styles.emptyText}>
-                강화할 카드를{'\n'}선택해 주세요
+                강화할 카드를{'
+'}선택해 주세요
               </Text>
             </View>
           )}
           <Text style={styles.stageText}>
             {phase === 'ad'
-              ? '광고 시청이 끝나면 강화 결과가 적용돼요'
-              : phase === 'result' && result
-                ? result === 'SUCCESS'
-                  ? '강화 단계가 캐시에 반영됐어요.'
-                  : '현재 단계는 유지되고 추가 강화가 잠겼어요.'
-                : selected?.status === 'ENHANCEMENT_LOCKED'
-                  ? '강화 실패로 추가 강화가 잠긴 카드예요.'
-                  : selected?.status === 'MAX_LEVEL'
-                    ? '최고 강화 단계에 도달했어요.'
-                    : selected
-                      ? `${selected.enhancementLevel}강 → ${selected.enhancementLevel + 1}강 · 성공 확률 ${rate}%`
-                      : '아래 보유 카드 중 원하는 카드 한 장을 골라주세요.'}
+              ? '광고 시청이 끝나면 강화가 시작돼요'
+              : phase === 'striking'
+                ? `모루를 두드리는 중… ${strikeCount}/3`
+                : phase === 'result' && result
+                  ? result === 'SUCCESS'
+                    ? '강화 단계가 캐시에 반영됐어요.'
+                    : '현재 단계는 유지되고 추가 강화가 잠겼어요.'
+                  : selected?.status === 'ENHANCEMENT_LOCKED'
+                    ? '강화 실패로 추가 강화가 잠긴 카드예요.'
+                    : selected?.status === 'MAX_LEVEL'
+                      ? '최고 강화 단계에 도달했어요.'
+                      : selected
+                        ? `${selected.enhancementLevel}강 → ${selected.enhancementLevel + 1}강 · 성공 확률 ${rate}%`
+                        : '아래 보유 카드 중 원하는 카드 한 장을 골라주세요.'}
           </Text>
         </View>
         <CardPicker
@@ -160,6 +336,7 @@ export function ForgePage() {
             setSelectedId(cardId);
             setError('');
             setResult(null);
+            setAttemptedLevel(null);
           }}
         />
         <View style={styles.actions}>
@@ -174,6 +351,7 @@ export function ForgePage() {
               style={styles.button}
               onPress={() => {
                 setResult(null);
+                setAttemptedLevel(null);
                 setPhase('idle');
               }}
             >
@@ -205,9 +383,11 @@ export function ForgePage() {
                     ? '광고 준비 중'
                     : phase === 'ad'
                       ? '광고 시청 중'
-                      : unavailable
-                        ? '강화할 수 없음'
-                        : '강화 시도'}
+                      : phase === 'striking'
+                        ? `강화 중 ${strikeCount}/3`
+                        : unavailable
+                          ? '강화할 수 없음'
+                          : '강화 시도'}
                 </Text>
               </TouchableOpacity>
             </>
