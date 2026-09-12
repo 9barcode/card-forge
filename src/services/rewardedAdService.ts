@@ -90,7 +90,7 @@ export class RewardedAdService {
     });
   }
 
-  show(): Promise<RewardedAdResult> {
+  show(devUserEarnedReward?: boolean): Promise<RewardedAdResult> {
     if (!this.isSupported()) {
       return Promise.reject(new Error('REWARDED_AD_NOT_SUPPORTED'));
     }
@@ -109,8 +109,17 @@ export class RewardedAdService {
           } else if (event.type === 'dismissed') {
             unregister();
             this.loadedAdGroupId = null;
-            if (reward) resolve(reward);
-            else reject(new Error('REWARDED_AD_DISMISSED_WITHOUT_REWARD'));
+            const earnedReward = devUserEarnedReward ?? Boolean(reward);
+            if (earnedReward) {
+              resolve(
+                reward ?? {
+                  unitType: 'dev-reward',
+                  unitAmount: 1,
+                },
+              );
+            } else {
+              reject(new Error('REWARDED_AD_DISMISSED_WITHOUT_REWARD'));
+            }
           }
         },
         onError: (error) => {
