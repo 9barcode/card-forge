@@ -10,6 +10,7 @@ function gateway(
 ): GameServerGateway {
   return {
     loadGame: async () => initialGameSnapshot,
+    reservePackOpening: async () => {},
     openPack: async () => Promise.reject(new Error('NOT_IMPLEMENTED')),
     enhanceCard: async () => Promise.reject(new Error('NOT_IMPLEMENTED')),
     sellCards: async () => Promise.reject(new Error('NOT_IMPLEMENTED')),
