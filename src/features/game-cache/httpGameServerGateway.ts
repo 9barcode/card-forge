@@ -1,4 +1,7 @@
-import type { GameServerGateway } from './gameActionService';
+import type {
+  GameServerGateway,
+  PackOpeningReservation,
+} from './gameActionService';
 import type {
   CachedOwnedCard,
   CachedPackAvailability,
@@ -50,7 +53,7 @@ export function createHttpGameServerGateway({
         throw new Error(errorCode(data, `GAME_API_${response.status}`));
       return parseSnapshot(data);
     },
-    async reservePackOpening(command): Promise<void> {
+    async reservePackOpening(command): Promise<PackOpeningReservation> {
       const response = await fetchImplementation(
         `${baseUrl}/api/v1/pack-openings/reservations`,
         {
@@ -67,6 +70,7 @@ export function createHttpGameServerGateway({
       if (!response.ok) {
         throw new Error(errorCode(data, `GAME_API_${response.status}`));
       }
+      return parsePackOpeningReservation(data);
     },
     async openPack(command): Promise<ServerPackOpeningResult> {
       const response = await fetchImplementation(
@@ -128,6 +132,16 @@ export function createHttpGameServerGateway({
       return parseCardSaleResult(data);
     },
     exchangePoints: notImplemented('POINT_EXCHANGE_API_NOT_IMPLEMENTED'),
+  };
+}
+
+function parsePackOpeningReservation(value: unknown): PackOpeningReservation {
+  const source = record(value);
+  return {
+    imageKey: string(source.imageKey),
+    startedAt: isoDate(source.startedAt),
+    nextAvailableAt: isoDate(source.nextAvailableAt),
+    replayed: boolean(source.replayed),
   };
 }
 

@@ -27,6 +27,10 @@ async function reservePackOpening(request: Request): Promise<Response> {
   const { data, error } = await database.rpc('reserve_game_pack_ad', {
     p_user_id: userId,
     p_request_id: requestId,
+    p_card_id: drawCardTemplateId(
+      secureRandomBelow(10_000),
+      secureRandomBelow(6),
+    ),
   });
   if (error) return databaseError(error.message);
   return json(data, 200);
@@ -41,10 +45,6 @@ async function openPack(request: Request): Promise<Response> {
   const { data, error } = await database.rpc('open_game_pack', {
     p_user_id: userId,
     p_request_id: requestId,
-    p_card_id: drawCardTemplateId(
-      secureRandomBelow(10_000),
-      secureRandomBelow(6),
-    ),
   });
   if (error) return databaseError(error.message);
   return json(data, 201);

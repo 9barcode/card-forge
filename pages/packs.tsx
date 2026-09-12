@@ -20,6 +20,7 @@ import {
   gameRuntime,
   getCardImage,
   gradeLabels,
+  prefetchCardImage,
   useGameCache,
 } from '../src/features/game-cache';
 import {
@@ -87,12 +88,7 @@ export function PacksPage() {
   }, [phase, animation]);
 
   const draw = async () => {
-    if (
-      busy.current ||
-      phase !== 'idle' ||
-      checkingStorage ||
-      storageFull
-    )
+    if (busy.current || phase !== 'idle' || checkingStorage || storageFull)
       return;
     busy.current = true;
     setMessage('');
@@ -100,10 +96,11 @@ export function PacksPage() {
     try {
       const accessToken = gameRuntime.requireAccessToken();
       const requestId = gameRuntime.nextRequestId();
-      await gameRuntime.actions.reservePackOpening({
+      const reservation = await gameRuntime.actions.reservePackOpening({
         accessToken,
         requestId,
       });
+      const imagePrefetch = prefetchCardImage(reservation.imageKey);
       await rewardedAdService.load();
       if (!mounted.current) return;
       setPhase('ad');
@@ -114,6 +111,8 @@ export function PacksPage() {
       if (!rewardSuccess) {
         throw new Error('REWARDED_AD_REWARD_FAILED');
       }
+
+      await imagePrefetch;
 
       const result = await gameRuntime.actions.openPack({
         accessToken,
@@ -130,19 +129,19 @@ export function PacksPage() {
           : errorCode === 'PACK_OPEN_COOLDOWN_ACTIVE'
             ? '카드는 1분에 한 번만 뽑을 수 있어요. 잠시 후 다시 시도해 주세요.'
             : errorCode === 'GAME_SESSION_NOT_INITIALIZED' ||
-              errorCode === 'GAME_SERVER_NOT_CONFIGURED'
-            ? '서버 연결 설정이 필요해요.'
-            : errorCode === 'REWARDED_AD_NOT_SUPPORTED'
-              ? '현재 환경에서는 광고를 재생할 수 없어요. 토스 앱을 최신 버전으로 업데이트해 주세요.'
-              : errorCode === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD' ||
-                  errorCode === 'REWARDED_AD_REWARD_FAILED'
-                ? '광고를 끝까지 시청해야 카드를 뽑을 수 있어요.'
-                : errorCode.startsWith('REWARDED_AD_LOAD_FAILED')
-                  ? `광고 로드 실패: ${errorCode.slice('REWARDED_AD_LOAD_FAILED:'.length).trim() || '상세 정보 없음'}`
-                  : errorCode.startsWith('REWARDED_AD_SHOW_FAILED') ||
-                      errorCode === 'REWARDED_AD_FAILED_TO_SHOW'
-                    ? `광고 표시 실패: ${errorCode}`
-                    : `카드 뽑기 실패: ${errorCode || '알 수 없는 오류'}`,
+                errorCode === 'GAME_SERVER_NOT_CONFIGURED'
+              ? '서버 연결 설정이 필요해요.'
+              : errorCode === 'REWARDED_AD_NOT_SUPPORTED'
+                ? '현재 환경에서는 광고를 재생할 수 없어요. 토스 앱을 최신 버전으로 업데이트해 주세요.'
+                : errorCode === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD' ||
+                    errorCode === 'REWARDED_AD_REWARD_FAILED'
+                  ? '광고를 끝까지 시청해야 카드를 뽑을 수 있어요.'
+                  : errorCode.startsWith('REWARDED_AD_LOAD_FAILED')
+                    ? `광고 로드 실패: ${errorCode.slice('REWARDED_AD_LOAD_FAILED:'.length).trim() || '상세 정보 없음'}`
+                    : errorCode.startsWith('REWARDED_AD_SHOW_FAILED') ||
+                        errorCode === 'REWARDED_AD_FAILED_TO_SHOW'
+                      ? `광고 표시 실패: ${errorCode}`
+                      : `카드 뽑기 실패: ${errorCode || '알 수 없는 오류'}`,
       );
       setPhase('idle');
       busy.current = false;
@@ -281,17 +280,11 @@ export function PacksPage() {
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="카드 뽑기"
-                disabled={
-                  phase !== 'idle' ||
-                  checkingStorage ||
-                  storageFull
-                }
+                disabled={phase !== 'idle' || checkingStorage || storageFull}
                 onPress={draw}
                 style={[
                   styles.button,
-                  (phase !== 'idle' ||
-                    checkingStorage ||
-                    storageFull) &&
+                  (phase !== 'idle' || checkingStorage || storageFull) &&
                     styles.disabled,
                   storageFull && styles.storageFullButton,
                 ]}
@@ -306,12 +299,12 @@ export function PacksPage() {
                   {storageFull
                     ? '카드가 가득 찼습니다.'
                     : phase === 'drawing'
-                    ? '카드 뽑는 중'
-                    : phase === 'ad'
-                      ? '광고 시청 중'
-                      : phase === 'loading'
-                        ? '광고 준비 중'
-                        : '카드 뽑기'}
+                      ? '카드 뽑는 중'
+                      : phase === 'ad'
+                        ? '광고 시청 중'
+                        : phase === 'loading'
+                          ? '광고 준비 중'
+                          : '카드 뽑기'}
                 </Text>
               </TouchableOpacity>
             </>

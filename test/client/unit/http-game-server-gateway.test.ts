@@ -69,6 +69,7 @@ it('카드 광고 시작을 같은 요청 ID로 서버에 예약한다', async (
     async () =>
       new Response(
         JSON.stringify({
+          imageKey: 'cards/flame_knight.png',
           startedAt: '2026-09-12T01:00:00.000Z',
           nextAvailableAt: '2026-09-12T01:01:00.000Z',
           replayed: false,
@@ -81,7 +82,7 @@ it('카드 광고 시작을 같은 요청 ID로 서버에 예약한다', async (
     fetchImplementation: fetchImplementation as typeof fetch,
   });
 
-  await gateway.reservePackOpening({
+  const reservation = await gateway.reservePackOpening({
     accessToken: 'session-token',
     requestId: 'game-request-001',
   });
@@ -98,6 +99,12 @@ it('카드 광고 시작을 같은 요청 ID로 서버에 예약한다', async (
       body: JSON.stringify({}),
     },
   );
+  expect(reservation).toEqual({
+    imageKey: 'cards/flame_knight.png',
+    startedAt: '2026-09-12T01:00:00.000Z',
+    nextAvailableAt: '2026-09-12T01:01:00.000Z',
+    replayed: false,
+  });
 });
 
 it('중복 방지 키로 카드 뽑기를 요청하고 서버 저장 결과를 캐시에 전달한다', async () => {

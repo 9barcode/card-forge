@@ -1,4 +1,4 @@
-import type { ImageSourcePropType } from 'react-native';
+import { Image, type ImageSourcePropType } from 'react-native';
 import type { CardElement, CardGrade } from './gameCache';
 
 export const elementLabels: Record<CardElement, string> = {
@@ -54,4 +54,18 @@ export function getCardImage(imageKey: string): ImageSourcePropType {
     .map(encodeURIComponent)
     .join('/');
   return { uri: `${SUPABASE_PUBLIC_IMAGE_BASE_URL}/${encodedPath}` };
+}
+
+/** 광고가 재생되는 동안 예약된 카드 이미지를 디스크 캐시에 준비합니다. */
+export async function prefetchCardImage(imageKey: string): Promise<boolean> {
+  const source = getCardImage(imageKey);
+  if (typeof source === 'number' || !('uri' in source) || !source.uri) {
+    return true;
+  }
+  try {
+    return await Image.prefetch(source.uri);
+  } catch {
+    // 이미지 사전 로드 실패가 카드 지급 자체를 막아서는 안 됩니다.
+    return false;
+  }
 }

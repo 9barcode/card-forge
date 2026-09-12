@@ -85,7 +85,9 @@ function drawLocalTemplate(randomValue: number): TestCardTemplate {
       upperBound += cardDrawRates.grades[candidate].weight;
       return ticket < upperBound;
     }) ?? 'LEGENDARY';
-  return templates.find((template) => template.grade === grade) ?? defaultTemplate;
+  return (
+    templates.find((template) => template.grade === grade) ?? defaultTemplate
+  );
 }
 
 export function createLocalGameplayTestGateway(
@@ -96,6 +98,7 @@ export function createLocalGameplayTestGateway(
   let usedToday = 0;
   let sequence = 0;
   let lastPackReservationAt = 0;
+  let pendingPackTemplate: TestCardTemplate | null = null;
 
   const availability = () => ({
     packType: 'AD_TEST',
@@ -120,15 +123,24 @@ export function createLocalGameplayTestGateway(
     },
     async reservePackOpening() {
       const now = Date.now();
-      if (now < lastPackReservationAt + 60_000) {
+      if (!pendingPackTemplate && now < lastPackReservationAt + 60_000) {
         throw new Error('PACK_OPEN_COOLDOWN_ACTIVE');
       }
+      const replayed = pendingPackTemplate !== null;
+      pendingPackTemplate ??= drawLocalTemplate(random());
       lastPackReservationAt = now;
+      return {
+        imageKey: pendingPackTemplate.imageKey,
+        startedAt: new Date(now).toISOString(),
+        nextAvailableAt: new Date(now + 60_000).toISOString(),
+        replayed,
+      };
     },
     async openPack() {
       if (cards.length >= 5) throw new Error('CARD_STORAGE_FULL');
       if (usedToday >= 20) throw new Error('DAILY_PACK_LIMIT_REACHED');
-      const template = drawLocalTemplate(random());
+      if (!pendingPackTemplate) throw new Error('PACK_AD_RESERVATION_REQUIRED');
+      const template = pendingPackTemplate;
       sequence += 1;
       usedToday += 1;
       const card: CachedOwnedCard = {
@@ -140,6 +152,7 @@ export function createLocalGameplayTestGateway(
         acquiredAt: new Date().toISOString(),
       };
       cards.push(card);
+      pendingPackTemplate = null;
       return { card: { ...card }, packAvailability: availability() };
     },
     async enhanceCard({ cardId }) {
