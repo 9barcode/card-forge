@@ -20,7 +20,10 @@ import {
   gradeLabels,
   useGameCache,
 } from '../src/features/game-cache';
-import { rewardedAdService } from '../src/services/rewardedAdService';
+import {
+  isRewardedAdSuccess,
+  rewardedAdService,
+} from '../src/services/rewardedAdService';
 
 export const Route = createRoute('/packs', {
   validateParams: (params) => params,
@@ -93,6 +96,12 @@ export function PacksPage() {
       setPhase('ad');
       const ad = await rewardedAdService.show();
       if (!mounted.current) return;
+
+      const rewardSuccess = isRewardedAdSuccess(ad);
+      if (!rewardSuccess) {
+        throw new Error('REWARDED_AD_REWARD_FAILED');
+      }
+
       const result = await gameRuntime.actions.openPack({
         accessToken: gameRuntime.requireAccessToken(),
         requestId: gameRuntime.nextRequestId(),
@@ -112,7 +121,8 @@ export function PacksPage() {
             ? '서버 연결과 광고 완료 검증 설정이 필요해요.'
             : errorCode === 'REWARDED_AD_NOT_SUPPORTED'
               ? '현재 환경에서는 광고를 재생할 수 없어요. 토스 앱을 최신 버전으로 업데이트해 주세요.'
-              : errorCode === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD'
+              : errorCode === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD' ||
+                  errorCode === 'REWARDED_AD_REWARD_FAILED'
                 ? '광고를 끝까지 시청해야 카드를 뽑을 수 있어요.'
                 : errorCode.startsWith('REWARDED_AD_LOAD_FAILED')
                   ? `광고 로드 실패: ${errorCode.slice('REWARDED_AD_LOAD_FAILED:'.length).trim() || '상세 정보 없음'}`
