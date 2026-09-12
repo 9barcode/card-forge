@@ -30,6 +30,7 @@ export async function configureTestRuntime(
   gameRuntime.reset();
   const gateway: GameServerGateway = {
     loadGame: async () => initialGameSnapshot,
+    reservePackOpening: async () => {},
     openPack: async () => ({
       card: card('card-wind', '바람의 궁수', 'WIND', 'NORMAL', 1),
       packAvailability: {
