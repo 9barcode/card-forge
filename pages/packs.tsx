@@ -21,6 +21,7 @@ import {
   useGameCache,
 } from '../src/features/game-cache';
 import {
+  createDevAdCompletionId,
   isRewardedAdSuccess,
   rewardedAdService,
 } from '../src/services/rewardedAdService';
@@ -106,6 +107,7 @@ export function PacksPage() {
       const result = await gameRuntime.actions.openPack({
         accessToken: gameRuntime.requireAccessToken(),
         requestId: gameRuntime.nextRequestId(),
+        adCompletionId: createDevAdCompletionId(),
       });
       setReward(result.card);
       setPhase('drawing');
