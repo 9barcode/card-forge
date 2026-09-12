@@ -24,6 +24,31 @@ describe('local gameplay test gateway', () => {
     expect(getAdCompletionProof(undefined)).toMatch(/^local-test-ad-/);
   });
 
+  it('광고 시작 시점부터 1분 동안 다음 예약을 막는다', async () => {
+    const now = jest.spyOn(Date, 'now').mockReturnValue(1_000_000);
+    const gateway = createLocalGameplayTestGateway();
+
+    await gateway.reservePackOpening({
+      accessToken: 'local',
+      requestId: 'reserve-1',
+    });
+    await expect(
+      gateway.reservePackOpening({
+        accessToken: 'local',
+        requestId: 'reserve-2',
+      }),
+    ).rejects.toThrow('PACK_OPEN_COOLDOWN_ACTIVE');
+
+    now.mockReturnValue(1_060_000);
+    await expect(
+      gateway.reservePackOpening({
+        accessToken: 'local',
+        requestId: 'reserve-3',
+      }),
+    ).resolves.toBeUndefined();
+    now.mockRestore();
+  });
+
   it('광고 이후 카드 뽑기, 강화, 판매, 결정 교환 흐름을 캐시용 결과로 만든다', async () => {
     const gateway = createLocalGameplayTestGateway(() => 0);
     const opened = await gateway.openPack({
