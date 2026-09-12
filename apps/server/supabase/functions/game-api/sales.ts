@@ -14,10 +14,6 @@ export async function handleSales(request: Request, path: string): Promise<Respo
   const body = await readJson(request);
   const cardIds = parseCardIds(body?.cardIds);
   if (!cardIds) return json({ code: 'INVALID_CARD_IDS' }, 400);
-  if (!isAcceptedTestAdProof(body?.adCompletionId)) {
-    return json({ code: 'AD_COMPLETION_NOT_VERIFIED' }, 403);
-  }
-
   const database = createServerDatabase();
   const { data, error } = await database.rpc('sell_game_cards', {
     p_user_id: userId,
@@ -39,12 +35,6 @@ function isPositiveSafeId(value: unknown): value is string {
   if (typeof value !== 'string' || !/^[1-9]\d*$/.test(value)) return false;
   const parsed = Number(value);
   return Number.isSafeInteger(parsed) && parsed > 0;
-}
-
-function isAcceptedTestAdProof(value: unknown): boolean {
-  return Deno.env.get('ALLOW_TEST_AD_REWARDS') === 'true'
-    && typeof value === 'string'
-    && /^local-test-ad-\d+$/.test(value);
 }
 
 function databaseError(message: string): Response {
