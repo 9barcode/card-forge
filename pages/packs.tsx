@@ -115,7 +115,9 @@ export function PacksPage() {
       setMessage(
         errorCode === 'CARD_STORAGE_FULL'
           ? '카드는 최대 5장까지 보유할 수 있어요. 보관함을 정리한 후 다시 시도해 주세요.'
-          : errorCode === 'GAME_SESSION_NOT_INITIALIZED' ||
+          : errorCode === 'PACK_OPEN_COOLDOWN_ACTIVE'
+            ? '카드는 1분에 한 번만 뽑을 수 있어요. 잠시 후 다시 시도해 주세요.'
+            : errorCode === 'GAME_SESSION_NOT_INITIALIZED' ||
               errorCode === 'GAME_SERVER_NOT_CONFIGURED'
             ? '서버 연결 설정이 필요해요.'
             : errorCode === 'REWARDED_AD_NOT_SUPPORTED'
