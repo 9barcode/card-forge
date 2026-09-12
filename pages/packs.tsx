@@ -15,7 +15,6 @@ import {
   type CachedOwnedCard,
   elementLabels,
   gameRuntime,
-  getAdCompletionProof,
   getCardImage,
   gradeLabels,
   useGameCache,
@@ -105,7 +104,6 @@ export function PacksPage() {
       const result = await gameRuntime.actions.openPack({
         accessToken: gameRuntime.requireAccessToken(),
         requestId: gameRuntime.nextRequestId(),
-        adCompletionId: getAdCompletionProof(ad.completionId),
       });
       setReward(result.card);
       setPhase('drawing');
@@ -116,9 +114,8 @@ export function PacksPage() {
         errorCode === 'CARD_STORAGE_FULL'
           ? '카드는 최대 5장까지 보유할 수 있어요. 보관함을 정리한 후 다시 시도해 주세요.'
           : errorCode === 'GAME_SESSION_NOT_INITIALIZED' ||
-              errorCode === 'GAME_SERVER_NOT_CONFIGURED' ||
-              errorCode === 'AD_COMPLETION_PROOF_UNAVAILABLE'
-            ? '서버 연결과 광고 완료 검증 설정이 필요해요.'
+              errorCode === 'GAME_SERVER_NOT_CONFIGURED'
+            ? '서버 연결 설정이 필요해요.'
             : errorCode === 'REWARDED_AD_NOT_SUPPORTED'
               ? '현재 환경에서는 광고를 재생할 수 없어요. 토스 앱을 최신 버전으로 업데이트해 주세요.'
               : errorCode === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD' ||
