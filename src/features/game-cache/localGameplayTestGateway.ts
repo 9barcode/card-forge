@@ -1,3 +1,4 @@
+import cardDrawRates from '../../../assets/config/card-draw-rates.json';
 import { getCardCrystalValue } from '../../services/cardValues';
 import { getEnhancementSuccessRate } from '../../services/enhancementService';
 import type { GameServerGateway } from './gameActionService';
@@ -63,6 +64,30 @@ const templates: readonly TestCardTemplate[] = [
   },
 ];
 
+const cardDrawGradeOrder: readonly CardGrade[] = [
+  'NORMAL',
+  'MAGIC',
+  'RARE',
+  'SUPER_RARE',
+  'UNIQUE',
+  'LEGENDARY',
+];
+
+function drawLocalTemplate(randomValue: number): TestCardTemplate {
+  const scale = cardDrawRates.probabilityScale;
+  const ticket = Math.min(
+    scale - 1,
+    Math.max(0, Math.floor(randomValue * scale)),
+  );
+  let upperBound = 0;
+  const grade =
+    cardDrawGradeOrder.find((candidate) => {
+      upperBound += cardDrawRates.grades[candidate].weight;
+      return ticket < upperBound;
+    }) ?? 'LEGENDARY';
+  return templates.find((template) => template.grade === grade) ?? defaultTemplate;
+}
+
 export function createLocalGameplayTestGateway(
   random: () => number = Math.random,
 ): GameServerGateway {
@@ -103,11 +128,7 @@ export function createLocalGameplayTestGateway(
     async openPack() {
       if (cards.length >= 5) throw new Error('CARD_STORAGE_FULL');
       if (usedToday >= 20) throw new Error('DAILY_PACK_LIMIT_REACHED');
-      const index = Math.min(
-        templates.length - 1,
-        Math.floor(random() * templates.length),
-      );
-      const template = templates[index] ?? defaultTemplate;
+      const template = drawLocalTemplate(random());
       sequence += 1;
       usedToday += 1;
       const card: CachedOwnedCard = {
@@ -129,7 +150,8 @@ export function createLocalGameplayTestGateway(
       if (current.enhancementLevel >= 10)
         throw new Error('MAX_ENHANCEMENT_LEVEL');
       const success =
-        random() * 100 < getEnhancementSuccessRate(current.enhancementLevel);
+        random() * 100 <
+        getEnhancementSuccessRate(current.enhancementLevel, current.grade);
       const card: CachedOwnedCard = success
         ? {
             ...current,
