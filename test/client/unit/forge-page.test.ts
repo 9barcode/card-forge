@@ -10,6 +10,7 @@ jest.mock('@granite-js/react-native', () => ({
 }));
 jest.mock('../../../src/services/rewardedAdService', () => ({
   rewardedAdService: { load: jest.fn(), show: jest.fn() },
+  isRewardedAdSuccess: jest.fn(() => true),
 }));
 const load = jest.mocked(rewardedAdService.load);
 const show = jest.mocked(rewardedAdService.show);

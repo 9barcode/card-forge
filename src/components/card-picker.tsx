@@ -37,7 +37,6 @@ export function CardPicker({
   disabled = false,
 }: CardPickerProps) {
   const visibleCards = cards.slice(0, 5);
-  const cardColumns = visibleCards.length === 4 ? 2 : 3;
 
   return (
     <View style={styles.container}>
@@ -57,16 +56,13 @@ export function CardPicker({
                 onPress={() => onSelect(card.cardId)}
                 style={[
                   styles.cardItem,
-                  cardColumns === 2
-                    ? styles.twoColumnCard
-                    : styles.threeColumnCard,
                   { borderColor: rarityColors[card.grade] },
                   selected && styles.selected,
                   card.enhancementLevel >= 10 && styles.maxLevelCard,
                   disabled && styles.disabled,
                 ]}
               >
-                <MaxLevelAura level={card.enhancementLevel} borderRadius={15} />
+                <MaxLevelAura level={card.enhancementLevel} borderRadius={11} />
                 <View
                   style={[
                     styles.rarityBadge,
@@ -121,71 +117,69 @@ const styles = StyleSheet.create({
   title: { color: '#E4D9C4', fontSize: 14, fontWeight: '700' },
   slots: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 12,
+    gap: 6,
   },
   cardItem: {
-    flexGrow: 0,
+    width: '18%',
+    minWidth: 0,
     backgroundColor: 'rgba(25, 36, 50, 0.96)',
     borderWidth: 1.5,
-    borderRadius: 15,
-    padding: 10,
+    borderRadius: 11,
+    padding: 4,
     overflow: 'hidden',
   },
-  twoColumnCard: { width: '48%' },
-  threeColumnCard: { width: '30.5%' },
   selected: {
     borderColor: '#EAC681',
-    borderWidth: 3,
+    borderWidth: 2,
     backgroundColor: '#34332E',
   },
   maxLevelCard: { overflow: 'visible' },
   disabled: { opacity: 0.5 },
   rarityBadge: {
     position: 'absolute',
-    top: 9,
-    right: 9,
+    top: 4,
+    right: 4,
     zIndex: 2,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 5,
   },
-  rarityText: { color: '#20242B', fontSize: 9, fontWeight: '800' },
+  rarityText: { color: '#20242B', fontSize: 7, fontWeight: '800' },
   imageWrap: {
     width: '100%',
     aspectRatio: 512 / 720,
-    marginBottom: 10,
+    marginBottom: 6,
   },
   cardImage: { width: '100%', height: '100%' },
   levelBadge: {
     position: 'absolute',
-    left: 7,
-    bottom: 7,
+    left: 3,
+    bottom: 3,
     backgroundColor: 'rgba(8, 12, 20, 0.84)',
     borderColor: '#EAC681',
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    borderRadius: 5,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
   },
-  levelText: { color: '#F5D390', fontSize: 11, fontWeight: '800' },
-  cardName: { color: '#F5F1E9', fontSize: 14, fontWeight: '700' },
-  elementText: { color: '#AAB6C5', fontSize: 11, marginTop: 5 },
+  levelText: { color: '#F5D390', fontSize: 8, fontWeight: '800' },
+  cardName: { color: '#F5F1E9', fontSize: 10, fontWeight: '700' },
+  elementText: { color: '#AAB6C5', fontSize: 8, marginTop: 3 },
   selectText: {
     color: '#AAB6C5',
     textAlign: 'center',
-    fontSize: 11,
-    marginTop: 7,
-    marginBottom: 2,
+    fontSize: 8,
+    marginTop: 4,
+    marginBottom: 1,
   },
   selectedText: {
     color: '#EAC681',
     textAlign: 'center',
-    fontSize: 11,
+    fontSize: 8,
     fontWeight: '700',
-    marginTop: 7,
-    marginBottom: 2,
+    marginTop: 4,
+    marginBottom: 1,
   },
   empty: {
     minHeight: 160,
