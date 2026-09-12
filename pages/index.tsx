@@ -1,8 +1,10 @@
-import { getOperationalEnvironment, getUserKeyForGame } from '@apps-in-toss/framework';
+import {
+  getOperationalEnvironment,
+  getUserKeyForGame,
+} from '@apps-in-toss/framework';
 import { createRoute, useNavigation } from '@granite-js/react-native';
-import React, { useEffect, useState } from 'react';
 import { Settings } from 'lucide-react-native';
-import { SvgUri } from 'react-native-svg';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -11,8 +13,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SvgUri } from 'react-native-svg';
 import { styles } from '../assets/sytle/index.style';
 import { BannerAd } from '../src/components/banner-ad';
+import { CardCollectionModal } from '../src/components/card-collection-modal';
 import { useGameCache } from '../src/features/game-cache';
 
 type AppRoutes = '/cards' | '/forge' | '/packs' | '/exchange';
@@ -68,6 +72,7 @@ export function HomePage() {
   const navigation = useNavigation();
   const game = useGameCache();
   const [gameUserHash, setGameUserHash] = useState<string | null>(null);
+  const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const environment =
     getOperationalEnvironment() === 'sandbox' ? '샌드박스' : '디폴트';
 
@@ -202,11 +207,7 @@ export function HomePage() {
               style={styles.menuCard}
             >
               <View style={[styles.iconWrap, { borderColor: item.accent }]}>
-                <SvgUri
-                  uri={item.iconUri}
-                  width={31}
-                  height={31}
-                />
+                <SvgUri uri={item.iconUri} width={31} height={31} />
               </View>
               <View style={styles.menuCopy}>
                 <Text style={styles.menuTitle}>{item.title}</Text>
@@ -216,6 +217,23 @@ export function HomePage() {
             </TouchableOpacity>
           ))}
         </View>
+
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="카드 도감 열기"
+          activeOpacity={0.82}
+          onPress={() => setIsCollectionOpen(true)}
+          style={styles.collectionButton}
+        >
+          <Text style={styles.collectionMark}>✦</Text>
+          <View style={styles.guideCopy}>
+            <Text style={styles.guideTitle}>카드 도감</Text>
+            <Text style={styles.guideText}>
+              발견한 6원소 카드를 등급별로 확인해 보세요.
+            </Text>
+          </View>
+          <Text style={styles.collectionArrow}>{'›'}</Text>
+        </TouchableOpacity>
 
         <View style={styles.guideCard}>
           <Text style={styles.guideMark}>✦</Text>
@@ -238,6 +256,11 @@ export function HomePage() {
           <Text style={styles.debugButtonText}>DEV · 앱 로그 보기</Text>
         </TouchableOpacity>
       </ScrollView>
+      <CardCollectionModal
+        collection={game.collection}
+        onClose={() => setIsCollectionOpen(false)}
+        visible={isCollectionOpen}
+      />
     </View>
   );
 }
