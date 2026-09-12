@@ -11,6 +11,8 @@ export async function handleSales(request: Request, path: string): Promise<Respo
     return json({ code: 'INVALID_IDEMPOTENCY_KEY' }, 400);
   }
 
+  // 광고 시청 성공 여부는 앱에서 확인합니다. 서버는 광고 completionId를
+  // 인증하지 않고 카드 소유권과 중복 요청만 검증합니다.
   const body = await readJson(request);
   const cardIds = parseCardIds(body?.cardIds);
   if (!cardIds) return json({ code: 'INVALID_CARD_IDS' }, 400);
