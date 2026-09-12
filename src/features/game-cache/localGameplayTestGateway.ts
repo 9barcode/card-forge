@@ -70,6 +70,7 @@ export function createLocalGameplayTestGateway(
   let crystalBalance = 0;
   let usedToday = 0;
   let sequence = 0;
+  let lastPackReservationAt = 0;
 
   const availability = () => ({
     packType: 'AD_TEST',
@@ -91,6 +92,13 @@ export function createLocalGameplayTestGateway(
   return {
     async loadGame() {
       return snapshot();
+    },
+    async reservePackOpening() {
+      const now = Date.now();
+      if (now < lastPackReservationAt + 60_000) {
+        throw new Error('PACK_OPEN_COOLDOWN_ACTIVE');
+      }
+      lastPackReservationAt = now;
     },
     async openPack() {
       if (cards.length >= 5) throw new Error('CARD_STORAGE_FULL');
