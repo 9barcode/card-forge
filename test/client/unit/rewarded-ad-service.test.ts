@@ -119,6 +119,37 @@ describe('RewardedAdService', () => {
     );
   });
 
+  it('개발용 true 선택 시 보상 이벤트 없이도 임시 성공 결과를 반환한다', async () => {
+    const gateway = createGateway();
+    gateway.show.mockImplementation(({ onEvent }) => {
+      onEvent({ type: 'dismissed' });
+      return jest.fn();
+    });
+    const service = new RewardedAdService(gateway);
+
+    await expect(service.show(true)).resolves.toEqual({
+      unitType: 'dev-reward',
+      unitAmount: 1,
+    });
+  });
+
+  it('개발용 false 선택 시 실제 보상 이벤트가 와도 지급을 거절한다', async () => {
+    const gateway = createGateway();
+    gateway.show.mockImplementation(({ onEvent }) => {
+      onEvent({
+        type: 'userEarnedReward',
+        data: { unitType: 'card', unitAmount: 1 },
+      });
+      onEvent({ type: 'dismissed' });
+      return jest.fn();
+    });
+    const service = new RewardedAdService(gateway);
+
+    await expect(service.show(false)).rejects.toThrow(
+      'REWARDED_AD_DISMISSED_WITHOUT_REWARD',
+    );
+  });
+
   it('보상 이벤트 후에도 광고가 닫히기 전에는 뽑기를 시작하지 않는다', async () => {
     const gateway = createGateway();
     let emit: ShowFullScreenAdParams['onEvent'] = () => {};
