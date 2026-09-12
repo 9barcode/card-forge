@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { styles } from '../assets/sytle/packs.style';
+import { cardOutlineColors } from '../src/components/card';
 import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
 import {
   type CachedOwnedCard,
@@ -163,19 +164,37 @@ export function PacksPage() {
           {phase === 'result' && reward ? (
             <>
               <Text style={styles.resultTitle}>카드 당첨!</Text>
-              <View style={styles.rewardCard}>
+              <View
+                style={[
+                  styles.rewardCard,
+                  { borderColor: cardOutlineColors[reward.grade] },
+                ]}
+              >
                 <Image
                   source={getCardImage(reward.imageKey)}
                   style={styles.cardImage}
-                  resizeMode="contain"
-                  accessibilityLabel={`${elementLabels[reward.element]} ${gradeLabels[reward.grade]}`}
+                  resizeMode="cover"
+                  accessibilityLabel={`${reward.name} ${gradeLabels[reward.grade]} ${reward.enhancementLevel}강`}
                 />
-                <Text style={styles.enhancement}>
-                  [{reward.enhancementLevel}강]
-                </Text>
+                <View
+                  style={[
+                    styles.gradeBadge,
+                    { backgroundColor: cardOutlineColors[reward.grade] },
+                  ]}
+                >
+                  <Text style={styles.gradeText}>
+                    {gradeLabels[reward.grade]}
+                  </Text>
+                </View>
+                <View style={styles.levelBadge}>
+                  <Text style={styles.levelText}>
+                    {reward.enhancementLevel}강
+                  </Text>
+                </View>
               </View>
-              <Text style={styles.resultName}>
-                {elementLabels[reward.element]} · {gradeLabels[reward.grade]}
+              <Text style={styles.resultName}>{reward.name}</Text>
+              <Text style={styles.resultElement}>
+                {elementLabels[reward.element]} 원소
               </Text>
             </>
           ) : (
