@@ -19,7 +19,6 @@ export interface EnhanceCardCommand extends AuthorizedCommand {
 }
 export interface SellCardsCommand extends AuthorizedCommand {
   cardIds: readonly string[];
-  adCompletionId?: string;
 }
 export interface ExchangePointsCommand extends AuthorizedCommand {
   pointAmount: number;
