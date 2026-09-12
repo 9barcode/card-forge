@@ -63,7 +63,10 @@ export function ForgePage() {
     selected.enhancementLevel >= MAX_ENHANCEMENT_LEVEL;
   const rate =
     selected && !unavailable
-      ? getEnhancementSuccessRate(selected.enhancementLevel)
+      ? getEnhancementSuccessRate(
+          selected.enhancementLevel,
+          selected.grade,
+        )
       : null;
   const displayedLevel =
     phase === 'striking' && attemptedLevel !== null
