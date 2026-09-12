@@ -353,7 +353,7 @@ it('강화 결과와 카드 상태가 모순되면 응답을 거절한다', asyn
   ).rejects.toThrow('INVALID_GAME_API_RESPONSE');
 });
 
-it('선택한 카드와 광고 완료 증명으로 판매를 요청한다', async () => {
+it('선택한 카드만 판매 요청하고 광고 완료 증명은 서버로 보내지 않는다', async () => {
   const fetchImplementation = jest.fn(
     async () =>
       new Response(
@@ -384,7 +384,6 @@ it('선택한 카드와 광고 완료 증명으로 판매를 요청한다', asyn
     accessToken: 'session-token',
     requestId: 'sale-request-001',
     cardIds: ['8', '9'],
-    adCompletionId: 'ad-completion-001',
   });
 
   expect(fetchImplementation).toHaveBeenCalledWith(
@@ -398,7 +397,6 @@ it('선택한 카드와 광고 완료 증명으로 판매를 요청한다', asyn
       },
       body: JSON.stringify({
         cardIds: ['8', '9'],
-        adCompletionId: 'ad-completion-001',
       }),
     },
   );
@@ -441,7 +439,6 @@ it('판매 응답에 중복 카드 ID가 있으면 캐시에 전달하지 않는
       accessToken: 'session-token',
       requestId: 'sale-request-002',
       cardIds: ['8'],
-      adCompletionId: 'ad-completion-002',
     }),
   ).rejects.toThrow('INVALID_GAME_API_RESPONSE');
 });
