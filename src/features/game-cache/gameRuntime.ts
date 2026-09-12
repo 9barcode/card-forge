@@ -7,6 +7,7 @@ import { gameCache } from './gameCache';
 
 const unconfiguredGateway: GameServerGateway = {
   loadGame: reject,
+  reservePackOpening: reject,
   openPack: reject,
   enhanceCard: reject,
   sellCards: reject,
