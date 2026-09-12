@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { styles } from '../assets/sytle/exchange.style';
+import { cardOutlineColors } from '../src/components/card';
 import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
 import {
   elementLabels,
@@ -162,19 +163,35 @@ export function ExchangePage() {
                 accessibilityState={{ checked: selected }}
                 accessibilityLabel={`${elementLabels[card.element]} ${gradeLabels[card.grade]} ${card.enhancementLevel}강`}
                 onPress={() => toggle(card.cardId)}
-                style={[styles.cardRow, selected && styles.selectedCard]}
+                style={[
+                  styles.cardRow,
+                  selected && styles.selectedCard,
+                  { borderColor: cardOutlineColors[card.grade] },
+                ]}
               >
-                <View>
+                <View style={styles.imageWrap}>
                   <Image
                     source={getCardImage(card.imageKey)}
                     style={styles.cardImage}
                   />
-                  <Text style={styles.level}>{card.enhancementLevel}강</Text>
+                  <View
+                    style={[
+                      styles.rarityBadge,
+                      { backgroundColor: cardOutlineColors[card.grade] },
+                    ]}
+                  >
+                    <Text style={styles.rarityText}>
+                      {gradeLabels[card.grade]}
+                    </Text>
+                  </View>
+                  <View style={styles.levelBadge}>
+                    <Text style={styles.level}>
+                      {card.enhancementLevel}강
+                    </Text>
+                  </View>
                 </View>
                 <View style={styles.cardInfo}>
-                  <Text style={styles.cardName}>
-                    {elementLabels[card.element]} · {gradeLabels[card.grade]}
-                  </Text>
+                  <Text style={styles.cardName}>{card.name}</Text>
                   <Text style={styles.muted}>{card.enhancementLevel}강</Text>
                   <Text style={styles.cardValue}>
                     {format(

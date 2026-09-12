@@ -9,6 +9,7 @@ import { configureTestRuntime } from './game-runtime.fixture';
 jest.mock('@granite-js/react-native', () => ({ createRoute: jest.fn() }));
 jest.mock('../../../src/services/rewardedAdService', () => ({
   rewardedAdService: { load: jest.fn(), show: jest.fn() },
+  isRewardedAdSuccess: jest.fn(() => true),
 }));
 
 beforeEach(async () => {
