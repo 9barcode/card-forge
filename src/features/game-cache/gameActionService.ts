@@ -13,7 +13,7 @@ export interface AuthorizedCommand {
   requestId: string;
 }
 export interface OpenPackCommand extends AuthorizedCommand {
-  adCompletionId: string;
+  adCompletionId?: string;
 }
 export interface EnhanceCardCommand extends AuthorizedCommand {
   cardId: string;
@@ -21,7 +21,7 @@ export interface EnhanceCardCommand extends AuthorizedCommand {
 }
 export interface SellCardsCommand extends AuthorizedCommand {
   cardIds: readonly string[];
-  adCompletionId: string;
+  adCompletionId?: string;
 }
 export interface ExchangePointsCommand extends AuthorizedCommand {
   pointAmount: number;
