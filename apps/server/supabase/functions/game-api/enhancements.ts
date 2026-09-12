@@ -12,6 +12,10 @@ export async function handleEnhancements(request: Request, path: string): Promis
   }
   const body = await readJson(request);
   if (!isPositiveId(body?.cardId)) return json({ code: 'INVALID_CARD_ID' }, 400);
+  if (!isAcceptedTestAdProof(body?.adCompletionId)) {
+    return json({ code: 'AD_COMPLETION_NOT_VERIFIED' }, 403);
+  }
+
   const database = createServerDatabase();
   const { data: inventory, error: inventoryError } = await database.rpc('get_game_inventory', {
     p_user_id: userId,
@@ -47,6 +51,12 @@ function findEnhancementLevel(value: unknown, cardId: string): number | null {
 
 function isPositiveId(value: unknown): value is string {
   return typeof value === 'string' && /^[1-9]\d*$/.test(value);
+}
+
+function isAcceptedTestAdProof(value: unknown): boolean {
+  return Deno.env.get('ALLOW_TEST_AD_REWARDS') === 'true'
+    && typeof value === 'string'
+    && /^local-test-ad-\d+$/.test(value);
 }
 
 function databaseError(message: string): Response {
