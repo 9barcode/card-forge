@@ -92,6 +92,12 @@ export function PacksPage() {
     setMessage('');
     setPhase('loading');
     try {
+      const accessToken = gameRuntime.requireAccessToken();
+      const requestId = gameRuntime.nextRequestId();
+      await gameRuntime.actions.reservePackOpening({
+        accessToken,
+        requestId,
+      });
       await rewardedAdService.load();
       if (!mounted.current) return;
       setPhase('ad');
@@ -104,8 +110,8 @@ export function PacksPage() {
       }
 
       const result = await gameRuntime.actions.openPack({
-        accessToken: gameRuntime.requireAccessToken(),
-        requestId: gameRuntime.nextRequestId(),
+        accessToken,
+        requestId,
       });
       setReward(result.card);
       setPhase('drawing');
