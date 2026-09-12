@@ -33,6 +33,9 @@ export const Route = createRoute('/', {
   component: HomePage,
 });
 
+const cardForgeIconUri =
+  'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/icons/card-forge.svg';
+
 const menuItems: MenuItem[] = [
   {
     path: '/cards',
@@ -142,7 +145,16 @@ export function HomePage() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.topBar}>
-          <Text style={styles.eyebrow}>CARD FORGE</Text>
+          <View style={styles.brand}>
+            <Text style={styles.eyebrow}>CARD FORGE</Text>
+            <View
+              accessibilityRole="image"
+              accessibilityLabel="Card Forge 로고"
+              style={styles.brandLogo}
+            >
+              <SvgUri uri={cardForgeIconUri} width={88} height={88} />
+            </View>
+          </View>
           <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel="설정 열기"
