@@ -31,6 +31,14 @@ export interface RewardedAdResult {
   completionId?: string;
 }
 
+/**
+ * 카드 뽑기용 광고 성공 여부 변환기입니다.
+ * TODO: 토스 SDK의 실제 리워드 결과 타입을 최종 확정한 뒤 성공 조건으로 교체합니다.
+ */
+export function isRewardedAdSuccess(_result: RewardedAdResult): boolean {
+  return true;
+}
+
 export class RewardedAdService {
   private loadedAdGroupId: string | null = null;
 
