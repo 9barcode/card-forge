@@ -78,7 +78,7 @@ export function createHttpGameServerGateway({
             'Content-Type': 'application/json',
             'Idempotency-Key': command.requestId,
           },
-          body: JSON.stringify({ adCompletionId: command.adCompletionId }),
+          body: JSON.stringify({}),
         },
       );
       const data = await readJson(response);
@@ -169,11 +169,9 @@ function parseEnhancementResult(value: unknown): ServerEnhancementResult {
 }
 
 function parsePackOpeningResult(value: unknown): ServerPackOpeningResult {
-  const source = record(value);
-  return {
-    card: parseCard(source.card),
-    packAvailability: parsePackAvailability(source.packAvailability),
-  };
+  // 카드 생성과 제한 검사는 Supabase 트랜잭션이 확정합니다.
+  // 성공 응답은 그대로 캐시에 반영해 클라이언트의 중복 검증을 피합니다.
+  return value as ServerPackOpeningResult;
 }
 
 function parsePackAvailability(value: unknown): CachedPackAvailability {

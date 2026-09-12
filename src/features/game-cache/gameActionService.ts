@@ -12,9 +12,7 @@ export interface AuthorizedCommand {
   accessToken: string;
   requestId: string;
 }
-export interface OpenPackCommand extends AuthorizedCommand {
-  adCompletionId?: string;
-}
+export type OpenPackCommand = AuthorizedCommand;
 export interface EnhanceCardCommand extends AuthorizedCommand {
   cardId: string;
   adCompletionId?: string;

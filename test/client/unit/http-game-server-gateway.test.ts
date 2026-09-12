@@ -100,7 +100,7 @@ it('카드 광고 시작을 같은 요청 ID로 서버에 예약한다', async (
   );
 });
 
-it('광고 완료 증명과 중복 방지 키로 카드 뽑기를 요청한다', async () => {
+it('중복 방지 키로 카드 뽑기를 요청하고 서버 저장 결과를 캐시에 전달한다', async () => {
   const fetchImplementation = jest.fn(
     async () =>
       new Response(
@@ -139,7 +139,6 @@ it('광고 완료 증명과 중복 방지 키로 카드 뽑기를 요청한다',
   const result = await gateway.openPack({
     accessToken: 'session-token',
     requestId: 'game-request-001',
-    adCompletionId: 'ad-completion-001',
   });
 
   expect(fetchImplementation).toHaveBeenCalledWith(
@@ -151,7 +150,7 @@ it('광고 완료 증명과 중복 방지 키로 카드 뽑기를 요청한다',
         'Content-Type': 'application/json',
         'Idempotency-Key': 'game-request-001',
       },
-      body: JSON.stringify({ adCompletionId: 'ad-completion-001' }),
+      body: JSON.stringify({}),
     },
   );
   expect(result).toEqual(
@@ -179,12 +178,11 @@ it('카드 뽑기 실패 응답은 성공 결과로 변환하지 않는다', asy
     gateway.openPack({
       accessToken: 'session-token',
       requestId: 'game-request-002',
-      adCompletionId: 'ad-completion-002',
     }),
   ).rejects.toThrow('CARD_STORAGE_FULL');
 });
 
-it('서버 카드팩 상태 합계가 맞지 않으면 응답을 거절한다', async () => {
+it('서버가 확정한 카드팩 결과는 클라이언트에서 다시 검증하지 않는다', async () => {
   const gateway = createHttpGameServerGateway({
     apiBaseUrl: 'https://example.test',
     fetchImplementation: (async () =>
@@ -218,9 +216,13 @@ it('서버 카드팩 상태 합계가 맞지 않으면 응답을 거절한다', 
     gateway.openPack({
       accessToken: 'session-token',
       requestId: 'game-request-003',
-      adCompletionId: 'ad-completion-003',
     }),
-  ).rejects.toThrow('INVALID_GAME_API_RESPONSE');
+  ).resolves.toEqual(
+    expect.objectContaining({
+      card: expect.objectContaining({ cardId: '8' }),
+      packAvailability: expect.objectContaining({ remainingToday: 20 }),
+    }),
+  );
 });
 
 it('선택한 카드와 광고 완료 증명으로 강화를 요청한다', async () => {

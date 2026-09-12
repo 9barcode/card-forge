@@ -64,9 +64,3 @@ function reject(): Promise<never> {
   return Promise.reject(new Error('GAME_SERVER_NOT_CONFIGURED'));
 }
 
-export function requireAdCompletionId(value: unknown): string {
-  if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new Error('AD_COMPLETION_PROOF_UNAVAILABLE');
-  }
-  return value;
-}
