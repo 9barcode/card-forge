@@ -24,7 +24,10 @@ import {
   getCardCrystalValue,
   getPointQuote,
 } from '../src/services/cardValues';
-import { rewardedAdService } from '../src/services/rewardedAdService';
+import {
+  isRewardedAdSuccess,
+  rewardedAdService,
+} from '../src/services/rewardedAdService';
 
 export const Route = createRoute('/exchange', {
   validateParams: (params) => params,
@@ -60,6 +63,11 @@ export function ExchangePage() {
       if (tab === 'cards') {
         await rewardedAdService.load();
         const ad = await rewardedAdService.show();
+        const rewardSuccess = isRewardedAdSuccess(ad);
+        if (!rewardSuccess) {
+          throw new Error('REWARDED_AD_REWARD_FAILED');
+        }
+
         const result = await gameRuntime.actions.sellCards({
           accessToken: gameRuntime.requireAccessToken(),
           requestId: gameRuntime.nextRequestId(),
@@ -83,11 +91,15 @@ export function ExchangePage() {
         );
       }
     } catch (error) {
+      const errorCode = error instanceof Error ? error.message : '';
       Alert.alert(
         '처리 실패',
-        error instanceof Error && error.message === 'INSUFFICIENT_CRYSTALS'
+        errorCode === 'INSUFFICIENT_CRYSTALS'
           ? '보유 결정이 부족해요.'
-          : '요청을 완료하지 못했어요.',
+          : errorCode === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD' ||
+              errorCode === 'REWARDED_AD_REWARD_FAILED'
+            ? '광고를 끝까지 시청해야 카드를 판매할 수 있어요.'
+            : '요청을 완료하지 못했어요.',
       );
     }
   };
