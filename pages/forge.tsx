@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { styles } from '../assets/sytle/forge.style';
 import { CardPicker } from '../src/components/card-picker';
+import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
 import {
   gameRuntime,
   getCardImage,
@@ -41,6 +42,7 @@ export function ForgePage() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [result, setResult] = useState<'SUCCESS' | 'FAILURE' | null>(null);
   const [error, setError] = useState('');
+  const [devUserEarnedReward, setDevUserEarnedReward] = useState(true);
   const busy = useRef(false);
   const selected = game.cards.find((card) => card.cardId === selectedId);
   const unavailable =
@@ -61,7 +63,7 @@ export function ForgePage() {
     try {
       await rewardedAdService.load();
       setPhase('ad');
-      const ad = await rewardedAdService.show();
+      const ad = await rewardedAdService.show(devUserEarnedReward);
       const rewardSuccess = isRewardedAdSuccess(ad);
       if (!rewardSuccess) {
         throw new Error('REWARDED_AD_REWARD_FAILED');
@@ -182,6 +184,11 @@ export function ForgePage() {
               <Text style={styles.hint}>
                 광고 완료 후 선택한 카드 한 장만 강화해요.
               </Text>
+              <DevRewardedAdToggle
+                value={devUserEarnedReward}
+                disabled={phase !== 'idle'}
+                onChange={setDevUserEarnedReward}
+              />
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="강화 시도"
