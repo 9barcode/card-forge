@@ -13,7 +13,6 @@ import { styles } from '../assets/sytle/exchange.style';
 import {
   elementLabels,
   gameRuntime,
-  getAdCompletionProof,
   getCardImage,
   gradeLabels,
   useGameCache,
@@ -72,7 +71,6 @@ export function ExchangePage() {
           accessToken: gameRuntime.requireAccessToken(),
           requestId: gameRuntime.nextRequestId(),
           cardIds: selectedIds,
-          adCompletionId: getAdCompletionProof(ad.completionId),
         });
         setSelectedIds([]);
         Alert.alert(
