@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { styles } from '../assets/sytle/exchange.style';
+import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
 import {
   elementLabels,
   gameRuntime,
@@ -40,6 +41,7 @@ export function ExchangePage() {
   const [tab, setTab] = useState<'cards' | 'points'>('cards');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [amount, setAmount] = useState('10000');
+  const [devUserEarnedReward, setDevUserEarnedReward] = useState(true);
   const selectedCards = game.cards.filter((card) =>
     selectedIds.includes(card.cardId),
   );
@@ -61,7 +63,7 @@ export function ExchangePage() {
     try {
       if (tab === 'cards') {
         await rewardedAdService.load();
-        const ad = await rewardedAdService.show();
+        const ad = await rewardedAdService.show(devUserEarnedReward);
         const rewardSuccess = isRewardedAdSuccess(ad);
         if (!rewardSuccess) {
           throw new Error('REWARDED_AD_REWARD_FAILED');
@@ -196,6 +198,10 @@ export function ExchangePage() {
               선택한 카드 {selectedCards.length}장 · 기본 가치 기준
             </Text>
           </View>
+          <DevRewardedAdToggle
+            value={devUserEarnedReward}
+            onChange={setDevUserEarnedReward}
+          />
           <TouchableOpacity
             accessibilityRole="button"
             disabled={!selectedIds.length}
