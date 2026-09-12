@@ -51,5 +51,7 @@ export const styles = StyleSheet.create({
   button: { backgroundColor: '#EAC681', minHeight: 58, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 10, padding: 14 },
   buttonText: { color: '#292015', fontSize: 18, fontWeight: '800' },
   disabled: { opacity: 0.65 },
+  storageFullButton: { backgroundColor: '#697386', opacity: 1 },
+  storageFullButtonText: { color: '#E5E7EB' },
   message: { color: '#F1C6AD', textAlign: 'center', fontSize: 13, lineHeight: 20 },
 });

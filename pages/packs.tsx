@@ -40,6 +40,10 @@ export function PacksPage() {
   const game = useGameCache();
   const availability = game.packAvailability;
   const checkingStorage = game.status !== 'ready';
+  const storageFull = Boolean(
+    availability?.storageFull ||
+      game.cards.length >= (availability?.storageCapacity ?? 5),
+  );
   const busy = useRef(false);
   const mounted = useRef(false);
   const animation = useRef(new Animated.Value(0)).current;
@@ -86,7 +90,7 @@ export function PacksPage() {
       busy.current ||
       phase !== 'idle' ||
       checkingStorage ||
-      availability?.storageFull
+      storageFull
     )
       return;
     busy.current = true;
@@ -258,7 +262,7 @@ export function PacksPage() {
               <Text style={styles.hint}>
                 {checkingStorage
                   ? '카드 보관함을 확인하고 있어요'
-                  : availability?.storageFull
+                  : storageFull
                     ? `보관함이 가득 찼어요 (${availability.ownedCardCount}/${availability.storageCapacity})`
                     : `광고 시청 완료 후 카드 1장을 뽑아요 (${availability?.ownedCardCount ?? 0}/${availability?.storageCapacity ?? 5})`}
               </Text>
@@ -273,20 +277,28 @@ export function PacksPage() {
                 disabled={
                   phase !== 'idle' ||
                   checkingStorage ||
-                  availability?.storageFull
+                  storageFull
                 }
                 onPress={draw}
                 style={[
                   styles.button,
                   (phase !== 'idle' ||
                     checkingStorage ||
-                    availability?.storageFull) &&
+                    storageFull) &&
                     styles.disabled,
+                  storageFull && styles.storageFullButton,
                 ]}
               >
                 {phase !== 'idle' && <ActivityIndicator color="#292015" />}
-                <Text style={styles.buttonText}>
-                  {phase === 'drawing'
+                <Text
+                  style={[
+                    styles.buttonText,
+                    storageFull && styles.storageFullButtonText,
+                  ]}
+                >
+                  {storageFull
+                    ? '카드가 가득 찼습니다.'
+                    : phase === 'drawing'
                     ? '카드 뽑는 중'
                     : phase === 'ad'
                       ? '광고 시청 중'

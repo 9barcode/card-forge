@@ -4,11 +4,15 @@ import { Animated } from 'react-native';
 import { PacksPage } from '../../../pages/packs';
 import { gameCache } from '../../../src/features/game-cache';
 import { rewardedAdService } from '../../../src/services/rewardedAdService';
-import { configureTestRuntime } from './game-runtime.fixture';
+import {
+  configureTestRuntime,
+  initialGameSnapshot,
+} from './game-runtime.fixture';
 
 jest.mock('@granite-js/react-native', () => ({ createRoute: jest.fn() }));
 jest.mock('../../../src/services/rewardedAdService', () => ({
   rewardedAdService: { load: jest.fn(), show: jest.fn() },
+  isRewardedAdSuccess: jest.fn(() => true),
 }));
 const load = jest.mocked(rewardedAdService.load);
 const show = jest.mocked(rewardedAdService.show);
@@ -61,4 +65,30 @@ it('광고 중단 시 캐시를 변경하지 않는다', async () => {
     ).toBeTruthy(),
   );
   expect(gameCache.getSnapshot().cards).toHaveLength(3);
+});
+
+it('카드가 5장이면 뽑기 버튼을 회색 비활성 상태로 표시한다', async () => {
+  await configureTestRuntime({
+    loadGame: async () => ({
+      ...initialGameSnapshot,
+      cards: [
+        ...initialGameSnapshot.cards,
+        { ...initialGameSnapshot.cards[0], cardId: 'card-earth-2' },
+        { ...initialGameSnapshot.cards[1], cardId: 'card-water-2' },
+      ],
+      packAvailability: {
+        ...initialGameSnapshot.packAvailability,
+        ownedCardCount: 5,
+        storageFull: true,
+      },
+    }),
+  });
+
+  const screen = render(React.createElement(PacksPage));
+  const button = screen.getByLabelText('카드 뽑기');
+
+  expect(screen.getByText('카드가 가득 찼습니다.')).toBeTruthy();
+  expect(button.props.accessibilityState.disabled).toBe(true);
+  fireEvent.press(button);
+  expect(load).not.toHaveBeenCalled();
 });
