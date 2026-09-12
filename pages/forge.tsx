@@ -280,7 +280,7 @@ export function ForgePage() {
                     resizeMode="cover"
                     accessibilityLabel={`${selected.name} ${gradeLabels[selected.grade]} ${displayedLevel}강`}
                   />
-                  {failed && Platform.OS === 'ios' && (
+                  {failed && (
                     <View pointerEvents="none" style={styles.failedShade} />
                   )}
                   <View
