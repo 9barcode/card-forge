@@ -17,7 +17,7 @@ export interface OpenPackCommand extends AuthorizedCommand {
 }
 export interface EnhanceCardCommand extends AuthorizedCommand {
   cardId: string;
-  adCompletionId: string;
+  adCompletionId?: string;
 }
 export interface SellCardsCommand extends AuthorizedCommand {
   cardIds: readonly string[];
