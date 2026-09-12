@@ -22,7 +22,6 @@ import {
   getEnhancementSuccessRate,
 } from '../src/services/enhancementService';
 import {
-  createDevAdCompletionId,
   isRewardedAdSuccess,
   rewardedAdService,
 } from '../src/services/rewardedAdService';
@@ -74,7 +73,6 @@ export function ForgePage() {
         accessToken: gameRuntime.requireAccessToken(),
         requestId: gameRuntime.nextRequestId(),
         cardId: selected.cardId,
-        adCompletionId: createDevAdCompletionId(),
       });
       setResult(outcome.result);
       setPhase('result');
