@@ -16,7 +16,6 @@ import {
   REWARDED_AD_INTEGRATED_TEST_ID,
   REWARDED_AD_TEST_ID,
   RewardedAdService,
-  createDevAdCompletionId,
 } from '../../../src/services/rewardedAdService';
 
 function createGateway() {
@@ -29,10 +28,6 @@ function createGateway() {
 }
 
 describe('RewardedAdService', () => {
-  it('개발 서버가 허용하는 형식의 임시 광고 완료 ID를 만든다', () => {
-    expect(createDevAdCompletionId()).toMatch(/^local-test-ad-\d+$/);
-  });
-
   it('현재 공식 개발용 보상형 광고 ID를 사용한다', () => {
     expect(REWARDED_AD_TEST_ID).toBe('ait-ad-test-rewarded-id');
   });
