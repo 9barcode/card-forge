@@ -50,6 +50,24 @@ export function createHttpGameServerGateway({
         throw new Error(errorCode(data, `GAME_API_${response.status}`));
       return parseSnapshot(data);
     },
+    async reservePackOpening(command): Promise<void> {
+      const response = await fetchImplementation(
+        `${baseUrl}/api/v1/pack-openings/reservations`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${command.accessToken}`,
+            'Content-Type': 'application/json',
+            'Idempotency-Key': command.requestId,
+          },
+          body: JSON.stringify({}),
+        },
+      );
+      const data = await readJson(response);
+      if (!response.ok) {
+        throw new Error(errorCode(data, `GAME_API_${response.status}`));
+      }
+    },
     async openPack(command): Promise<ServerPackOpeningResult> {
       const response = await fetchImplementation(
         `${baseUrl}/api/v1/pack-openings`,
