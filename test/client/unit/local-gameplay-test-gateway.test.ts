@@ -49,6 +49,25 @@ describe('local gameplay test gateway', () => {
     now.mockRestore();
   });
 
+  it.each([
+    [0, 'NORMAL'],
+    [0.60005, 'MAGIC'],
+    [0.93135, 'RARE'],
+    [0.99135, 'SUPER_RARE'],
+    [0.99565, 'UNIQUE'],
+    [0.99895, 'LEGENDARY'],
+  ])(
+    'JSON 카드 뽑기 확률에서 %s 티켓을 %s 등급으로 판정한다',
+    async (randomValue, expectedGrade) => {
+      const gateway = createLocalGameplayTestGateway(() => randomValue as number);
+      const opened = await gateway.openPack({
+        accessToken: 'local',
+        requestId: `draw-${expectedGrade}`,
+      });
+      expect(opened.card.grade).toBe(expectedGrade);
+    },
+  );
+
   it('광고 이후 카드 뽑기, 강화, 판매, 결정 교환 흐름을 캐시용 결과로 만든다', async () => {
     const gateway = createLocalGameplayTestGateway(() => 0);
     const opened = await gateway.openPack({
