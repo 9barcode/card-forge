@@ -19,6 +19,9 @@ export const gradeLabels: Record<CardGrade, string> = {
   LEGENDARY: '레전더리',
 };
 
+const SUPABASE_PUBLIC_IMAGE_BASE_URL =
+  'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images';
+
 const fallbackCardImage: ImageSourcePropType = require('../../../assets/images/cards/earth_guardian.png');
 const cardImages: Record<string, ImageSourcePropType> = {
   earth_guardian: fallbackCardImage,
@@ -36,5 +39,19 @@ const cardImages: Record<string, ImageSourcePropType> = {
 };
 
 export function getCardImage(imageKey: string): ImageSourcePropType {
-  return cardImages[imageKey] ?? fallbackCardImage;
+  const normalizedKey = imageKey.trim().replace(/^\/+/, '');
+  if (!normalizedKey) return fallbackCardImage;
+
+  const localImage = cardImages[normalizedKey];
+  if (localImage) return localImage;
+
+  if (/^https?:\/\//i.test(imageKey)) {
+    return { uri: imageKey };
+  }
+
+  const encodedPath = normalizedKey
+    .split('/')
+    .map(encodeURIComponent)
+    .join('/');
+  return { uri: `${SUPABASE_PUBLIC_IMAGE_BASE_URL}/${encodedPath}` };
 }
