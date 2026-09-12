@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Settings } from 'lucide-react-native';
 import { SvgUri } from 'react-native-svg';
 import {
+  ActivityIndicator,
   Image,
   ScrollView,
   Text,
@@ -66,7 +67,7 @@ const menuItems: MenuItem[] = [
 export function HomePage() {
   const navigation = useNavigation();
   const game = useGameCache();
-  const [gameUserHash, setGameUserHash] = useState('hash 확인 중...');
+  const [gameUserHash, setGameUserHash] = useState<string | null>(null);
   const environment =
     getOperationalEnvironment() === 'sandbox' ? '샌드박스' : '디폴트';
 
@@ -96,6 +97,31 @@ export function HomePage() {
       isMounted = false;
     };
   }, []);
+
+  const isInitialLoading =
+    game.status === 'idle' ||
+    game.status === 'loading' ||
+    gameUserHash === null;
+
+  if (isInitialLoading) {
+    return (
+      <View
+        accessibilityLiveRegion="polite"
+        accessibilityLabel="카드의 세계로 들어가는 중"
+        style={styles.loadingScreen}
+      >
+        <View pointerEvents="none" style={styles.loadingIcon}>
+          <View style={[styles.loadingCard, styles.loadingCardLeft]} />
+          <View style={[styles.loadingCard, styles.loadingCardRight]} />
+          <View style={[styles.loadingCard, styles.loadingCardFront]}>
+            <Text style={styles.loadingCardMark}>✦</Text>
+          </View>
+        </View>
+        <Text style={styles.loadingTitle}>카드의 세계로 들어가는 중…</Text>
+        <ActivityIndicator color="#D5B87F" size="small" />
+      </View>
+    );
+  }
 
   const nickname = game.currentUser?.displayName ?? '모험가';
   const user = {
