@@ -119,7 +119,6 @@ export function createHttpGameServerGateway({
           },
           body: JSON.stringify({
             cardIds: command.cardIds,
-            adCompletionId: command.adCompletionId,
           }),
         },
       );
