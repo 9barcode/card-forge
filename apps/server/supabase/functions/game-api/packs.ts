@@ -22,7 +22,11 @@ export async function handlePacks(request: Request, path: string): Promise<Respo
 }
 
 function databaseError(message: string): Response {
-  const code = ['CARD_STORAGE_FULL', 'DAILY_PACK_LIMIT_REACHED'].find((item) =>
+  const code = [
+    'CARD_STORAGE_FULL',
+    'DAILY_PACK_LIMIT_REACHED',
+    'PACK_OPEN_COOLDOWN_ACTIVE',
+  ].find((item) =>
     message.includes(item)
   );
   if (code) return json({ code }, 409);
