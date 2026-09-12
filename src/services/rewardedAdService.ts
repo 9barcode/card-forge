@@ -39,14 +39,6 @@ export function isRewardedAdSuccess(_result: RewardedAdResult): boolean {
   return true;
 }
 
-/**
- * 개발 서버가 허용하는 임시 광고 완료 ID입니다.
- * 서버의 ALLOW_TEST_AD_REWARDS=true 환경에서만 승인됩니다.
- */
-export function createDevAdCompletionId(): string {
-  return `local-test-ad-${Date.now()}`;
-}
-
 export class RewardedAdService {
   private loadedAdGroupId: string | null = null;
 
