@@ -1,5 +1,7 @@
 const elements = new Set(['EARTH', 'WATER', 'WIND', 'FIRE', 'LIGHT', 'DARK']);
 const grades = new Set(['NORMAL', 'MAGIC', 'RARE', 'SUPER_RARE', 'UNIQUE', 'LEGENDARY']);
+const publicCardImageUrl =
+  /^https:\/\/nmbdwukrvwfaxpasbppj[.]supabase[.]co\/storage\/v1\/object\/public\/images\/cards\/webp\/[a-z0-9_]+[.]webp(?:[?]v=\d+)?$/;
 
 export type InventoryCard = {
   cardId: string;
@@ -49,7 +51,7 @@ function parseCard(value: unknown): InventoryCard {
     name: text(source.name, 'INVALID_CARD_NAME'),
     element,
     grade,
-    imageKey: storageCardKey(source.imageKey),
+    imageKey: cardImageReference(source.imageKey),
     enhancementLevel: safeNonnegativeInteger(
       source.enhancementLevel,
       'INVALID_ENHANCEMENT_LEVEL',
@@ -73,9 +75,12 @@ function text(value: unknown, code: string): string {
   return value;
 }
 
-function storageCardKey(value: unknown): string {
+function cardImageReference(value: unknown): string {
   const result = text(value, 'INVALID_CARD_IMAGE');
-  if (result !== '' && (!result.startsWith('cards/') || result.includes('..'))) {
+  const isLegacyStorageKey =
+    result === '' ||
+    (result.startsWith('cards/') && !result.includes('..'));
+  if (!isLegacyStorageKey && !publicCardImageUrl.test(result)) {
     throw new Error('INVALID_CARD_IMAGE');
   }
   return result;
