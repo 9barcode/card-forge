@@ -253,10 +253,11 @@ export function ForgePage() {
           )}
           {selected ? (
             <View style={styles.strikeScene}>
-              <View style={styles.cardGlow}>
+              <View>
                 <MaxLevelAura
                   level={displayedLevel ?? 0}
                   borderRadius={15}
+                  color={cardOutlineColors[selected.grade]}
                 />
                 <View
                   style={[

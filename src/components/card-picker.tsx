@@ -54,11 +54,14 @@ export function CardPicker({
                   styles.cardItem,
                   { borderColor: rarityColors[card.grade] },
                   selected && styles.selected,
-                  card.enhancementLevel >= 10 && styles.maxLevelCard,
                   disabled && styles.disabled,
                 ]}
               >
-                <MaxLevelAura level={card.enhancementLevel} borderRadius={11} />
+                <MaxLevelAura
+                  level={card.enhancementLevel}
+                  borderRadius={11}
+                  color={rarityColors[card.grade]}
+                />
                 <View
                   style={[
                     styles.rarityBadge,
@@ -124,14 +127,13 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderRadius: 11,
     padding: 4,
-    overflow: 'hidden',
+    overflow: 'visible',
   },
   selected: {
     borderColor: '#EAC681',
     borderWidth: 2,
     backgroundColor: '#34332E',
   },
-  maxLevelCard: { overflow: 'visible' },
   disabled: { opacity: 0.5 },
   rarityBadge: {
     position: 'absolute',

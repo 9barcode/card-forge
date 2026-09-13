@@ -40,13 +40,6 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
-  cardGlow: {
-    shadowColor: '#EAC681',
-    shadowOpacity: 0.7,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 10,
-  },
   cardFrame: {
     width: 171,
     aspectRatio: 512 / 720,

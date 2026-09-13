@@ -46,12 +46,16 @@ export function Card({ card, imageSource, style }: CardProps) {
       accessibilityLabel={`${card.name}, ${gradeLabels[card.grade]}, 강화 ${card.enhancementLevel}`}
       style={[
         styles.card,
-        card.enhancementLevel >= 10 && styles.maxLevelCard,
+        styles.auraCard,
         style,
         { borderColor: outlineColor },
       ]}
     >
-      <MaxLevelAura level={card.enhancementLevel} borderRadius={14} />
+      <MaxLevelAura
+        level={card.enhancementLevel}
+        borderRadius={14}
+        color={outlineColor}
+      />
       <Image source={source} style={styles.image} resizeMode="cover" />
       <View style={[styles.footer, { borderTopColor: outlineColor }]}>
         <Text style={[styles.grade, { color: outlineColor }]}>
@@ -73,7 +77,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#151C2C',
   },
-  maxLevelCard: { overflow: 'visible' },
+  auraCard: { overflow: 'visible' },
   image: {
     width: '100%',
     aspectRatio: 5 / 7,

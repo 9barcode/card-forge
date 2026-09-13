@@ -167,10 +167,13 @@ export function ExchangePage() {
                   styles.cardRow,
                   selected && styles.selectedCard,
                   { borderColor: cardOutlineColors[card.grade] },
-                  card.enhancementLevel >= 10 && styles.maxLevelCard,
                 ]}
               >
-                <MaxLevelAura level={card.enhancementLevel} borderRadius={15} />
+                <MaxLevelAura
+                  level={card.enhancementLevel}
+                  borderRadius={15}
+                  color={cardOutlineColors[card.grade]}
+                />
                 <View style={styles.imageWrap}>
                   <CardArtwork
                     imageKey={card.imageKey}

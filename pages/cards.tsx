@@ -108,10 +108,13 @@ export function CardsPage() {
                     ? styles.twoColumnCard
                     : styles.threeColumnCard,
                   { borderColor: rarityColors[item.grade] },
-                  item.enhancementLevel >= 10 && styles.maxLevelCard,
                 ]}
               >
-                <MaxLevelAura level={item.enhancementLevel} borderRadius={15} />
+                <MaxLevelAura
+                  level={item.enhancementLevel}
+                  borderRadius={15}
+                  color={rarityColors[item.grade]}
+                />
                 <View
                   style={[
                     styles.rarityBadge,

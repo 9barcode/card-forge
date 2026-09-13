@@ -172,6 +172,7 @@ export function PacksPage() {
                 <MaxLevelAura
                   level={reward.enhancementLevel}
                   borderRadius={15}
+                  color={cardOutlineColors[reward.grade]}
                 />
                 <View
                   style={[
