@@ -174,12 +174,7 @@ export function PacksPage() {
                   borderRadius={15}
                   color={cardOutlineColors[reward.grade]}
                 />
-                <View
-                  style={[
-                    styles.rewardCard,
-                    { borderColor: cardOutlineColors[reward.grade] },
-                  ]}
-                >
+                <View style={styles.rewardCard}>
                   <Image
                     source={getCardImage(reward.imageKey)}
                     style={styles.cardImage}

@@ -22,68 +22,44 @@ export function MaxLevelAura({
 }: MaxLevelAuraProps) {
   const isMaxLevel = level >= 10;
   if (!isMaxLevel && !color) return null;
-
-  if (isMaxLevel) {
-    return (
-      <View
-        pointerEvents="none"
-        testID="max-level-gold-aura"
-        style={styles.aura}
-      >
-        <View
-          testID="max-level-gold-wide-glow"
-          style={[styles.maxLevelWideGlow, { borderRadius }]}
-        />
-        <View
-          testID="max-level-gold-core-glow"
-          style={[styles.maxLevelCoreGlow, { borderRadius }]}
-        />
-      </View>
-    );
-  }
-
-  const glowRadius = Math.max(borderRadius - 4, 4);
-  const auraColor = color ?? '#FFD76A';
-  const glowStyle = {
-    backgroundColor: withAlpha(auraColor, 0.16),
-    shadowColor: auraColor,
-    shadowOpacity: 0.72,
-    shadowRadius: 12,
-    elevation: 10,
-  };
+  const auraColor = isMaxLevel ? '#FFD76A' : (color ?? '#FFD76A');
 
   return (
-    <View pointerEvents="none" testID="grade-color-aura" style={styles.aura}>
+    <View
+      pointerEvents="none"
+      testID={isMaxLevel ? 'max-level-gold-aura' : 'grade-color-aura'}
+      style={styles.aura}
+    >
       <View
+        testID={
+          isMaxLevel ? 'max-level-gold-wide-glow' : 'grade-color-wide-glow'
+        }
         style={[
-          styles.glow,
-          styles.topGlow,
-          glowStyle,
-          { borderRadius: glowRadius },
+          styles.wideGlow,
+          {
+            borderRadius,
+            backgroundColor: withAlpha(auraColor, isMaxLevel ? 0.14 : 0.08),
+            shadowColor: auraColor,
+            shadowOpacity: isMaxLevel ? 1 : 0.82,
+            shadowRadius: isMaxLevel ? 28 : 20,
+            elevation: isMaxLevel ? 18 : 14,
+          },
         ]}
       />
       <View
+        testID={
+          isMaxLevel ? 'max-level-gold-core-glow' : 'grade-color-core-glow'
+        }
         style={[
-          styles.glow,
-          styles.rightGlow,
-          glowStyle,
-          { borderRadius: glowRadius },
-        ]}
-      />
-      <View
-        style={[
-          styles.glow,
-          styles.bottomGlow,
-          glowStyle,
-          { borderRadius: glowRadius },
-        ]}
-      />
-      <View
-        style={[
-          styles.glow,
-          styles.leftGlow,
-          glowStyle,
-          { borderRadius: glowRadius },
+          styles.coreGlow,
+          {
+            borderRadius,
+            backgroundColor: withAlpha(auraColor, isMaxLevel ? 0.2 : 0.1),
+            shadowColor: auraColor,
+            shadowOpacity: isMaxLevel ? 0.9 : 0.68,
+            shadowRadius: isMaxLevel ? 12 : 10,
+            elevation: isMaxLevel ? 12 : 8,
+          },
         ]}
       />
     </View>
@@ -95,50 +71,12 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     overflow: 'visible',
   },
-  glow: {
-    position: 'absolute',
-    shadowOffset: { width: 0, height: 0 },
-  },
-  maxLevelWideGlow: {
+  wideGlow: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 215, 106, 0.14)',
-    shadowColor: '#FFD76A',
-    shadowOpacity: 1,
-    shadowRadius: 28,
     shadowOffset: { width: 0, height: 0 },
-    elevation: 18,
   },
-  maxLevelCoreGlow: {
+  coreGlow: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 215, 106, 0.2)',
-    shadowColor: '#FFE7A6',
-    shadowOpacity: 0.9,
-    shadowRadius: 12,
     shadowOffset: { width: 0, height: 0 },
-    elevation: 12,
-  },
-  topGlow: {
-    top: -9,
-    right: 8,
-    left: 8,
-    height: 7,
-  },
-  rightGlow: {
-    top: 8,
-    right: -9,
-    bottom: 8,
-    width: 7,
-  },
-  bottomGlow: {
-    right: 8,
-    bottom: -9,
-    left: 8,
-    height: 7,
-  },
-  leftGlow: {
-    top: 8,
-    bottom: 8,
-    left: -9,
-    width: 7,
   },
 });

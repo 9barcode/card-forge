@@ -259,13 +259,7 @@ export function ForgePage() {
                   borderRadius={15}
                   color={cardOutlineColors[selected.grade]}
                 />
-                <View
-                  style={[
-                    styles.cardFrame,
-                    { borderColor: cardOutlineColors[selected.grade] },
-                    failed && styles.failedCardFrame,
-                  ]}
-                >
+                <View style={[styles.cardFrame, failed && styles.failedCardFrame]}>
                   <CardArtwork
                     imageKey={selected.imageKey}
                     thumbnail

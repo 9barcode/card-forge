@@ -18,7 +18,6 @@ export const styles = StyleSheet.create({
   rewardCard: {
     width: 192,
     aspectRatio: 512 / 720,
-    borderWidth: 3,
     borderRadius: 15,
     overflow: 'hidden',
     backgroundColor: 'rgba(25, 36, 50, 0.96)',

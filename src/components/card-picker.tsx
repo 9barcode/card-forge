@@ -52,7 +52,6 @@ export function CardPicker({
                 onPress={() => onSelect(card.cardId)}
                 style={[
                   styles.cardItem,
-                  { borderColor: rarityColors[card.grade] },
                   selected && styles.selected,
                   disabled && styles.disabled,
                 ]}
@@ -124,14 +123,11 @@ const styles = StyleSheet.create({
     width: '18%',
     minWidth: 0,
     backgroundColor: 'rgba(25, 36, 50, 0.96)',
-    borderWidth: 1.5,
     borderRadius: 11,
     padding: 4,
     overflow: 'visible',
   },
   selected: {
-    borderColor: '#EAC681',
-    borderWidth: 2,
     backgroundColor: '#34332E',
   },
   disabled: { opacity: 0.5 },

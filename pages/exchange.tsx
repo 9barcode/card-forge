@@ -168,11 +168,7 @@ export function ExchangePage() {
                 accessibilityState={{ checked: selected }}
                 accessibilityLabel={`${elementLabels[card.element]} ${gradeLabels[card.grade]} ${card.enhancementLevel}강`}
                 onPress={() => toggle(card.cardId)}
-                style={[
-                  styles.cardRow,
-                  selected && styles.selectedCard,
-                  { borderColor: cardOutlineColors[card.grade] },
-                ]}
+                style={[styles.cardRow, selected && styles.selectedCard]}
               >
                 <MaxLevelAura
                   level={card.enhancementLevel}

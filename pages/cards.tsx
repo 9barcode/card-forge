@@ -107,7 +107,6 @@ export function CardsPage() {
                   cardColumns === 2
                     ? styles.twoColumnCard
                     : styles.threeColumnCard,
-                  { borderColor: rarityColors[item.grade] },
                 ]}
               >
                 <MaxLevelAura

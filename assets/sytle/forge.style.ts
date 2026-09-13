@@ -43,7 +43,6 @@ export const styles = StyleSheet.create({
   cardFrame: {
     width: 171,
     aspectRatio: 512 / 720,
-    borderWidth: 3,
     borderRadius: 15,
     overflow: 'hidden',
     backgroundColor: '#151C2C',
