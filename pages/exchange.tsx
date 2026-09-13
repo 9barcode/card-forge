@@ -2,7 +2,6 @@ import { createRoute } from '@granite-js/react-native';
 import React, { useState } from 'react';
 import {
   Alert,
-  Image,
   ScrollView,
   Text,
   TextInput,
@@ -11,12 +10,12 @@ import {
 } from 'react-native';
 import { styles } from '../assets/sytle/exchange.style';
 import { cardOutlineColors } from '../src/components/card';
+import { CardArtwork } from '../src/components/card-artwork';
 import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
 import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
   elementLabels,
   gameRuntime,
-  getCardThumbnail,
   gradeLabels,
   useGameCache,
 } from '../src/features/game-cache';
@@ -173,8 +172,9 @@ export function ExchangePage() {
               >
                 <MaxLevelAura level={card.enhancementLevel} borderRadius={15} />
                 <View style={styles.imageWrap}>
-                  <Image
-                    source={getCardThumbnail(card.imageKey)}
+                  <CardArtwork
+                    imageKey={card.imageKey}
+                    thumbnail
                     style={styles.cardImage}
                   />
                   <View

@@ -1,17 +1,13 @@
 import React from 'react';
 import {
-  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import type { CachedOwnedCard } from '../features/game-cache/gameCache';
-import {
-  elementLabels,
-  getCardThumbnail,
-  gradeLabels,
-} from '../features/game-cache/gamePresentation';
+import { elementLabels, gradeLabels } from '../features/game-cache/gamePresentation';
+import { CardArtwork } from './card-artwork';
 import { MaxLevelAura } from './max-level-aura';
 
 interface CardPickerProps {
@@ -74,8 +70,9 @@ export function CardPicker({
                   </Text>
                 </View>
                 <View style={styles.imageWrap}>
-                  <Image
-                    source={getCardThumbnail(card.imageKey)}
+                  <CardArtwork
+                    imageKey={card.imageKey}
+                    thumbnail
                     style={styles.cardImage}
                     resizeMode="contain"
                   />

@@ -2,18 +2,17 @@ import { createRoute, useNavigation } from '@granite-js/react-native';
 import React from 'react';
 import {
   FlatList,
-  Image,
   ImageBackground,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { styles } from '../assets/sytle/cards.style';
+import { CardArtwork } from '../src/components/card-artwork';
 import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
   type CardGrade,
   elementLabels,
-  getCardThumbnail,
   gradeLabels,
   useGameCache,
 } from '../src/features/game-cache';
@@ -124,8 +123,9 @@ export function CardsPage() {
                   </Text>
                 </View>
                 <View style={styles.imageWrap}>
-                  <Image
-                    source={getCardThumbnail(item.imageKey)}
+                  <CardArtwork
+                    imageKey={item.imageKey}
+                    thumbnail
                     style={styles.cardImage}
                     resizeMode="contain"
                   />

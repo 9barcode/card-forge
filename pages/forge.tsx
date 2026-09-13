@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
-  Image,
   ImageBackground,
   Platform,
   ScrollView,
@@ -14,12 +13,12 @@ import {
 } from 'react-native';
 import { styles } from '../assets/sytle/forge.style';
 import { cardOutlineColors } from '../src/components/card';
+import { CardArtwork } from '../src/components/card-artwork';
 import { CardPicker } from '../src/components/card-picker';
 import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
 import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
   gameRuntime,
-  getCardThumbnail,
   gradeLabels,
   useGameCache,
 } from '../src/features/game-cache';
@@ -266,8 +265,9 @@ export function ForgePage() {
                     failed && styles.failedCardFrame,
                   ]}
                 >
-                  <Image
-                    source={getCardThumbnail(selected.imageKey)}
+                  <CardArtwork
+                    imageKey={selected.imageKey}
+                    thumbnail
                     style={[styles.heroCard, failed && failedImageStyle]}
                     resizeMode="cover"
                     accessibilityLabel={`${selected.name} ${gradeLabels[selected.grade]} ${displayedLevel}강`}
@@ -391,8 +391,9 @@ export function ForgePage() {
           accessibilityLabel={`카드 강화 중, 모루 타격 ${strikeCount}/3`}
           style={[styles.strikeOverlay, overlayShakeStyle]}
         >
-          <Image
-            source={getCardThumbnail(selected.imageKey)}
+          <CardArtwork
+            imageKey={selected.imageKey}
+            thumbnail
             style={styles.strikeBackdrop}
             resizeMode="cover"
             blurRadius={18}
