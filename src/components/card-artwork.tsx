@@ -1,39 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Image, type ImageProps } from 'react-native';
-import {
-  getCardImage,
-  getCardThumbnail,
-} from '../features/game-cache/gamePresentation';
+import { getCardImage } from '../features/game-cache/gamePresentation';
 
 interface CardArtworkProps extends Omit<ImageProps, 'source'> {
   imageKey: string;
   thumbnail?: boolean;
 }
 
-/** 목록 썸네일이 아직 업로드되지 않았으면 기존 원본 이미지로 자동 전환합니다. */
+/** 앱인토스 요구사항에 맞춰 모든 카드 이미지를 공개 URL로 렌더링합니다. */
 export function CardArtwork({
   imageKey,
-  thumbnail = false,
-  onError,
+  thumbnail: _thumbnail = false,
   ...imageProps
 }: CardArtworkProps) {
-  const [failedThumbnailKey, setFailedThumbnailKey] = useState<string | null>(
-    null,
-  );
-  const thumbnailFailed = failedThumbnailKey === imageKey;
-
-  return (
-    <Image
-      {...imageProps}
-      source={
-        thumbnail && !thumbnailFailed
-          ? getCardThumbnail(imageKey)
-          : getCardImage(imageKey)
-      }
-      onError={(event) => {
-        if (thumbnail) setFailedThumbnailKey(imageKey);
-        onError?.(event);
-      }}
-    />
-  );
+  return <Image {...imageProps} source={getCardImage(imageKey)} />;
 }

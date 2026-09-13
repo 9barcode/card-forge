@@ -17,9 +17,10 @@ const DEFAULT_SUPABASE_URL = 'https://nmbdwukrvwfaxpasbppj.supabase.co';
 const DEFAULT_BUCKET = 'images';
 const DEFAULT_ASSETS_DIR = path.resolve(process.cwd(), 'assets/images');
 const PAGE_SIZE = 1000;
-const CARD_THUMBNAIL_WIDTH = 256;
-const CARD_THUMBNAIL_HEIGHT = 360;
-const CARD_THUMBNAIL_QUALITY = 78;
+const CARD_WEBP_WIDTH = 512;
+const CARD_WEBP_HEIGHT = 720;
+const CARD_WEBP_QUALITY = 78;
+const CARD_IMAGE_CACHE_VERSION = '3';
 const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 const supabaseUrl = (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, '');
@@ -88,38 +89,38 @@ async function collectLocalFiles(directory, root = directory) {
   );
 }
 
-async function createCardThumbnails(localFiles) {
-  const thumbnails = [];
+async function createCardWebpFiles(localFiles) {
+  const webpFiles = [];
 
   for (const file of localFiles) {
     if (
       !file.storagePath.startsWith('cards/') ||
-      file.storagePath.startsWith('cards/thumb/') ||
+      file.storagePath.startsWith('cards/webp/') ||
       !/\.(avif|jpe?g|png|webp)$/i.test(file.storagePath)
     ) {
       continue;
     }
 
     const relativePath = file.storagePath.slice('cards/'.length);
-    const thumbnailPath = `cards/thumb/${relativePath.replace(/\.[^.]+$/, '.webp')}`;
+    const webpPath = `cards/webp/${relativePath.replace(/\.[^.]+$/, '.webp')}`;
     const sourceBuffer = await readFile(file.absolutePath);
     const buffer = await sharp(sourceBuffer)
-      .resize(CARD_THUMBNAIL_WIDTH, CARD_THUMBNAIL_HEIGHT, {
+      .resize(CARD_WEBP_WIDTH, CARD_WEBP_HEIGHT, {
         fit: 'cover',
         position: 'centre',
       })
-      .webp({ quality: CARD_THUMBNAIL_QUALITY })
+      .webp({ quality: CARD_WEBP_QUALITY })
       .toBuffer();
 
-    thumbnails.push({
+    webpFiles.push({
       absolutePath: null,
       buffer,
-      storagePath: thumbnailPath,
+      storagePath: webpPath,
       size: buffer.length,
     });
   }
 
-  return thumbnails;
+  return webpFiles;
 }
 
 async function getFileBuffer(localFile) {
@@ -244,17 +245,72 @@ async function uploadFile(localFile, existsRemotely) {
   console.log(`[${action}] ${localFile.storagePath}`);
 }
 
+async function updateCardImageUrls(cardWebpFiles) {
+  const webpPaths = new Set(cardWebpFiles.map((file) => file.storagePath));
+  const response = await fetch(`${supabaseUrl}/rest/v1/cards?select=id,image_path`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    throw new Error(
+      `카드 DB 조회 실패 (${response.status}): ${await response.text()}`,
+    );
+  }
+
+  const cards = await response.json();
+  if (cards.length !== 36) {
+    throw new Error(`카드 DB는 36행이어야 합니다. 현재 ${cards.length}행입니다.`);
+  }
+
+  for (const card of cards) {
+    const currentPath = String(card.image_path || '');
+    const cardsMarker = '/cards/';
+    const markerIndex = currentPath.indexOf(cardsMarker);
+    const relativePath =
+      markerIndex >= 0
+        ? currentPath.slice(markerIndex + cardsMarker.length).split('?')[0]
+        : currentPath.replace(/^\/+/, '').replace(/^cards\//, '').split('?')[0];
+    const sourceRelativePath = relativePath.replace(/^webp\//, '');
+    const webpPath = `cards/webp/${sourceRelativePath.replace(/\.[^.]+$/, '.webp')}`;
+
+    if (!webpPaths.has(webpPath)) {
+      throw new Error(`생성된 WebP가 없는 카드입니다: ${currentPath}`);
+    }
+
+    const publicUrl = `${supabaseUrl}/storage/v1/object/public/${encodeURIComponent(bucket)}/${encodeStoragePath(webpPath)}?v=${CARD_IMAGE_CACHE_VERSION}`;
+    const updateResponse = await fetch(
+      `${supabaseUrl}/rest/v1/cards?id=eq.${encodeURIComponent(card.id)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ image_path: publicUrl }),
+      },
+    );
+
+    if (!updateResponse.ok) {
+      throw new Error(
+        `카드 ${card.id} URL 변경 실패 (${updateResponse.status}): ${await updateResponse.text()}`,
+      );
+    }
+  }
+
+  console.log('카드 DB image_path 36개를 WebP 공개 URL로 변경했습니다.');
+}
+
 async function main() {
   const sourceFiles = await collectLocalFiles(assetsDir);
-  const thumbnails = await createCardThumbnails(sourceFiles);
-  const localFiles = [...sourceFiles, ...thumbnails].sort((left, right) =>
+  const cardWebpFiles = await createCardWebpFiles(sourceFiles);
+  const localFiles = [...sourceFiles, ...cardWebpFiles].sort((left, right) =>
     left.storagePath.localeCompare(right.storagePath),
   );
   const remoteFiles = await collectRemoteFiles(localFiles);
   const summary = { uploaded: 0, updated: 0, skipped: 0, failed: 0 };
 
   console.log(
-    `로컬 이미지: ${sourceFiles.length}개 / 생성한 카드 썸네일: ${thumbnails.length}개`,
+    `로컬 이미지: ${sourceFiles.length}개 / 생성한 카드 WebP: ${cardWebpFiles.length}개`,
   );
   console.log(`대상 버킷: ${bucket}`);
   if (dryRun) console.log('DRY-RUN: 실제 업로드는 하지 않습니다.');
@@ -285,6 +341,12 @@ async function main() {
     `완료 - 신규 ${summary.uploaded}, 변경 ${summary.updated}, 중복 건너뜀 ${summary.skipped}, 실패 ${summary.failed}`,
   );
   console.log('원격 파일 삭제는 수행하지 않았습니다.');
+
+  if (summary.failed === 0 && !dryRun) {
+    await updateCardImageUrls(cardWebpFiles);
+  } else if (dryRun) {
+    console.log('[DRY-RUN] 카드 DB URL은 변경하지 않았습니다.');
+  }
 
   if (summary.failed > 0) process.exitCode = 1;
 }

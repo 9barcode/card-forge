@@ -47,7 +47,9 @@ export const packService = {
       rarity: 'NORMAL',
       rarityLabel: '노말',
       enhanceLevel: 1,
-      image: require('../../assets/images/cards/wind_archer.png'),
+      image: {
+        uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/cards/webp/wind_archer.webp?v=3',
+      },
     }];
   },
 };

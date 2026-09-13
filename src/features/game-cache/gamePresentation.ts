@@ -22,24 +22,12 @@ export const gradeLabels: Record<CardGrade, string> = {
 const SUPABASE_PUBLIC_IMAGE_BASE_URL =
   'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images';
 // 같은 경로의 이미지를 교체하면 이 값을 올려 장기 캐시 URL을 갱신합니다.
-const CARD_IMAGE_CACHE_VERSION = '2';
+export const CARD_IMAGE_CACHE_VERSION = '3';
 
 export type CardImageVariant = 'full' | 'thumbnail';
 
-const fallbackCardImage: ImageSourcePropType = require('../../../assets/images/cards/earth_guardian.png');
-const cardImages: Record<string, ImageSourcePropType> = {
-  earth_guardian: fallbackCardImage,
-  deep_sea_wave: require('../../../assets/images/cards/deep_sea_wave.png'),
-  gale_spirit: require('../../../assets/images/cards/gale_spirit.png'),
-  flame_dragon: require('../../../assets/images/cards/flame_dragon.png'),
-  radiant_judgment: require('../../../assets/images/cards/radiant_judgment.png'),
-  abyss_lord: require('../../../assets/images/cards/abyss_lord.png'),
-  earth_normal: fallbackCardImage,
-  water_rare: require('../../../assets/images/cards/frost_witch.png'),
-  wind_normal: require('../../../assets/images/cards/wind_archer.png'),
-  fire_legendary: require('../../../assets/images/cards/apocalypse_flame_dragon.png'),
-  light_unique: require('../../../assets/images/cards/radiant_judgment.png'),
-  dark_magic: require('../../../assets/images/cards/shadow_rogue.png'),
+const fallbackCardImage: ImageSourcePropType = {
+  uri: `${SUPABASE_PUBLIC_IMAGE_BASE_URL}/cards/webp/earth_guardian.webp?v=${CARD_IMAGE_CACHE_VERSION}`,
 };
 
 export function getCardImage(imageKey: string): ImageSourcePropType {
@@ -52,21 +40,16 @@ export function getCardThumbnail(imageKey: string): ImageSourcePropType {
 
 function getCardImageSource(
   imageKey: string,
-  variant: CardImageVariant,
+  _variant: CardImageVariant,
 ): ImageSourcePropType {
   const normalizedKey = imageKey.trim().replace(/^\/+/, '');
   if (!normalizedKey) return fallbackCardImage;
-
-  const localImage = cardImages[normalizedKey];
-  if (localImage) return localImage;
 
   if (/^https?:\/\//i.test(imageKey)) {
     return { uri: imageKey };
   }
 
-  const storagePath =
-    variant === 'thumbnail' ? toThumbnailStoragePath(normalizedKey) : normalizedKey;
-  const encodedPath = storagePath
+  const encodedPath = normalizedKey
     .split('/')
     .map(encodeURIComponent)
     .join('/');
@@ -100,16 +83,4 @@ export async function prefetchCardThumbnails(
   await Promise.all(
     uniqueKeys.map((imageKey) => prefetchCardImage(imageKey, 'thumbnail')),
   );
-}
-
-function toThumbnailStoragePath(imageKey: string): string {
-  const relativePath = imageKey.startsWith('cards/')
-    ? imageKey.slice('cards/'.length)
-    : imageKey;
-  const extensionIndex = relativePath.lastIndexOf('.');
-  const pathWithoutExtension =
-    extensionIndex > relativePath.lastIndexOf('/')
-      ? relativePath.slice(0, extensionIndex)
-      : relativePath;
-  return `cards/thumb/${pathWithoutExtension}.webp`;
 }
