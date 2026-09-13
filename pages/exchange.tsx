@@ -2,6 +2,7 @@ import { createRoute } from '@granite-js/react-native';
 import React, { useState } from 'react';
 import {
   Alert,
+  Modal,
   ScrollView,
   Text,
   TextInput,
@@ -43,6 +44,10 @@ export function ExchangePage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [amount, setAmount] = useState('10000');
   const [devUserEarnedReward, setDevUserEarnedReward] = useState(true);
+  const [saleReceipt, setSaleReceipt] = useState<{
+    cardCount: number;
+    crystalReward: number;
+  } | null>(null);
   const selectedCards = game.cards.filter((card) =>
     selectedIds.includes(card.cardId),
   );
@@ -76,10 +81,10 @@ export function ExchangePage() {
           cardIds: selectedIds,
         });
         setSelectedIds([]);
-        Alert.alert(
-          '판매 완료',
-          `${selectedCards.length}장을 판매해 ${format(result.crystalReward)}결정을 받았어요.`,
-        );
+        setSaleReceipt({
+          cardCount: selectedCards.length,
+          crystalReward: result.crystalReward,
+        });
       } else {
         const result = await gameRuntime.actions.exchangePoints({
           accessToken: gameRuntime.requireAccessToken(),
@@ -337,6 +342,46 @@ export function ExchangePage() {
           </TouchableOpacity>
         </>
       )}
+
+      <Modal
+        animationType="fade"
+        onRequestClose={() => setSaleReceipt(null)}
+        transparent
+        visible={saleReceipt !== null}
+      >
+        <View style={styles.resultBackdrop}>
+          {saleReceipt && (
+            <View
+              accessibilityLabel={`판매 완료. ${saleReceipt.cardCount}장을 판매해 ${format(saleReceipt.crystalReward)}결정을 받았어요.`}
+              accessibilityRole="alert"
+              style={styles.resultDialog}
+            >
+              <View style={styles.resultIcon}>
+                <Text style={styles.resultIconText}>◆</Text>
+              </View>
+              <Text style={styles.resultEyebrow}>TRADE COMPLETE</Text>
+              <Text style={styles.resultTitle}>판매 완료</Text>
+              <Text style={styles.resultMessage}>
+                선택한 카드 {saleReceipt.cardCount}장이{'
+'}결정으로 변환되었어요.
+              </Text>
+              <View style={styles.resultReward}>
+                <Text style={styles.resultRewardLabel}>획득한 결정</Text>
+                <Text style={styles.resultRewardValue}>
+                  +{format(saleReceipt.crystalReward)} 결정
+                </Text>
+              </View>
+              <TouchableOpacity
+                accessibilityRole="button"
+                onPress={() => setSaleReceipt(null)}
+                style={styles.resultButton}
+              >
+                <Text style={styles.resultButtonText}>확인</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
