@@ -5,6 +5,7 @@ import {
   createHttpUserRepository,
 } from '../user';
 import { gameCache } from './gameCache';
+import { prefetchCardThumbnails } from './gamePresentation';
 import { gameRuntime } from './gameRuntime';
 import { createHttpGameServerGateway } from './httpGameServerGateway';
 import {
@@ -47,11 +48,19 @@ async function initializeAuthenticatedRuntime(
     const session = await users.initializeCurrentUser();
     gameCache.setCurrentUser(session.user);
     await gameRuntime.initialize(session.accessToken);
+    await prefetchOwnedCardThumbnails();
   } catch (error) {
     if (!shouldUseLocalTestFallback(error)) throw error;
     gameRuntime.configure(createLocalGameplayTestGateway(), 'local-test');
     await gameRuntime.initialize('local-gameplay-test');
+    await prefetchOwnedCardThumbnails();
   }
+}
+
+async function prefetchOwnedCardThumbnails(): Promise<void> {
+  await prefetchCardThumbnails(
+    gameCache.getSnapshot().cards.map((card) => card.imageKey),
+  );
 }
 
 function shouldUseLocalTestFallback(error: unknown): boolean {

@@ -19,7 +19,7 @@ import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
 import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
   gameRuntime,
-  getCardImage,
+  getCardThumbnail,
   gradeLabels,
   useGameCache,
 } from '../src/features/game-cache';
@@ -267,7 +267,7 @@ export function ForgePage() {
                   ]}
                 >
                   <Image
-                    source={getCardImage(selected.imageKey)}
+                    source={getCardThumbnail(selected.imageKey)}
                     style={[styles.heroCard, failed && failedImageStyle]}
                     resizeMode="cover"
                     accessibilityLabel={`${selected.name} ${gradeLabels[selected.grade]} ${displayedLevel}강`}
@@ -392,7 +392,7 @@ export function ForgePage() {
           style={[styles.strikeOverlay, overlayShakeStyle]}
         >
           <Image
-            source={getCardImage(selected.imageKey)}
+            source={getCardThumbnail(selected.imageKey)}
             style={styles.strikeBackdrop}
             resizeMode="cover"
             blurRadius={18}

@@ -9,7 +9,7 @@ import {
 import type { CachedOwnedCard } from '../features/game-cache/gameCache';
 import {
   elementLabels,
-  getCardImage,
+  getCardThumbnail,
   gradeLabels,
 } from '../features/game-cache/gamePresentation';
 import { MaxLevelAura } from './max-level-aura';
@@ -75,7 +75,7 @@ export function CardPicker({
                 </View>
                 <View style={styles.imageWrap}>
                   <Image
-                    source={getCardImage(card.imageKey)}
+                    source={getCardThumbnail(card.imageKey)}
                     style={styles.cardImage}
                     resizeMode="contain"
                   />

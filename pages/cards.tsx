@@ -13,7 +13,7 @@ import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
   type CardGrade,
   elementLabels,
-  getCardImage,
+  getCardThumbnail,
   gradeLabels,
   useGameCache,
 } from '../src/features/game-cache';
@@ -125,7 +125,7 @@ export function CardsPage() {
                 </View>
                 <View style={styles.imageWrap}>
                   <Image
-                    source={getCardImage(item.imageKey)}
+                    source={getCardThumbnail(item.imageKey)}
                     style={styles.cardImage}
                     resizeMode="contain"
                   />

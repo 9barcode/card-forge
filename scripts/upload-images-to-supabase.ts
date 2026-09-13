@@ -11,11 +11,16 @@
 const { createHash } = require('node:crypto');
 const { readdir, readFile, stat } = require('node:fs/promises');
 const path = require('node:path');
+const sharp = require('sharp');
 
 const DEFAULT_SUPABASE_URL = 'https://nmbdwukrvwfaxpasbppj.supabase.co';
 const DEFAULT_BUCKET = 'images';
 const DEFAULT_ASSETS_DIR = path.resolve(process.cwd(), 'assets/images');
 const PAGE_SIZE = 1000;
+const CARD_THUMBNAIL_WIDTH = 256;
+const CARD_THUMBNAIL_HEIGHT = 360;
+const CARD_THUMBNAIL_QUALITY = 78;
+const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 const supabaseUrl = (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, '');
 const secretKey =
@@ -81,6 +86,44 @@ async function collectLocalFiles(directory, root = directory) {
   return files.sort((left, right) =>
     left.storagePath.localeCompare(right.storagePath),
   );
+}
+
+async function createCardThumbnails(localFiles) {
+  const thumbnails = [];
+
+  for (const file of localFiles) {
+    if (
+      !file.storagePath.startsWith('cards/') ||
+      file.storagePath.startsWith('cards/thumb/') ||
+      !/\.(avif|jpe?g|png|webp)$/i.test(file.storagePath)
+    ) {
+      continue;
+    }
+
+    const relativePath = file.storagePath.slice('cards/'.length);
+    const thumbnailPath = `cards/thumb/${relativePath.replace(/\.[^.]+$/, '.webp')}`;
+    const sourceBuffer = await readFile(file.absolutePath);
+    const buffer = await sharp(sourceBuffer)
+      .resize(CARD_THUMBNAIL_WIDTH, CARD_THUMBNAIL_HEIGHT, {
+        fit: 'cover',
+        position: 'centre',
+      })
+      .webp({ quality: CARD_THUMBNAIL_QUALITY })
+      .toBuffer();
+
+    thumbnails.push({
+      absolutePath: null,
+      buffer,
+      storagePath: thumbnailPath,
+      size: buffer.length,
+    });
+  }
+
+  return thumbnails;
+}
+
+async function getFileBuffer(localFile) {
+  return localFile.buffer ?? readFile(localFile.absolutePath);
 }
 
 async function listRemoteDirectory(prefix) {
@@ -150,6 +193,11 @@ function normalizeEtag(value) {
 async function isSameFile(localFile, remoteFile) {
   if (!remoteFile?.metadata) return false;
 
+  const remoteCacheControl = String(
+    remoteFile.metadata.cacheControl ?? remoteFile.metadata.cache_control ?? '',
+  );
+  if (!remoteCacheControl.includes('31536000')) return false;
+
   const remoteSize = Number(
     remoteFile.metadata.size ?? remoteFile.metadata.contentLength,
   );
@@ -160,7 +208,7 @@ async function isSameFile(localFile, remoteFile) {
   );
   if (!remoteEtag || !/^[a-f0-9]{32}$/.test(remoteEtag)) return true;
 
-  const fileBuffer = await readFile(localFile.absolutePath);
+  const fileBuffer = await getFileBuffer(localFile);
   const localMd5 = createHash('md5').update(fileBuffer).digest('hex');
   return localMd5 === remoteEtag;
 }
@@ -172,15 +220,15 @@ async function uploadFile(localFile, existsRemotely) {
     return;
   }
 
-  const fileBuffer = await readFile(localFile.absolutePath);
+  const fileBuffer = await getFileBuffer(localFile);
   const response = await fetch(
     `${supabaseUrl}/storage/v1/object/${encodeURIComponent(bucket)}/${encodeStoragePath(localFile.storagePath)}`,
     {
       method: 'POST',
       headers: {
         ...getAuthHeaders(),
-        'Content-Type': getContentType(localFile.absolutePath),
-        'Cache-Control': '3600',
+        'Content-Type': getContentType(localFile.storagePath),
+        'Cache-Control': IMMUTABLE_CACHE_CONTROL,
         'x-upsert': 'true',
       },
       body: fileBuffer,
@@ -197,11 +245,17 @@ async function uploadFile(localFile, existsRemotely) {
 }
 
 async function main() {
-  const localFiles = await collectLocalFiles(assetsDir);
+  const sourceFiles = await collectLocalFiles(assetsDir);
+  const thumbnails = await createCardThumbnails(sourceFiles);
+  const localFiles = [...sourceFiles, ...thumbnails].sort((left, right) =>
+    left.storagePath.localeCompare(right.storagePath),
+  );
   const remoteFiles = await collectRemoteFiles(localFiles);
   const summary = { uploaded: 0, updated: 0, skipped: 0, failed: 0 };
 
-  console.log(`로컬 이미지: ${localFiles.length}개`);
+  console.log(
+    `로컬 이미지: ${sourceFiles.length}개 / 생성한 카드 썸네일: ${thumbnails.length}개`,
+  );
   console.log(`대상 버킷: ${bucket}`);
   if (dryRun) console.log('DRY-RUN: 실제 업로드는 하지 않습니다.');
 

@@ -16,7 +16,7 @@ import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
   elementLabels,
   gameRuntime,
-  getCardImage,
+  getCardThumbnail,
   gradeLabels,
   useGameCache,
 } from '../src/features/game-cache';
@@ -174,7 +174,7 @@ export function ExchangePage() {
                 <MaxLevelAura level={card.enhancementLevel} borderRadius={15} />
                 <View style={styles.imageWrap}>
                   <Image
-                    source={getCardImage(card.imageKey)}
+                    source={getCardThumbnail(card.imageKey)}
                     style={styles.cardImage}
                   />
                   <View
