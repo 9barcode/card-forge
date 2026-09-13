@@ -20,7 +20,7 @@ const PAGE_SIZE = 1000;
 const CARD_WEBP_WIDTH = 512;
 const CARD_WEBP_HEIGHT = 720;
 const CARD_WEBP_QUALITY = 78;
-const CARD_IMAGE_CACHE_VERSION = '3';
+const CARD_IMAGE_CACHE_VERSION = '4';
 const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 const supabaseUrl = (process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL).replace(/\/$/, '');
