@@ -362,8 +362,7 @@ export function ExchangePage() {
               <Text style={styles.resultEyebrow}>TRADE COMPLETE</Text>
               <Text style={styles.resultTitle}>판매 완료</Text>
               <Text style={styles.resultMessage}>
-                선택한 카드 {saleReceipt.cardCount}장이{'
-'}결정으로 변환되었어요.
+                선택한 카드 {saleReceipt.cardCount}장이{'\n'}결정으로 변환되었어요.
               </Text>
               <View style={styles.resultReward}>
                 <Text style={styles.resultRewardLabel}>획득한 결정</Text>
