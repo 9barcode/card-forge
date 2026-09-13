@@ -23,22 +23,33 @@ export function MaxLevelAura({
   const isMaxLevel = level >= 10;
   if (!isMaxLevel && !color) return null;
 
+  if (isMaxLevel) {
+    return (
+      <View
+        pointerEvents="none"
+        testID="max-level-gold-aura"
+        style={styles.aura}
+      >
+        <View
+          testID="max-level-gold-glow"
+          style={[styles.maxLevelGlow, { borderRadius }]}
+        />
+      </View>
+    );
+  }
+
   const glowRadius = Math.max(borderRadius - 4, 4);
-  const auraColor = isMaxLevel ? '#FFD76A' : (color ?? '#FFD76A');
+  const auraColor = color ?? '#FFD76A';
   const glowStyle = {
-    backgroundColor: withAlpha(auraColor, isMaxLevel ? 0.22 : 0.16),
+    backgroundColor: withAlpha(auraColor, 0.16),
     shadowColor: auraColor,
-    shadowOpacity: isMaxLevel ? 0.95 : 0.72,
-    shadowRadius: isMaxLevel ? 18 : 12,
-    elevation: isMaxLevel ? 16 : 10,
+    shadowOpacity: 0.72,
+    shadowRadius: 12,
+    elevation: 10,
   };
 
   return (
-    <View
-      pointerEvents="none"
-      testID={isMaxLevel ? 'max-level-gold-aura' : 'grade-color-aura'}
-      style={styles.aura}
-    >
+    <View pointerEvents="none" testID="grade-color-aura" style={styles.aura}>
       <View
         style={[
           styles.glow,
@@ -83,6 +94,15 @@ const styles = StyleSheet.create({
   glow: {
     position: 'absolute',
     shadowOffset: { width: 0, height: 0 },
+  },
+  maxLevelGlow: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 215, 106, 0.01)',
+    shadowColor: '#FFD76A',
+    shadowOpacity: 0.95,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 16,
   },
   topGlow: {
     top: -9,

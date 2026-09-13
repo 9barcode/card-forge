@@ -13,6 +13,7 @@ it('10강은 금색 오로라, 나머지는 전달받은 등급색 오로라를 
     React.createElement(MaxLevelAura, { level: 10, color: '#72B6FF' }),
   );
   expect(screen.getByTestId('max-level-gold-aura')).toBeTruthy();
+  expect(screen.getByTestId('max-level-gold-glow')).toBeTruthy();
   expect(screen.queryByTestId('grade-color-aura')).toBeNull();
 });
 
