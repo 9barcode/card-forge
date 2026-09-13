@@ -31,8 +31,12 @@ export function MaxLevelAura({
         style={styles.aura}
       >
         <View
-          testID="max-level-gold-glow"
-          style={[styles.maxLevelGlow, { borderRadius }]}
+          testID="max-level-gold-wide-glow"
+          style={[styles.maxLevelWideGlow, { borderRadius }]}
+        />
+        <View
+          testID="max-level-gold-core-glow"
+          style={[styles.maxLevelCoreGlow, { borderRadius }]}
         />
       </View>
     );
@@ -95,14 +99,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     shadowOffset: { width: 0, height: 0 },
   },
-  maxLevelGlow: {
+  maxLevelWideGlow: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 215, 106, 0.01)',
+    backgroundColor: 'rgba(255, 215, 106, 0.14)',
     shadowColor: '#FFD76A',
-    shadowOpacity: 0.95,
-    shadowRadius: 18,
+    shadowOpacity: 1,
+    shadowRadius: 28,
     shadowOffset: { width: 0, height: 0 },
-    elevation: 16,
+    elevation: 18,
+  },
+  maxLevelCoreGlow: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 215, 106, 0.2)',
+    shadowColor: '#FFE7A6',
+    shadowOpacity: 0.9,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 12,
   },
   topGlow: {
     top: -9,
