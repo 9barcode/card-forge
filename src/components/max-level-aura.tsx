@@ -14,7 +14,7 @@ function withAlpha(hexColor: string, alpha: number) {
   return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
 }
 
-/** 10강은 금색, 그 외 카드는 등급색 오로라를 카드 바깥에 표시합니다. */
+/** 10강은 금색, 그 외 카드는 등급색의 부드러운 확산광을 표시합니다. */
 export function MaxLevelAura({
   level,
   borderRadius = 18,
@@ -35,22 +35,15 @@ export function MaxLevelAura({
           isMaxLevel ? 'max-level-gold-wide-glow' : 'grade-color-wide-glow'
         }
         style={[
-          styles.wideGlow,
+          styles.glow,
           {
-            borderRadius: borderRadius + 16,
-            backgroundColor: withAlpha(auraColor, isMaxLevel ? 0.16 : 0.12),
+            borderRadius,
+            backgroundColor: withAlpha(auraColor, 0.012),
             shadowColor: auraColor,
-            shadowOpacity: isMaxLevel ? 0.95 : 0.78,
-            shadowRadius: isMaxLevel ? 28 : 20,
-          },
-        ]}
-      />
-      <View
-        style={[
-          styles.middleGlow,
-          {
-            borderRadius: borderRadius + 9,
-            backgroundColor: withAlpha(auraColor, isMaxLevel ? 0.2 : 0.15),
+            shadowOpacity: isMaxLevel ? 1 : 0.78,
+            shadowRadius: isMaxLevel ? 34 : 22,
+            elevation: isMaxLevel ? 18 : 11,
+            transform: [{ scale: isMaxLevel ? 1.025 : 1.015 }],
           },
         ]}
       />
@@ -59,10 +52,14 @@ export function MaxLevelAura({
           isMaxLevel ? 'max-level-gold-core-glow' : 'grade-color-core-glow'
         }
         style={[
-          styles.coreGlow,
+          styles.glow,
           {
-            borderRadius: borderRadius + 4,
-            backgroundColor: withAlpha(auraColor, isMaxLevel ? 0.24 : 0.18),
+            borderRadius,
+            backgroundColor: withAlpha(auraColor, 0.01),
+            shadowColor: auraColor,
+            shadowOpacity: isMaxLevel ? 0.92 : 0.62,
+            shadowRadius: isMaxLevel ? 18 : 12,
+            elevation: isMaxLevel ? 14 : 8,
           },
         ]}
       />
@@ -75,26 +72,8 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     overflow: 'visible',
   },
-  wideGlow: {
-    position: 'absolute',
-    top: -16,
-    right: -16,
-    bottom: -16,
-    left: -16,
+  glow: {
+    ...StyleSheet.absoluteFillObject,
     shadowOffset: { width: 0, height: 0 },
-  },
-  middleGlow: {
-    position: 'absolute',
-    top: -9,
-    right: -9,
-    bottom: -9,
-    left: -9,
-  },
-  coreGlow: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    bottom: -4,
-    left: -4,
   },
 });
