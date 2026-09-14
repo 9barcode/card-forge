@@ -103,4 +103,17 @@ describe('Supabase inventory response', () => {
       }],
     })).toThrow('INVALID_CARD_STATUS');
   });
+
+  it('기존 데이터가 10강을 강화 가능으로 저장했어도 최고 단계로 정규화한다', () => {
+    const result = parseGameInventory({
+      userId: '7', crystalBalance: '0', totalCrystalsEarned: '0',
+      cards: [{
+        cardId: '11', templateId: '4', name: '불꽃 기사',
+        element: 'FIRE', grade: 'NORMAL', imageKey: '',
+        enhancementLevel: 10, status: 'ENHANCEABLE',
+      }],
+    });
+
+    expect(result.cards[0]?.status).toBe('MAX_LEVEL');
+  });
 });

@@ -1,4 +1,5 @@
 import { createRoute } from '@granite-js/react-native';
+import { SquareCheckBig, SquareMinus } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -56,6 +57,8 @@ export function ExchangePage() {
   const selectedCards = game.cards.filter((card) =>
     selectedIds.includes(card.cardId),
   );
+  const allSelected =
+    game.cards.length > 0 && selectedCards.length === game.cards.length;
   const total = selectedCards.reduce(
     (sum, card) => sum + getCardCrystalValue(card.grade, card.enhancementLevel),
     0,
@@ -69,6 +72,10 @@ export function ExchangePage() {
   const toggle = (id: string) =>
     setSelectedIds((ids) =>
       ids.includes(id) ? ids.filter((value) => value !== id) : [...ids, id],
+    );
+  const toggleAll = () =>
+    setSelectedIds(
+      allSelected ? [] : game.cards.map((card) => card.cardId),
     );
   const exchange = async () => {
     try {
@@ -164,7 +171,25 @@ export function ExchangePage() {
           </View>
           <View style={styles.sectionHeading}>
             <Text style={styles.heading}>교환할 카드 선택</Text>
-            <Text style={styles.muted}>{selectedIds.length}장 선택</Text>
+            <View style={styles.selectionControls}>
+              <Text style={styles.muted}>{selectedCards.length}장 선택</Text>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={allSelected ? '카드 전체 선택 해제' : '카드 전체 선택'}
+                disabled={game.cards.length === 0}
+                onPress={toggleAll}
+                style={styles.selectAllButton}
+              >
+                {allSelected ? (
+                  <SquareMinus color="#F4D391" size={17} strokeWidth={2.2} />
+                ) : (
+                  <SquareCheckBig color="#F4D391" size={17} strokeWidth={2.2} />
+                )}
+                <Text style={styles.selectAllText}>
+                  {allSelected ? '선택 해제' : '전체 선택'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
           <Text style={styles.muted}>
             등급과 강화 단계에 따라 결정 가치가 달라져요.

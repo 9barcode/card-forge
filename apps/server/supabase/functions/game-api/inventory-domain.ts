@@ -45,10 +45,15 @@ function parseCard(value: unknown): InventoryCard {
   const source = record(value, 'INVALID_INVENTORY_CARD');
   const element = text(source.element, 'INVALID_CARD_ELEMENT');
   const grade = text(source.grade, 'INVALID_CARD_GRADE');
-  const status = text(source.status, 'INVALID_CARD_STATUS') as InventoryCard['status'];
+  const storedStatus = text(source.status, 'INVALID_CARD_STATUS') as InventoryCard['status'];
   if (!elements.has(element)) throw new Error('INVALID_CARD_ELEMENT');
   if (!grades.has(grade)) throw new Error('INVALID_CARD_GRADE');
-  if (!statuses.has(status)) throw new Error('INVALID_CARD_STATUS');
+  if (!statuses.has(storedStatus)) throw new Error('INVALID_CARD_STATUS');
+  const enhancementLevel = safeNonnegativeInteger(
+    source.enhancementLevel,
+    'INVALID_ENHANCEMENT_LEVEL',
+  );
+  const status = enhancementLevel >= 10 ? 'MAX_LEVEL' : storedStatus;
   return {
     cardId: positiveId(source.cardId, 'INVALID_CARD_ID'),
     templateId: positiveId(source.templateId, 'INVALID_TEMPLATE_ID'),
@@ -56,10 +61,7 @@ function parseCard(value: unknown): InventoryCard {
     element,
     grade,
     imageKey: cardImageReference(source.imageKey),
-    enhancementLevel: safeNonnegativeInteger(
-      source.enhancementLevel,
-      'INVALID_ENHANCEMENT_LEVEL',
-    ),
+    enhancementLevel,
     status,
   };
 }
