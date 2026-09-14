@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { styles } from '../assets/sytle/forge.style';
+import { BannerAd } from '../src/components/banner-ad';
 import { cardOutlineColors } from '../src/components/card';
 import { CardArtwork } from '../src/components/card-artwork';
 import { CardPicker } from '../src/components/card-picker';
@@ -37,6 +38,9 @@ export const Route = createRoute('/forge', {
 });
 
 type Phase = 'idle' | 'loading' | 'ad' | 'striking' | 'result';
+
+const wait = (durationMs: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, durationMs));
 
 export function ForgePage() {
   const game = useGameCache();
@@ -120,14 +124,7 @@ export function ForgePage() {
       activeStrike.current = animation;
       animation.start(({ finished }) => {
         if (!finished || cancelled) return;
-        if (count < 3) {
-          runStrike(count + 1);
-          return;
-        }
-        activeStrike.current = null;
-        setStrikeCount(0);
-        setPhase('result');
-        busy.current = false;
+        runStrike(count >= 3 ? 1 : count + 1);
       });
     };
 
@@ -155,13 +152,20 @@ export function ForgePage() {
         throw new Error('REWARDED_AD_REWARD_FAILED');
       }
 
-      const outcome = await gameRuntime.actions.enhanceCard({
-        accessToken: gameRuntime.requireAccessToken(),
-        requestId: gameRuntime.nextRequestId(),
-        cardId: selected.cardId,
-      });
-      setResult(outcome.result);
       setPhase('striking');
+      const [outcome] = await Promise.all([
+        gameRuntime.actions.enhanceCard({
+          accessToken: gameRuntime.requireAccessToken(),
+          requestId: gameRuntime.nextRequestId(),
+          cardId: selected.cardId,
+        }),
+        wait(5_000),
+      ]);
+
+      setResult(outcome.result);
+      setStrikeCount(0);
+      setPhase('result');
+      busy.current = false;
     } catch (reason) {
       const code = reason instanceof Error ? reason.message : '';
       setError(
@@ -417,6 +421,9 @@ export function ForgePage() {
           <Text style={styles.strikeProgress}>
             강화 중 · {strikeCount}/3
           </Text>
+          <View style={styles.strikeBanner}>
+            <BannerAd />
+          </View>
         </Animated.View>
       )}
     </ImageBackground>

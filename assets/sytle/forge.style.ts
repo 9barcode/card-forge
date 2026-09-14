@@ -218,7 +218,7 @@ export const styles = StyleSheet.create({
   strikeProgress: {
     position: 'absolute',
     right: 0,
-    bottom: 72,
+    bottom: 132,
     left: 0,
     color: '#F4E6CC',
     fontSize: 16,
@@ -226,6 +226,13 @@ export const styles = StyleSheet.create({
     letterSpacing: 1,
     textAlign: 'center',
     zIndex: 4,
+  },
+  strikeBanner: {
+    position: 'absolute',
+    right: 24,
+    bottom: 20,
+    left: 24,
+    zIndex: 8,
   },
   emptyCard: {
     width: 171,
