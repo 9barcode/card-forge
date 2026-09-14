@@ -277,6 +277,9 @@ export function ExchangePage() {
               {format(cardValues.crystalsPerPoint)}결정 = 1포인트
             </Text>
           </View>
+          <View style={styles.cardExchangeBanner}>
+            <BannerAd />
+          </View>
           <Text style={styles.heading}>교환할 결정</Text>
           <View style={styles.inputRow}>
             <TextInput
