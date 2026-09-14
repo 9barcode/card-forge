@@ -25,6 +25,7 @@ const cachedCard: ServerGameSnapshot['cards'][number] = {
 const serverSnapshot: ServerGameSnapshot = {
   cards: [cachedCard],
   crystalBalance: 10_000,
+  totalCrystalsEarned: 20_000,
   packAvailability: {
     packType: 'FREE',
     dailyLimit: 20,
@@ -66,6 +67,7 @@ describe('gameCache', () => {
       status: 'ready',
       cards: serverSnapshot.cards,
       crystalBalance: 10_000,
+      totalCrystalsEarned: 20_000,
       packAvailability: serverSnapshot.packAvailability,
       lastSyncedAt: serverSnapshot.syncedAt,
     });
@@ -205,6 +207,7 @@ describe('gameCache', () => {
 
     expect(cache.getSnapshot()).toMatchObject({
       crystalBalance: 20_000,
+      totalCrystalsEarned: 30_000,
       pendingAction: null,
       packAvailability: { ownedCardCount: 4, storageFull: false },
     });
@@ -239,6 +242,7 @@ describe('gameCache', () => {
     expect(cache.getSnapshot()).toMatchObject({
       cards: [],
       crystalBalance: 60_000,
+      totalCrystalsEarned: 70_000,
       packAvailability: { ownedCardCount: 0 },
     });
   });
@@ -341,6 +345,7 @@ describe('gameCache', () => {
       status: 'idle',
       cards: [],
       crystalBalance: null,
+      totalCrystalsEarned: null,
       packAvailability: null,
       pendingAction: null,
       error: null,

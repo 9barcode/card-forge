@@ -15,6 +15,10 @@ import {
 } from 'react-native';
 import { SvgUri } from 'react-native-svg';
 import { styles } from '../assets/sytle/index.style';
+import {
+  getPlayerLevel,
+  getPlayerLevelStarCount,
+} from '../src/features/player-level/playerLevel';
 import { BannerAd } from '../src/components/banner-ad';
 import { CardCollectionModal } from '../src/components/card-collection-modal';
 import { MaxLevelAura } from '../src/components/max-level-aura';
@@ -158,9 +162,15 @@ export function HomePage() {
   }
 
   const nickname = game.currentUser?.displayName ?? '모험가';
+  const playerLevel = getPlayerLevel(game.totalCrystalsEarned ?? 0);
+  const levelStars = Array.from(
+    { length: getPlayerLevelStarCount(playerLevel.level) },
+    () => '★',
+  ).join(' ');
   const user = {
     nickname,
-    level: 1,
+    level: playerLevel.level,
+    title: playerLevel.name,
     crystals: game.crystalBalance ?? 0,
   };
 
@@ -198,7 +208,9 @@ export function HomePage() {
           <View style={styles.playerInfo}>
             <Text style={styles.profileLabel}>CARD COLLECTOR</Text>
             <Text style={styles.nickname}>{user.nickname}</Text>
-            <Text style={styles.levelText}>Lv. {user.level} · 카드 수집가</Text>
+            <Text style={styles.levelText}>
+              Lv. {user.level} · {user.title}
+            </Text>
             <View style={styles.currencyCard}>
               <Text style={styles.crystalIcon}>◆</Text>
               <View>
@@ -218,7 +230,7 @@ export function HomePage() {
             />
             <View style={styles.characterShade} />
             <View style={styles.stars}>
-              <Text style={styles.starText}>★ ★ ★ ★ ★</Text>
+              <Text style={styles.starText}>{levelStars}</Text>
             </View>
           </View>
         </View>

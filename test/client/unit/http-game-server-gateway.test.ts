@@ -36,6 +36,7 @@ it('Supabase 보관함 응답을 게임 캐시 스냅샷으로 변환한다', as
     { headers: { Authorization: 'Bearer session-token' } },
   );
   expect(snapshot.crystalBalance).toBe(10000);
+  expect(snapshot.totalCrystalsEarned).toBe(20000);
   expect(snapshot.cards[0]).toEqual(
     expect.objectContaining({
       cardId: '7',

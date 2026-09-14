@@ -76,6 +76,7 @@ export interface ServerGameSnapshot {
   cards: readonly CachedOwnedCard[];
   collection?: readonly CachedCollectionEntry[];
   crystalBalance: number;
+  totalCrystalsEarned: number;
   packAvailability: CachedPackAvailability;
   syncedAt?: string;
 }
@@ -111,6 +112,7 @@ export interface GameCacheSnapshot {
   cards: readonly CachedOwnedCard[];
   collection: readonly CachedCollectionEntry[];
   crystalBalance: number | null;
+  totalCrystalsEarned: number | null;
   packAvailability: CachedPackAvailability | null;
   pendingAction: PendingGameAction | null;
   error: GameCacheError | null;
@@ -126,6 +128,7 @@ const createInitialSnapshot = (): GameCacheSnapshot => ({
   cards: [],
   collection: [],
   crystalBalance: null,
+  totalCrystalsEarned: null,
   packAvailability: null,
   pendingAction: null,
   error: null,
@@ -139,6 +142,7 @@ const copyServerSnapshot = (snapshot: ServerGameSnapshot) => ({
     snapshot.collection ?? snapshot.cards.map(toCollectionEntry)
   ).map((entry) => ({ ...entry })),
   crystalBalance: snapshot.crystalBalance,
+  totalCrystalsEarned: snapshot.totalCrystalsEarned,
   packAvailability: { ...snapshot.packAvailability },
   lastSyncedAt: snapshot.syncedAt ?? new Date().toISOString(),
 });
@@ -317,6 +321,8 @@ export const createGameCache = () => {
           .filter((card) => !soldCardIds.has(card.cardId))
           .map((card) => ({ ...card })),
         crystalBalance: result.crystalBalance,
+        totalCrystalsEarned:
+          (current.totalCrystalsEarned ?? 0) + result.crystalReward,
         packAvailability: { ...result.packAvailability },
         pendingAction: null,
         error: null,

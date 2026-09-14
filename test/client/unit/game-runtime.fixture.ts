@@ -11,6 +11,7 @@ export const initialGameSnapshot: ServerGameSnapshot = {
     card('card-fire', '불꽃 드래곤', 'FIRE', 'LEGENDARY', 9),
   ],
   crystalBalance: 1_000_000,
+  totalCrystalsEarned: 1_500_000,
   packAvailability: {
     packType: 'AD',
     dailyLimit: 20,

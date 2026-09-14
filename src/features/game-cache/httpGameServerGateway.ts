@@ -228,11 +228,15 @@ function parseSnapshot(value: unknown): ServerGameSnapshot {
   const cardsValue = source.cards;
   if (!Array.isArray(cardsValue)) throw new Error('INVALID_GAME_API_RESPONSE');
   const cards = cardsValue.map(parseCard);
-  const crystalBalance = integer(source.crystalBalance);
+  const crystalBalance = nonnegativeSafeInteger(source.crystalBalance);
+  const totalCrystalsEarned = nonnegativeSafeInteger(
+    source.totalCrystalsEarned,
+  );
   const syncedAt = string(source.syncedAt);
   return {
     cards,
     crystalBalance,
+    totalCrystalsEarned,
     packAvailability: {
       packType: 'FREE_DAILY',
       dailyLimit: 20,

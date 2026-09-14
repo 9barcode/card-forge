@@ -96,6 +96,7 @@ export function createLocalGameplayTestGateway(
 ): GameServerGateway {
   let cards: CachedOwnedCard[] = [];
   let crystalBalance = 0;
+  let totalCrystalsEarned = 0;
   let usedToday = 0;
   let sequence = 0;
   let lastPackReservationAt = 0;
@@ -114,6 +115,7 @@ export function createLocalGameplayTestGateway(
   const snapshot = (): ServerGameSnapshot => ({
     cards: cards.map((card) => ({ ...card })),
     crystalBalance,
+    totalCrystalsEarned,
     packAvailability: availability(),
     syncedAt: new Date().toISOString(),
   });
@@ -200,6 +202,7 @@ export function createLocalGameplayTestGateway(
       );
       cards = cards.filter((card) => !unique.has(card.cardId));
       crystalBalance += crystalReward;
+      totalCrystalsEarned += crystalReward;
       return {
         soldCardIds: [...cardIds],
         crystalReward,
