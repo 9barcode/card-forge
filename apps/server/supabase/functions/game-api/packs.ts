@@ -1,7 +1,12 @@
 import { createServerDatabase } from '../_shared/database.ts';
 import { json } from '../_shared/http.ts';
+import { rejectProbabilityConfigMismatch } from '../_shared/probability-config.ts';
 import { requireSessionUser } from './membership.ts';
-import { drawCardTemplateId, secureRandomBelow } from './pack-opening-domain.ts';
+import {
+  drawCardTemplateId,
+  PACK_PROBABILITY_SCALE,
+  secureRandomBelow,
+} from './pack-opening-domain.ts';
 
 export async function handlePacks(
   request: Request,
@@ -10,9 +15,13 @@ export async function handlePacks(
   if (request.method !== 'POST') return null;
 
   if (path.endsWith('/api/v1/pack-openings/reservations')) {
+    const mismatch = rejectProbabilityConfigMismatch(request);
+    if (mismatch) return mismatch;
     return reservePackOpening(request);
   }
   if (path.endsWith('/api/v1/pack-openings')) {
+    const mismatch = rejectProbabilityConfigMismatch(request);
+    if (mismatch) return mismatch;
     return openPack(request);
   }
   return null;
@@ -28,7 +37,7 @@ async function reservePackOpening(request: Request): Promise<Response> {
     p_user_id: userId,
     p_request_id: requestId,
     p_card_id: drawCardTemplateId(
-      secureRandomBelow(10_000),
+      secureRandomBelow(PACK_PROBABILITY_SCALE),
       secureRandomBelow(6),
     ),
   });

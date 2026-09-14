@@ -1,10 +1,18 @@
 import { createServerDatabase } from '../_shared/database.ts';
 import { json } from '../_shared/http.ts';
-import { drawEnhancementResult, secureEnhancementTicket } from './enhancement-domain.ts';
+import { rejectProbabilityConfigMismatch } from '../_shared/probability-config.ts';
+import {
+  type CardGrade,
+  drawEnhancementResult,
+  MAX_ENHANCEMENT_LEVEL,
+  secureEnhancementTicket,
+} from './enhancement-domain.ts';
 import { requireSessionUser } from './membership.ts';
 
 export async function handleEnhancements(request: Request, path: string): Promise<Response | null> {
   if (request.method !== 'POST' || !path.endsWith('/api/v1/enhancements')) return null;
+  const mismatch = rejectProbabilityConfigMismatch(request);
+  if (mismatch) return mismatch;
   const userId = await requireSessionUser(request);
   const requestId = request.headers.get('idempotency-key') ?? '';
   if (!/^[A-Za-z0-9._:-]{8,100}$/.test(requestId)) {
@@ -17,32 +25,57 @@ export async function handleEnhancements(request: Request, path: string): Promis
     p_user_id: userId,
   });
   if (inventoryError) return json({ code: 'INVENTORY_LOOKUP_FAILED' }, 500);
-  const level = findEnhancementLevel(inventory, body.cardId);
-  if (level === null) return json({ code: 'CARD_NOT_FOUND' }, 404);
-  if (level >= 10) return json({ code: 'MAX_ENHANCEMENT_LEVEL' }, 409);
+  const card = findEnhancementCard(inventory, body.cardId);
+  if (card === null) return json({ code: 'CARD_NOT_FOUND' }, 404);
+  if (card.level >= MAX_ENHANCEMENT_LEVEL) {
+    return json({ code: 'MAX_ENHANCEMENT_LEVEL' }, 409);
+  }
 
-  const result = drawEnhancementResult(level + 1, secureEnhancementTicket());
+  const result = drawEnhancementResult(
+    card.level + 1,
+    card.grade,
+    secureEnhancementTicket(),
+  );
   const { data, error } = await database.rpc('enhance_game_card', {
     p_user_id: userId,
     p_request_id: requestId,
     p_user_card_id: Number(body.cardId),
-    p_expected_level: level,
+    p_expected_level: card.level,
     p_success: result === 'SUCCESS',
   });
   if (error) return databaseError(error.message);
   return json(data, 200);
 }
 
-function findEnhancementLevel(value: unknown, cardId: string): number | null {
+function findEnhancementCard(
+  value: unknown,
+  cardId: string,
+): { level: number; grade: CardGrade } | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const cards = (value as { cards?: unknown }).cards;
   if (!Array.isArray(cards)) return null;
   const card = cards.find((item) =>
     item && typeof item === 'object' && (item as { cardId?: unknown }).cardId === cardId
-  ) as { enhancementLevel?: unknown } | undefined;
-  return typeof card?.enhancementLevel === 'number' && Number.isSafeInteger(card.enhancementLevel)
-    ? card.enhancementLevel
-    : null;
+  ) as { enhancementLevel?: unknown; grade?: unknown } | undefined;
+  if (
+    typeof card?.enhancementLevel !== 'number' ||
+    !Number.isSafeInteger(card.enhancementLevel) ||
+    !isCardGrade(card.grade)
+  ) {
+    return null;
+  }
+  return { level: card.enhancementLevel, grade: card.grade };
+}
+
+function isCardGrade(value: unknown): value is CardGrade {
+  return [
+    'NORMAL',
+    'MAGIC',
+    'RARE',
+    'SUPER_RARE',
+    'UNIQUE',
+    'LEGENDARY',
+  ].includes(value as CardGrade);
 }
 
 function isPositiveId(value: unknown): value is string {

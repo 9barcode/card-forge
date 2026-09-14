@@ -13,6 +13,7 @@ import type {
   ServerGameSnapshot,
   ServerPackOpeningResult,
 } from './gameCache';
+import { probabilityConfigHeaders } from './probabilityConfig';
 
 const elements = new Set<CardElement>([
   'EARTH',
@@ -62,6 +63,7 @@ export function createHttpGameServerGateway({
             Authorization: `Bearer ${command.accessToken}`,
             'Content-Type': 'application/json',
             'Idempotency-Key': command.requestId,
+            ...probabilityConfigHeaders,
           },
           body: JSON.stringify({}),
         },
@@ -81,6 +83,7 @@ export function createHttpGameServerGateway({
             Authorization: `Bearer ${command.accessToken}`,
             'Content-Type': 'application/json',
             'Idempotency-Key': command.requestId,
+            ...probabilityConfigHeaders,
           },
           body: JSON.stringify({}),
         },
@@ -99,6 +102,7 @@ export function createHttpGameServerGateway({
             Authorization: `Bearer ${command.accessToken}`,
             'Content-Type': 'application/json',
             'Idempotency-Key': command.requestId,
+            ...probabilityConfigHeaders,
           },
           body: JSON.stringify({
             cardId: command.cardId,

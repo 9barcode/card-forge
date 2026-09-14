@@ -1,4 +1,3 @@
-import cardDrawRates from '../../../assets/config/card-draw-rates.json';
 import { getCardCrystalValue } from '../../services/cardValues';
 import { getEnhancementSuccessRate } from '../../services/enhancementService';
 import type { GameServerGateway } from './gameActionService';
@@ -9,6 +8,7 @@ import type {
   ServerGameSnapshot,
 } from './gameCache';
 import { gameRuntime } from './gameRuntime';
+import { probabilityConfigCache } from './probabilityConfig';
 
 /**
  * 앱인토스 공식 테스트 광고 뒤의 UI/캐시 흐름을 확인하기 위한 로컬 게이트웨이입니다.
@@ -74,6 +74,7 @@ const cardDrawGradeOrder: readonly CardGrade[] = [
 ];
 
 function drawLocalTemplate(randomValue: number): TestCardTemplate {
+  const cardDrawRates = probabilityConfigCache.cardDrawRates;
   const scale = cardDrawRates.probabilityScale;
   const ticket = Math.min(
     scale - 1,

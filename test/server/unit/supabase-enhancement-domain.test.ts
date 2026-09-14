@@ -10,7 +10,7 @@ describe('Supabase V2 enhancement result', () => {
     [10, 199_999, 'SUCCESS'],
     [10, 200_000, 'FAILURE'],
   ] as const)('%i강의 경계 티켓을 판정한다', (level, ticket, expected) => {
-    expect(drawEnhancementResult(level, ticket)).toBe(expected);
+    expect(drawEnhancementResult(level, 'LEGENDARY', ticket)).toBe(expected);
   });
 
   it.each([
@@ -20,6 +20,6 @@ describe('Supabase V2 enhancement result', () => {
     [2, 1_000_000],
     [2, 1.5],
   ])('잘못된 단계 또는 난수를 거절한다', (level, ticket) => {
-    expect(() => drawEnhancementResult(level, ticket)).toThrow();
+    expect(() => drawEnhancementResult(level, 'LEGENDARY', ticket)).toThrow();
   });
 });

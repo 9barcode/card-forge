@@ -2,17 +2,16 @@
   "name": "card-forge",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "apps/server"
-  ],
+  "workspaces": ["apps/server"],
   "scripts": {
-    "dev": "granite dev",
-    "build": "node scripts/patch-granite-windows-path.cjs && node ./node_modules/@apps-in-toss/framework/bin/ait.js build",
+    "probability:config": "node apps/server/supabase/scripts/generate-probability-config.cjs",
+    "dev": "npm run probability:config && granite dev",
+    "build": "npm run probability:config && node scripts/patch-granite-windows-path.cjs && node ./node_modules/@apps-in-toss/framework/bin/ait.js build",
     "test": "jest --passWithNoTests",
     "test:client": "jest --runInBand",
     "typecheck": "tsc --noEmit",
     "lint": "biome check --write",
-    "deploy": "ait deploy",
+    "deploy": "npm run probability:config && ait deploy",
     "storage:sync": "node scripts/upload-images-to-supabase.ts",
     "server:build": "npm run build --workspace @card-forge/server",
     "server:test": "npm test --workspace @card-forge/server",
