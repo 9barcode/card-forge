@@ -54,6 +54,12 @@ export const styles = StyleSheet.create({
     height: 1,
     opacity: 0,
   },
+  loadingBanner: {
+    position: 'absolute',
+    left: 24,
+    right: 24,
+    bottom: 24,
+  },
   loadingTitle: {
     color: '#FFF5E3',
     fontSize: 18,

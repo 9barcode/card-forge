@@ -76,6 +76,8 @@ export function HomePage() {
   const navigation = useNavigation();
   const game = useGameCache();
   const [gameUserHash, setGameUserHash] = useState<string | null>(null);
+  const [hasMinimumLoadingElapsed, setHasMinimumLoadingElapsed] =
+    useState(false);
   const [isCharacterCardLoaded, setIsCharacterCardLoaded] = useState(false);
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const environment =
@@ -108,11 +110,20 @@ export function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    const minimumLoadingTimer = setTimeout(() => {
+      setHasMinimumLoadingElapsed(true);
+    }, 5_000);
+
+    return () => clearTimeout(minimumLoadingTimer);
+  }, []);
+
   const isInitialLoading =
     game.status === 'idle' ||
     game.status === 'loading' ||
     gameUserHash === null ||
-    !isCharacterCardLoaded;
+    !isCharacterCardLoaded ||
+    !hasMinimumLoadingElapsed;
 
   if (isInitialLoading) {
     return (
@@ -139,6 +150,9 @@ export function HomePage() {
         ) : null}
         <Text style={styles.loadingTitle}>카드의 세계로 들어가는 중…</Text>
         <ActivityIndicator color="#D5B87F" size="small" />
+        <View style={styles.loadingBanner}>
+          <BannerAd />
+        </View>
       </View>
     );
   }
