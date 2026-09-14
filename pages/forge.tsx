@@ -16,7 +16,10 @@ import { BannerAd } from '../src/components/banner-ad';
 import { cardOutlineColors } from '../src/components/card';
 import { CardArtwork } from '../src/components/card-artwork';
 import { CardPicker } from '../src/components/card-picker';
-import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
+import {
+  type DevRewardedAdMode,
+  DevRewardedAdToggle,
+} from '../src/components/dev-rewarded-ad-toggle';
 import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
   gameRuntime,
@@ -31,6 +34,7 @@ import {
   isRewardedAdSuccess,
   rewardedAdService,
 } from '../src/services/rewardedAdService';
+import { appLogger } from '../src/utils/appLogger';
 
 export const Route = createRoute('/forge', {
   validateParams: (params) => params,
@@ -54,7 +58,8 @@ export function ForgePage() {
   const [attemptedLevel, setAttemptedLevel] = useState<number | null>(null);
   const [strikeCount, setStrikeCount] = useState(0);
   const [error, setError] = useState('');
-  const [devUserEarnedReward, setDevUserEarnedReward] = useState(true);
+  const [devRewardedAdMode, setDevRewardedAdMode] =
+    useState<DevRewardedAdMode>(true);
   const busy = useRef(false);
   const activeStrike = useRef<Animated.CompositeAnimation | null>(null);
   const hammerProgress = useRef(new Animated.Value(0)).current;
@@ -143,13 +148,20 @@ export function ForgePage() {
     setResult(null);
     setAttemptedLevel(selected.enhancementLevel);
     setPhase('loading');
+    appLogger.info('FORGE', '강화 시도 시작', {
+      cardId: selected.cardId,
+      enhancementLevel: selected.enhancementLevel,
+      devRewardedAdMode,
+    });
     try {
-      await rewardedAdService.load();
-      setPhase('ad');
-      const ad = await rewardedAdService.show(devUserEarnedReward);
-      const rewardSuccess = isRewardedAdSuccess(ad);
-      if (!rewardSuccess) {
-        throw new Error('REWARDED_AD_REWARD_FAILED');
+      if (devRewardedAdMode !== 'NO_AD') {
+        await rewardedAdService.load();
+        setPhase('ad');
+        const ad = await rewardedAdService.show(devRewardedAdMode);
+        const rewardSuccess = isRewardedAdSuccess(ad);
+        if (!rewardSuccess) {
+          throw new Error('REWARDED_AD_REWARD_FAILED');
+        }
       }
 
       setPhase('striking');
@@ -162,12 +174,26 @@ export function ForgePage() {
         wait(5_000),
       ]);
 
+      appLogger.info('FORGE', '강화 결과 수신', {
+        cardId: selected.cardId,
+        attemptedLevel: selected.enhancementLevel,
+        result: outcome.result,
+      });
       setResult(outcome.result);
       setStrikeCount(0);
       setPhase('result');
       busy.current = false;
     } catch (reason) {
       const code = reason instanceof Error ? reason.message : '';
+      appLogger.error('FORGE', '강화 처리 실패', {
+        cardId: selected.cardId,
+        enhancementLevel: selected.enhancementLevel,
+        devRewardedAdMode,
+        code: code || 'UNKNOWN_ERROR',
+        name: reason instanceof Error ? reason.name : typeof reason,
+        stack: reason instanceof Error ? reason.stack : undefined,
+        raw: reason instanceof Error ? undefined : reason,
+      });
       setError(
         code === 'REWARDED_AD_NOT_SUPPORTED'
           ? '현재 환경에서는 광고를 재생할 수 없어요. 토스 앱에서 다시 실행해 주세요.'
@@ -350,12 +376,14 @@ export function ForgePage() {
           ) : (
             <>
               <Text style={styles.hint}>
-                광고 완료 후 선택한 카드 한 장만 강화해요.
+                {devRewardedAdMode === 'NO_AD'
+                  ? 'DEV 모드에서 광고 없이 선택한 카드 한 장을 강화해요.'
+                  : '광고 완료 후 선택한 카드 한 장만 강화해요.'}
               </Text>
               <DevRewardedAdToggle
-                value={devUserEarnedReward}
+                value={devRewardedAdMode}
                 disabled={phase !== 'idle'}
-                onChange={setDevUserEarnedReward}
+                onChange={setDevRewardedAdMode}
               />
               <TouchableOpacity
                 accessibilityRole="button"
