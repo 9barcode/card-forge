@@ -13,7 +13,10 @@ import {
 import { styles } from '../assets/sytle/packs.style';
 import { BannerAd } from '../src/components/banner-ad';
 import { cardOutlineColors } from '../src/components/card';
-import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
+import {
+  type DevRewardedAdMode,
+  DevRewardedAdToggle,
+} from '../src/components/dev-rewarded-ad-toggle';
 import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
   type CachedOwnedCard,
@@ -43,7 +46,8 @@ export function PacksPage() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [message, setMessage] = useState('');
   const [reward, setReward] = useState<CachedOwnedCard | null>(null);
-  const [devUserEarnedReward, setDevUserEarnedReward] = useState(true);
+  const [devRewardedAdMode, setDevRewardedAdMode] =
+    useState<DevRewardedAdMode>(true);
   const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
   const [clock, setClock] = useState(() => Date.now());
   const game = useGameCache();
@@ -117,9 +121,11 @@ export function PacksPage() {
       const accessToken = gameRuntime.requireAccessToken();
       const requestId = gameRuntime.nextRequestId();
 
-      // 광고 로드가 성공한 뒤에만 서버 예약과 1분 쿨다운을 시작합니다.
-      await rewardedAdService.load();
-      if (!mounted.current) return;
+      // 광고 모드에서는 광고 로드가 성공한 뒤에만 예약과 쿨다운을 시작합니다.
+      if (devRewardedAdMode !== 'NO_AD') {
+        await rewardedAdService.load();
+        if (!mounted.current) return;
+      }
 
       const reservation = await gameRuntime.actions.reservePackOpening({
         accessToken,
@@ -130,13 +136,15 @@ export function PacksPage() {
       setClock(Date.now());
       setCooldownUntil(nextAvailableAt);
       const imagePrefetch = prefetchCardImage(reservation.imageKey);
-      setPhase('ad');
-      const ad = await rewardedAdService.show(devUserEarnedReward);
-      if (!mounted.current) return;
+      if (devRewardedAdMode !== 'NO_AD') {
+        setPhase('ad');
+        const ad = await rewardedAdService.show(devRewardedAdMode);
+        if (!mounted.current) return;
 
-      const rewardSuccess = isRewardedAdSuccess(ad);
-      if (!rewardSuccess) {
-        throw new Error('REWARDED_AD_REWARD_FAILED');
+        const rewardSuccess = isRewardedAdSuccess(ad);
+        if (!rewardSuccess) {
+          throw new Error('REWARDED_AD_REWARD_FAILED');
+        }
       }
 
       setPhase('drawing');
@@ -301,12 +309,14 @@ export function PacksPage() {
                   ? '카드 보관함을 확인하고 있어요'
                   : storageFull
                     ? `보관함이 가득 찼어요 (${availability.ownedCardCount}/${availability.storageCapacity})`
-                    : `광고 시청 완료 후 카드 1장을 뽑아요 (${availability?.ownedCardCount ?? 0}/${availability?.storageCapacity ?? 5})`}
+                    : devRewardedAdMode === 'NO_AD'
+                      ? `DEV 광고 생략 후 카드 1장을 뽑아요 (${availability?.ownedCardCount ?? 0}/${availability?.storageCapacity ?? 5})`
+                      : `광고 시청 완료 후 카드 1장을 뽑아요 (${availability?.ownedCardCount ?? 0}/${availability?.storageCapacity ?? 5})`}
               </Text>
               <DevRewardedAdToggle
-                value={devUserEarnedReward}
+                value={devRewardedAdMode}
                 disabled={phase !== 'idle'}
-                onChange={setDevUserEarnedReward}
+                onChange={setDevRewardedAdMode}
               />
               <TouchableOpacity
                 accessibilityRole="button"
