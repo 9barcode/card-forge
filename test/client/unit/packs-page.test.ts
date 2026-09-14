@@ -16,9 +16,8 @@ jest.mock('../../../src/services/rewardedAdService', () => ({
 }));
 const load = jest.mocked(rewardedAdService.load);
 const show = jest.mocked(rewardedAdService.show);
-let finishEffect: (result: { finished: boolean }) => void;
-
 beforeEach(async () => {
+  jest.useFakeTimers();
   jest.clearAllMocks();
   await configureTestRuntime();
   load.mockResolvedValue(undefined);
@@ -28,14 +27,15 @@ beforeEach(async () => {
     completionId: 'proof-1234',
   });
   jest.spyOn(Animated, 'sequence').mockReturnValue({
-    start: (callback) => {
-      if (callback) finishEffect = callback;
-    },
+    start: jest.fn(),
     stop: jest.fn(),
     reset: jest.fn(),
   });
 });
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+  jest.useRealTimers();
+  jest.restoreAllMocks();
+});
 
 it('광고 완료 후 카드팩 결과를 캐시에 추가하고 화면에 표시한다', async () => {
   const screen = render(React.createElement(PacksPage));
@@ -46,9 +46,21 @@ it('광고 완료 후 카드팩 결과를 캐시에 추가하고 화면에 표�
   await waitFor(() =>
     expect(screen.getByText('원소의 힘이 모이고 있어요…')).toBeTruthy(),
   );
+  expect(screen.getByText('여기는 배너광고 위젯입니다')).toBeTruthy();
+  expect(screen.queryByText('카드 당첨!')).toBeNull();
+
+  await act(async () => {
+    jest.advanceTimersByTime(4_999);
+    await Promise.resolve();
+  });
+  expect(screen.queryByText('카드 당첨!')).toBeNull();
+
+  await act(async () => {
+    jest.advanceTimersByTime(1);
+    await Promise.resolve();
+  });
+  await waitFor(() => expect(screen.getByText('카드 당첨!')).toBeTruthy());
   expect(gameCache.getSnapshot().cards).toHaveLength(4);
-  act(() => finishEffect({ finished: true }));
-  expect(screen.getByText('카드 당첨!')).toBeTruthy();
   expect(screen.getByText('바람의 궁수')).toBeTruthy();
   expect(screen.getByText('노말')).toBeTruthy();
   expect(screen.getByText('1강')).toBeTruthy();

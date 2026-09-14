@@ -47,6 +47,7 @@ export const styles = StyleSheet.create({
   resultName: { color: '#FFF5E3', fontSize: 18, fontWeight: '700', marginTop: 18 },
   resultElement: { color: '#AAB6C5', fontSize: 13, marginTop: 6 },
   actions: { width: '100%', maxWidth: 420, gap: 12 },
+  drawingBanner: { width: '100%', maxWidth: 420, marginTop: 8 },
   hint: { color: '#C6C6CB', fontSize: 13, textAlign: 'center' },
   button: { backgroundColor: '#EAC681', minHeight: 58, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 10, padding: 14 },
   buttonText: { color: '#292015', fontSize: 18, fontWeight: '800' },

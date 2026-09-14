@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { styles } from '../assets/sytle/packs.style';
+import { BannerAd } from '../src/components/banner-ad';
 import { cardOutlineColors } from '../src/components/card';
 import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
 import { MaxLevelAura } from '../src/components/max-level-aura';
@@ -34,6 +35,10 @@ export const Route = createRoute('/packs', {
 });
 
 type Phase = 'idle' | 'loading' | 'ad' | 'drawing' | 'result';
+
+const wait = (durationMs: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, durationMs));
+
 export function PacksPage() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [message, setMessage] = useState('');
@@ -99,12 +104,7 @@ export function PacksPage() {
         useNativeDriver: true,
       }),
     ]);
-    effect.start(({ finished }) => {
-      if (finished && mounted.current) {
-        setPhase('result');
-        busy.current = false;
-      }
-    });
+    effect.start();
     return () => effect.stop();
   }, [phase, animation]);
 
@@ -139,14 +139,20 @@ export function PacksPage() {
         throw new Error('REWARDED_AD_REWARD_FAILED');
       }
 
-      await imagePrefetch;
-
-      const result = await gameRuntime.actions.openPack({
-        accessToken,
-        requestId,
-      });
-      setReward(result.card);
       setPhase('drawing');
+      const [result] = await Promise.all([
+        gameRuntime.actions.openPack({
+          accessToken,
+          requestId,
+        }),
+        imagePrefetch,
+        wait(5_000),
+      ]);
+      if (!mounted.current) return;
+
+      setReward(result.card);
+      setPhase('result');
+      busy.current = false;
     } catch (error) {
       if (!mounted.current) return;
       const errorCode = error instanceof Error ? error.message : '';
@@ -337,6 +343,12 @@ export function PacksPage() {
             </>
           )}
         </View>
+
+        {phase === 'drawing' ? (
+          <View style={styles.drawingBanner}>
+            <BannerAd />
+          </View>
+        ) : null}
       </ScrollView>
     </ImageBackground>
   );
