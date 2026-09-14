@@ -155,20 +155,22 @@ export function PacksPage() {
           ? '카드는 최대 5장까지 보유할 수 있어요. 보관함을 정리한 후 다시 시도해 주세요.'
           : errorCode === 'PACK_OPEN_COOLDOWN_ACTIVE'
             ? '카드는 1분에 한 번만 뽑을 수 있어요. 잠시 후 다시 시도해 주세요.'
-            : errorCode === 'GAME_SESSION_NOT_INITIALIZED' ||
-                errorCode === 'GAME_SERVER_NOT_CONFIGURED'
-              ? '서버 연결 설정이 필요해요.'
-              : errorCode === 'REWARDED_AD_NOT_SUPPORTED'
-                ? '현재 환경에서는 광고를 재생할 수 없어요. 토스 앱을 최신 버전으로 업데이트해 주세요.'
-                : errorCode === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD' ||
-                    errorCode === 'REWARDED_AD_REWARD_FAILED'
-                  ? '광고를 끝까지 시청해야 카드를 뽑을 수 있어요.'
-                  : errorCode.startsWith('REWARDED_AD_LOAD_FAILED')
-                    ? `광고 로드 실패: ${errorCode.slice('REWARDED_AD_LOAD_FAILED:'.length).trim() || '상세 정보 없음'}`
-                    : errorCode.startsWith('REWARDED_AD_SHOW_FAILED') ||
-                        errorCode === 'REWARDED_AD_FAILED_TO_SHOW'
-                      ? `광고 표시 실패: ${errorCode}`
-                      : `카드 뽑기 실패: ${errorCode || '알 수 없는 오류'}`,
+            : errorCode === 'INVALID_PACK_RESERVATION_RESPONSE'
+              ? '카드 뽑기 준비 응답이 올바르지 않아요. 잠시 후 다시 시도해 주세요.'
+              : errorCode === 'GAME_SESSION_NOT_INITIALIZED' ||
+                  errorCode === 'GAME_SERVER_NOT_CONFIGURED'
+                ? '서버 연결 설정이 필요해요.'
+                : errorCode === 'REWARDED_AD_NOT_SUPPORTED'
+                  ? '현재 환경에서는 광고를 재생할 수 없어요. 토스 앱을 최신 버전으로 업데이트해 주세요.'
+                  : errorCode === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD' ||
+                      errorCode === 'REWARDED_AD_REWARD_FAILED'
+                    ? '광고를 끝까지 시청해야 카드를 뽑을 수 있어요.'
+                    : errorCode.startsWith('REWARDED_AD_LOAD_FAILED')
+                      ? `광고 로드 실패: ${errorCode.slice('REWARDED_AD_LOAD_FAILED:'.length).trim() || '상세 정보 없음'}`
+                      : errorCode.startsWith('REWARDED_AD_SHOW_FAILED') ||
+                          errorCode === 'REWARDED_AD_FAILED_TO_SHOW'
+                        ? `광고 표시 실패: ${errorCode}`
+                        : `카드 뽑기 실패: ${errorCode || '알 수 없는 오류'}`,
       );
       setPhase('idle');
       busy.current = false;
@@ -324,12 +326,12 @@ export function PacksPage() {
                     : cooldownActive && phase === 'idle'
                       ? `${cooldownSeconds}초 후 다시 뽑기`
                       : phase === 'drawing'
-                      ? '카드 뽑는 중'
-                      : phase === 'ad'
-                        ? '광고 시청 중'
-                        : phase === 'loading'
-                          ? '광고 준비 중'
-                          : '카드 뽑기'}
+                        ? '카드 뽑는 중'
+                        : phase === 'ad'
+                          ? '광고 시청 중'
+                          : phase === 'loading'
+                            ? '광고 준비 중'
+                            : '카드 뽑기'}
                 </Text>
               </TouchableOpacity>
             </>

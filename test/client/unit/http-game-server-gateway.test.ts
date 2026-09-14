@@ -107,6 +107,28 @@ it('카드 광고 시작을 같은 요청 ID로 서버에 예약한다', async (
   });
 });
 
+it('카드 이미지가 없는 광고 예약 응답을 구체적인 오류로 거절한다', async () => {
+  const gateway = createHttpGameServerGateway({
+    apiBaseUrl: 'https://example.test',
+    fetchImplementation: (async () =>
+      new Response(
+        JSON.stringify({
+          startedAt: '2026-09-12T01:00:00.000Z',
+          nextAvailableAt: '2026-09-12T01:01:00.000Z',
+          replayed: false,
+        }),
+        { status: 200 },
+      )) as typeof fetch,
+  });
+
+  await expect(
+    gateway.reservePackOpening({
+      accessToken: 'session-token',
+      requestId: 'game-request-001',
+    }),
+  ).rejects.toThrow('INVALID_PACK_RESERVATION_RESPONSE');
+});
+
 it('중복 방지 키로 카드 뽑기를 요청하고 서버 저장 결과를 캐시에 전달한다', async () => {
   const fetchImplementation = jest.fn(
     async () =>

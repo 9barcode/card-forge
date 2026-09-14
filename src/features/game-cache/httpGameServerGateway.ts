@@ -136,13 +136,17 @@ export function createHttpGameServerGateway({
 }
 
 function parsePackOpeningReservation(value: unknown): PackOpeningReservation {
-  const source = record(value);
-  return {
-    imageKey: string(source.imageKey),
-    startedAt: isoDate(source.startedAt),
-    nextAvailableAt: isoDate(source.nextAvailableAt),
-    replayed: boolean(source.replayed),
-  };
+  try {
+    const source = record(value);
+    return {
+      imageKey: string(source.imageKey),
+      startedAt: isoDate(source.startedAt),
+      nextAvailableAt: isoDate(source.nextAvailableAt),
+      replayed: boolean(source.replayed),
+    };
+  } catch {
+    throw new Error('INVALID_PACK_RESERVATION_RESPONSE');
+  }
 }
 
 function parseCardSaleResult(value: unknown): ServerCardSaleResult {
