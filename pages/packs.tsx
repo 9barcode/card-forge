@@ -39,6 +39,8 @@ export function PacksPage() {
   const [message, setMessage] = useState('');
   const [reward, setReward] = useState<CachedOwnedCard | null>(null);
   const [devUserEarnedReward, setDevUserEarnedReward] = useState(true);
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+  const [clock, setClock] = useState(() => Date.now());
   const game = useGameCache();
   const availability = game.packAvailability;
   const checkingStorage = game.status !== 'ready';
@@ -46,6 +48,12 @@ export function PacksPage() {
     availability?.storageFull ||
       game.cards.length >= (availability?.storageCapacity ?? 5),
   );
+  const cooldownSeconds = cooldownUntil
+    ? Math.max(0, Math.ceil((cooldownUntil - clock) / 1_000))
+    : 0;
+  const cooldownActive = cooldownSeconds > 0;
+  const drawDisabled =
+    phase !== 'idle' || checkingStorage || storageFull || cooldownActive;
   const busy = useRef(false);
   const mounted = useRef(false);
   const animation = useRef(new Animated.Value(0)).current;
@@ -57,6 +65,19 @@ export function PacksPage() {
       animation.stopAnimation();
     };
   }, [animation]);
+
+  useEffect(() => {
+    if (cooldownUntil === null) return;
+
+    const tick = () => {
+      const now = Date.now();
+      setClock(now);
+      if (now >= cooldownUntil) setCooldownUntil(null);
+    };
+    tick();
+    const timer = setInterval(tick, 1_000);
+    return () => clearInterval(timer);
+  }, [cooldownUntil]);
 
   useEffect(() => {
     if (phase !== 'drawing') return;
@@ -88,21 +109,27 @@ export function PacksPage() {
   }, [phase, animation]);
 
   const draw = async () => {
-    if (busy.current || phase !== 'idle' || checkingStorage || storageFull)
-      return;
+    if (busy.current || drawDisabled) return;
     busy.current = true;
     setMessage('');
     setPhase('loading');
     try {
       const accessToken = gameRuntime.requireAccessToken();
       const requestId = gameRuntime.nextRequestId();
+
+      // 광고 로드가 성공한 뒤에만 서버 예약과 1분 쿨다운을 시작합니다.
+      await rewardedAdService.load();
+      if (!mounted.current) return;
+
       const reservation = await gameRuntime.actions.reservePackOpening({
         accessToken,
         requestId,
       });
-      const imagePrefetch = prefetchCardImage(reservation.imageKey);
-      await rewardedAdService.load();
       if (!mounted.current) return;
+      const nextAvailableAt = new Date(reservation.nextAvailableAt).getTime();
+      setClock(Date.now());
+      setCooldownUntil(nextAvailableAt);
+      const imagePrefetch = prefetchCardImage(reservation.imageKey);
       setPhase('ad');
       const ad = await rewardedAdService.show(devUserEarnedReward);
       if (!mounted.current) return;
@@ -276,25 +303,27 @@ export function PacksPage() {
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="카드 뽑기"
-                disabled={phase !== 'idle' || checkingStorage || storageFull}
+                disabled={drawDisabled}
                 onPress={draw}
                 style={[
                   styles.button,
-                  (phase !== 'idle' || checkingStorage || storageFull) &&
-                    styles.disabled,
-                  storageFull && styles.storageFullButton,
+                  drawDisabled && styles.disabled,
+                  (storageFull || cooldownActive) && styles.storageFullButton,
                 ]}
               >
                 {phase !== 'idle' && <ActivityIndicator color="#292015" />}
                 <Text
                   style={[
                     styles.buttonText,
-                    storageFull && styles.storageFullButtonText,
+                    (storageFull || cooldownActive) &&
+                      styles.storageFullButtonText,
                   ]}
                 >
                   {storageFull
                     ? '카드가 가득 찼습니다.'
-                    : phase === 'drawing'
+                    : cooldownActive && phase === 'idle'
+                      ? `${cooldownSeconds}초 후 다시 뽑기`
+                      : phase === 'drawing'
                       ? '카드 뽑는 중'
                       : phase === 'ad'
                         ? '광고 시청 중'
