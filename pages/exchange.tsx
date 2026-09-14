@@ -12,7 +12,10 @@ import {
 import { styles } from '../assets/sytle/exchange.style';
 import { cardOutlineColors } from '../src/components/card';
 import { CardArtwork } from '../src/components/card-artwork';
-import { DevRewardedAdToggle } from '../src/components/dev-rewarded-ad-toggle';
+import {
+  type DevRewardedAdMode,
+  DevRewardedAdToggle,
+} from '../src/components/dev-rewarded-ad-toggle';
 import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
   elementLabels,
@@ -43,7 +46,8 @@ export function ExchangePage() {
   const [tab, setTab] = useState<'cards' | 'points'>('cards');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [amount, setAmount] = useState('10000');
-  const [devUserEarnedReward, setDevUserEarnedReward] = useState(true);
+  const [devRewardedAdMode, setDevRewardedAdMode] =
+    useState<DevRewardedAdMode>(true);
   const [saleReceipt, setSaleReceipt] = useState<{
     cardCount: number;
     crystalReward: number;
@@ -68,11 +72,13 @@ export function ExchangePage() {
   const exchange = async () => {
     try {
       if (tab === 'cards') {
-        await rewardedAdService.load();
-        const ad = await rewardedAdService.show(devUserEarnedReward);
-        const rewardSuccess = isRewardedAdSuccess(ad);
-        if (!rewardSuccess) {
-          throw new Error('REWARDED_AD_REWARD_FAILED');
+        if (devRewardedAdMode !== 'NO_AD') {
+          await rewardedAdService.load();
+          const ad = await rewardedAdService.show(devRewardedAdMode);
+          const rewardSuccess = isRewardedAdSuccess(ad);
+          if (!rewardSuccess) {
+            throw new Error('REWARDED_AD_REWARD_FAILED');
+          }
         }
 
         const result = await gameRuntime.actions.sellCards({
@@ -223,8 +229,8 @@ export function ExchangePage() {
             </Text>
           </View>
           <DevRewardedAdToggle
-            value={devUserEarnedReward}
-            onChange={setDevUserEarnedReward}
+            value={devRewardedAdMode}
+            onChange={setDevRewardedAdMode}
           />
           <TouchableOpacity
             accessibilityRole="button"
