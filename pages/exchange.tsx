@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { styles } from '../assets/sytle/exchange.style';
+import { BannerAd } from '../src/components/banner-ad';
 import { cardOutlineColors } from '../src/components/card';
 import { CardArtwork } from '../src/components/card-artwork';
 import {
@@ -158,6 +159,9 @@ export function ExchangePage() {
 
       {tab === 'cards' ? (
         <>
+          <View style={styles.cardExchangeBanner}>
+            <BannerAd />
+          </View>
           <View style={styles.sectionHeading}>
             <Text style={styles.heading}>교환할 카드 선택</Text>
             <Text style={styles.muted}>{selectedIds.length}장 선택</Text>
