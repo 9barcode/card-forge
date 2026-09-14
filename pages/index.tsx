@@ -17,6 +17,7 @@ import { SvgUri } from 'react-native-svg';
 import { styles } from '../assets/sytle/index.style';
 import { BannerAd } from '../src/components/banner-ad';
 import { CardCollectionModal } from '../src/components/card-collection-modal';
+import { MaxLevelAura } from '../src/components/max-level-aura';
 import { useGameCache } from '../src/features/game-cache';
 
 type AppRoutes = '/cards' | '/forge' | '/packs' | '/exchange';
@@ -195,6 +196,7 @@ export function HomePage() {
             </View>
           </View>
           <View style={styles.characterWrap}>
+            <MaxLevelAura level={10} borderRadius={0} />
             <Image
               source={{ uri: characterCardUri }}
               style={styles.character}
