@@ -22,6 +22,10 @@ import {
 } from '../src/components/dev-rewarded-ad-toggle';
 import { MaxLevelAura } from '../src/components/max-level-aura';
 import {
+  FORGE_ANVIL_DATA_URI,
+  FORGE_HAMMER_DATA_URI,
+} from '../src/features/forge/forgeImageData.generated';
+import {
   gameRuntime,
   gradeLabels,
   useGameCache,
@@ -79,18 +83,19 @@ export function ForgePage() {
   useEffect(() => {
     if (phase !== 'striking') return;
 
-    let cancelled = false;
-    const runStrike = (count: number) => {
-      if (cancelled) return;
-      setStrikeCount(count);
-      hammerProgress.setValue(0);
-      impactProgress.setValue(0);
-
-      const animation = Animated.sequence([
+    hammerProgress.setValue(0);
+    impactProgress.setValue(0);
+    setStrikeCount(1);
+    const countTimers = [
+      setTimeout(() => setStrikeCount(2), 1_100),
+      setTimeout(() => setStrikeCount(3), 2_200),
+    ];
+    const strike = () =>
+      Animated.sequence([
         Animated.timing(hammerProgress, {
           toValue: 1,
-          duration: 260,
-          easing: Easing.in(Easing.quad),
+          duration: 400,
+          easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.parallel([
@@ -100,36 +105,37 @@ export function ForgePage() {
             useNativeDriver: true,
           }),
           Animated.timing(hammerProgress, {
-            toValue: 0.72,
-            duration: 70,
+            toValue: 0.78,
+            duration: 80,
             useNativeDriver: true,
           }),
         ]),
         Animated.parallel([
           Animated.timing(hammerProgress, {
             toValue: 0,
-            duration: 220,
-            easing: Easing.out(Easing.quad),
+            duration: 300,
+            easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
           }),
           Animated.timing(impactProgress, {
             toValue: 0,
-            duration: 220,
+            duration: 260,
             useNativeDriver: true,
           }),
         ]),
-        Animated.delay(140),
       ]);
-      activeStrike.current = animation;
-      animation.start(({ finished }) => {
-        if (!finished || cancelled) return;
-        runStrike(count >= 3 ? 1 : count + 1);
-      });
-    };
-
-    runStrike(1);
+    const timeline = Animated.sequence([
+      strike(),
+      Animated.delay(320),
+      strike(),
+      Animated.delay(320),
+      strike(),
+      Animated.delay(2_020),
+    ]);
+    activeStrike.current = timeline;
+    timeline.start();
     return () => {
-      cancelled = true;
+      for (const timer of countTimers) clearTimeout(timer);
       activeStrike.current?.stop();
       activeStrike.current = null;
     };
@@ -215,13 +221,19 @@ export function ForgePage() {
       {
         translateY: hammerProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [-120, 100],
+          outputRange: [-42, 34],
+        }),
+      },
+      {
+        translateX: hammerProgress.interpolate({
+          inputRange: [0, 1],
+          outputRange: [18, -8],
         }),
       },
       {
         rotate: hammerProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: ['-28deg', '10deg'],
+          outputRange: ['-30deg', '4deg'],
         }),
       },
     ],
@@ -248,9 +260,7 @@ export function ForgePage() {
     ],
   };
   const failedImageStyle =
-    Platform.OS === 'ios'
-      ? styles.failedImageIos
-      : styles.failedImageGrayscale;
+    Platform.OS === 'ios' ? styles.failedImageIos : styles.failedImageGrayscale;
 
   return (
     <ImageBackground
@@ -295,7 +305,9 @@ export function ForgePage() {
                   borderRadius={17}
                   color={cardOutlineColors[selected.grade]}
                 />
-                <View style={[styles.cardFrame, failed && styles.failedCardFrame]}>
+                <View
+                  style={[styles.cardFrame, failed && styles.failedCardFrame]}
+                >
                   <CardArtwork
                     imageKey={selected.imageKey}
                     thumbnail
@@ -317,9 +329,7 @@ export function ForgePage() {
                     </Text>
                   </View>
                   <View style={styles.heroLevelBadge}>
-                    <Text style={styles.heroLevelText}>
-                      {displayedLevel}강
-                    </Text>
+                    <Text style={styles.heroLevelText}>{displayedLevel}강</Text>
                   </View>
                 </View>
               </View>
@@ -446,35 +456,25 @@ export function ForgePage() {
               <Text style={[styles.ember, styles.emberFour]}>•</Text>
             </View>
             <Animated.View style={[styles.fullHammer, hammerStyle]}>
-              <View style={styles.hammerHandle}>
-                <View style={styles.handleHighlight} />
-                <View style={[styles.handleGrip, styles.handleGripOne]} />
-                <View style={[styles.handleGrip, styles.handleGripTwo]} />
-                <View style={[styles.handleGrip, styles.handleGripThree]} />
-              </View>
-              <View style={styles.hammerNeck} />
-              <View style={styles.hammerHead}>
-                <View style={styles.hammerHeadHighlight} />
-                <View style={styles.hammerHeadBand} />
-                <View style={styles.hammerFace} />
-              </View>
+              <Animated.Image
+                accessibilityLabel="강화용 망치"
+                resizeMode="contain"
+                source={{ uri: FORGE_HAMMER_DATA_URI }}
+                style={styles.fullHammerImage}
+              />
             </Animated.View>
-            <View style={styles.anvil}>
+            <View style={styles.anvilWrap}>
               <View pointerEvents="none" style={styles.anvilGlow} />
-              <View style={styles.anvilTop}>
-                <View style={styles.anvilHorn} />
-                <View style={styles.anvilTopHighlight} />
+              <ImageBackground
+                accessibilityLabel="강화용 모루"
+                resizeMode="contain"
+                source={{ uri: FORGE_ANVIL_DATA_URI }}
+                style={styles.anvilImage}
+              >
                 <View style={styles.heatedMetal}>
                   <View style={styles.heatedMetalCore} />
                 </View>
-              </View>
-              <View style={styles.anvilShoulder} />
-              <View style={styles.anvilStem}>
-                <View style={styles.anvilStemHighlight} />
-              </View>
-              <View style={styles.anvilBase}>
-                <View style={styles.anvilBaseHighlight} />
-              </View>
+              </ImageBackground>
             </View>
             <Animated.View
               pointerEvents="none"
@@ -482,7 +482,7 @@ export function ForgePage() {
             >
               <View style={styles.impactRingOuter} />
               <View style={styles.impactRingInner} />
-              <Text style={styles.sparkText}>✦  ✦  ✦</Text>
+              <Text style={styles.sparkText}>✦ ✦ ✦</Text>
               <Text style={styles.bangText}>CLANG</Text>
             </Animated.View>
           </View>
