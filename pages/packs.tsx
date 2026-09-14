@@ -48,6 +48,7 @@ export function PacksPage() {
   const [reward, setReward] = useState<CachedOwnedCard | null>(null);
   const [devRewardedAdMode, setDevRewardedAdMode] =
     useState<DevRewardedAdMode>(true);
+  const [bannerRefreshKey, setBannerRefreshKey] = useState(0);
   const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
   const [clock, setClock] = useState(() => Date.now());
   const game = useGameCache();
@@ -145,6 +146,7 @@ export function PacksPage() {
         if (!rewardSuccess) {
           throw new Error('REWARDED_AD_REWARD_FAILED');
         }
+        setBannerRefreshKey((key) => key + 1);
       }
 
       setPhase('drawing');
@@ -319,7 +321,7 @@ export function PacksPage() {
                 onChange={setDevRewardedAdMode}
               />
               <View style={styles.drawButtonBanner}>
-                <BannerAd />
+                <BannerAd key={bannerRefreshKey} />
               </View>
               <TouchableOpacity
                 accessibilityRole="button"
