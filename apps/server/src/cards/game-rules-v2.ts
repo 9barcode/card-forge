@@ -1,12 +1,13 @@
 import { randomInt } from 'node:crypto';
 import type { Element, Grade } from './gameplay.types';
+import { ENHANCEMENT_CONFIG } from './probability-config';
 
 export const GAME_RULES_VERSION = 'card-forge-rules-v2';
 export const CARD_STORAGE_CAPACITY = 5;
 export const DAILY_AD_PACK_LIMIT = 20;
 export const CRYSTALS_PER_TOSS_POINT_V2 = 10_000;
-export const MIN_ENHANCEMENT_LEVEL = 1;
-export const MAX_ENHANCEMENT_LEVEL = 10;
+export const MIN_ENHANCEMENT_LEVEL = ENHANCEMENT_CONFIG.initialLevel;
+export const MAX_ENHANCEMENT_LEVEL = ENHANCEMENT_CONFIG.maxLevel;
 
 export const GRADE_BASE_VALUES: Readonly<Record<Grade, number>> = {
   NORMAL: 10_000,
@@ -15,18 +16,6 @@ export const GRADE_BASE_VALUES: Readonly<Record<Grade, number>> = {
   SUPER_RARE: 50_000,
   UNIQUE: 70_000,
   LEGENDARY: 100_000,
-};
-
-export const ENHANCEMENT_SUCCESS_RATES_V2: Readonly<Record<number, number>> = {
-  2: 1,
-  3: 0.9,
-  4: 0.8,
-  5: 0.7,
-  6: 0.6,
-  7: 0.5,
-  8: 0.4,
-  9: 0.3313,
-  10: 0.2,
 };
 
 export type ForgeClimate =
@@ -58,10 +47,14 @@ export interface SaleValueResult extends SaleValueInput {
   crystalReward: number;
 }
 
-export function successRateForTargetLevel(targetLevel: number): number {
-  const rate = ENHANCEMENT_SUCCESS_RATES_V2[targetLevel];
+export function successRateForTargetLevel(
+  targetLevel: number,
+  grade: Grade,
+): number {
+  const rate =
+    ENHANCEMENT_CONFIG.levels[String(targetLevel)]?.[grade]?.successRatePercent;
   if (rate === undefined) throw new Error('INVALID_TARGET_ENHANCEMENT_LEVEL');
-  return rate;
+  return rate / 100;
 }
 
 export function calculateCardSaleValue(

@@ -1,22 +1,19 @@
 import { randomInt } from 'node:crypto';
 import { Injectable, Optional } from '@nestjs/common';
 import type { Element, Grade } from '../cards/gameplay.types';
+import { CARD_DRAW_CONFIG } from '../cards/probability-config';
 import type { PackRewardPolicy } from './pack-reward.policy';
 
-export const PACK_PROBABILITY_VERSION_V2 = 'card-forge-pack-v2';
-export const PACK_PROBABILITY_SCALE = 10_000;
+export const PACK_PROBABILITY_VERSION_V2 = CARD_DRAW_CONFIG.version;
+export const PACK_PROBABILITY_SCALE = CARD_DRAW_CONFIG.probabilityScale;
 
 export const PACK_GRADE_WEIGHTS_V2: ReadonlyArray<{
   grade: Grade;
   weight: number;
-}> = [
-  { grade: 'NORMAL', weight: 6_000 },
-  { grade: 'MAGIC', weight: 3_313 },
-  { grade: 'RARE', weight: 600 },
-  { grade: 'SUPER_RARE', weight: 43 },
-  { grade: 'UNIQUE', weight: 33 },
-  { grade: 'LEGENDARY', weight: 11 },
-];
+}> = Object.entries(CARD_DRAW_CONFIG.grades).map(([grade, config]) => ({
+  grade: grade as Grade,
+  weight: config.weight,
+}));
 
 export const PACK_ELEMENTS_V2: ReadonlyArray<Element> = [
   'FIRE',

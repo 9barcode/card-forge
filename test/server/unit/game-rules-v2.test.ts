@@ -17,11 +17,11 @@ describe('card-forge-rules-v2', () => {
   });
 
   it('강화 성공률과 최종 누적 확률이 규칙표와 일치한다', () => {
-    expect(successRateForTargetLevel(2)).toBe(1);
-    expect(successRateForTargetLevel(9)).toBe(0.3313);
-    expect(successRateForTargetLevel(10)).toBe(0.2);
+    expect(successRateForTargetLevel(2, 'NORMAL')).toBe(1);
+    expect(successRateForTargetLevel(9, 'RARE')).toBeCloseTo(0.3313, 10);
+    expect(successRateForTargetLevel(10, 'LEGENDARY')).toBe(0.2);
     const cumulative = [2, 3, 4, 5, 6, 7, 8, 9, 10].reduce(
-      (value, level) => value * successRateForTargetLevel(level),
+      (value, level) => value * successRateForTargetLevel(level, 'NORMAL'),
       1,
     );
     expect(cumulative).toBeCloseTo(0.0040074048, 10);
