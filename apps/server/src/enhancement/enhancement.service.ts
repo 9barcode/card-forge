@@ -73,7 +73,7 @@ export class EnhancementService {
     )
       throw new ForbiddenException('AD_COMPLETION_NOT_VERIFIED');
     const targetLevel = card.enhancementLevel + 1;
-    const rate = successRateForTargetLevel(targetLevel);
+    const rate = successRateForTargetLevel(targetLevel, card.grade);
     const result: EnhancementResult =
       randomInt(0, 1_000_000) / 1_000_000 < rate ? 'SUCCESS' : 'FAILURE';
     return this.games.enhance({
