@@ -1,4 +1,5 @@
 import { createHttpGameServerGateway } from '../../../src/features/game-cache/httpGameServerGateway';
+import { probabilityConfigHeaders } from '../../../src/features/game-cache/probabilityConfig';
 
 it('Supabase 보관함 응답을 게임 캐시 스냅샷으로 변환한다', async () => {
   const fetchImplementation = jest.fn(
@@ -95,6 +96,7 @@ it('카드 광고 시작을 같은 요청 ID로 서버에 예약한다', async (
         Authorization: 'Bearer session-token',
         'Content-Type': 'application/json',
         'Idempotency-Key': 'game-request-001',
+        ...probabilityConfigHeaders,
       },
       body: JSON.stringify({}),
     },
@@ -178,6 +180,7 @@ it('중복 방지 키로 카드 뽑기를 요청하고 서버 저장 결과를 �
         Authorization: 'Bearer session-token',
         'Content-Type': 'application/json',
         'Idempotency-Key': 'game-request-001',
+        ...probabilityConfigHeaders,
       },
       body: JSON.stringify({}),
     },
@@ -296,6 +299,7 @@ it('선택한 카드와 광고 완료 증명으로 강화를 요청한다', asyn
         Authorization: 'Bearer session-token',
         'Content-Type': 'application/json',
         'Idempotency-Key': 'enhance-request-001',
+        ...probabilityConfigHeaders,
       },
       body: JSON.stringify({
         cardId: '8',

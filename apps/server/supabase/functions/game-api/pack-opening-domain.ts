@@ -1,7 +1,30 @@
-const gradeWeights = [6000, 3313, 600, 43, 33, 11] as const;
+import { probabilityConfigCache } from '../_shared/probability-config.ts';
+
+const CARD_DRAW_CONFIG = probabilityConfigCache.cardDrawRates;
+
+const gradeOrder = [
+  'NORMAL',
+  'MAGIC',
+  'RARE',
+  'SUPER_RARE',
+  'UNIQUE',
+  'LEGENDARY',
+] as const;
+const gradeWeights = gradeOrder.map(
+  (grade) => CARD_DRAW_CONFIG.grades[grade].weight,
+);
+export const PACK_PROBABILITY_SCALE = CARD_DRAW_CONFIG.probabilityScale;
+
+if (gradeWeights.reduce((total, weight) => total + weight, 0) !== PACK_PROBABILITY_SCALE) {
+  throw new Error('INVALID_CARD_DRAW_GRADE_WEIGHT_TOTAL');
+}
 
 export function drawCardTemplateId(randomTicket: number, elementIndex: number): number {
-  if (!Number.isInteger(randomTicket) || randomTicket < 0 || randomTicket >= 10_000) {
+  if (
+    !Number.isInteger(randomTicket) ||
+    randomTicket < 0 ||
+    randomTicket >= PACK_PROBABILITY_SCALE
+  ) {
     throw new Error('INVALID_PACK_RANDOM_TICKET');
   }
   if (!Number.isInteger(elementIndex) || elementIndex < 0 || elementIndex >= 6) {

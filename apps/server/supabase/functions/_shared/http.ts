@@ -1,5 +1,6 @@
 export const corsHeaders = {
-  'Access-Control-Allow-Headers': 'authorization, content-type, idempotency-key',
+  'Access-Control-Allow-Headers':
+    'authorization, content-type, idempotency-key, x-probability-config-version, x-probability-config-hash',
   'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
   'Access-Control-Allow-Origin': '*',
 };

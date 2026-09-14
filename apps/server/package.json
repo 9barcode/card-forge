@@ -11,7 +11,9 @@
     "test:mtls": "jest --config jest.integration.config.js --runInBand --testPathPattern=toss-mtls",
     "test:postgres": "jest --config jest.integration.config.js --runInBand --testPathPattern=postgres",
     "test:integration": "jest --config jest.integration.config.js --runInBand",
-    "test:all": "npm test && npm run test:component && npm run test:integration"
+    "test:all": "npm test && npm run test:component && npm run test:integration",
+    "supabase:config": "node supabase/scripts/generate-probability-config.cjs",
+    "supabase:deploy": "npm run supabase:config && npx supabase functions deploy game-api"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.6",
