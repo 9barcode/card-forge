@@ -81,6 +81,10 @@ export function ForgePage() {
       ? attemptedLevel
       : selected?.enhancementLevel;
   const failed = phase === 'result' && result === 'FAILURE';
+  const heroAuraColor =
+    selected && (displayedLevel ?? 0) < MAX_ENHANCEMENT_LEVEL
+      ? cardOutlineColors[selected.grade]
+      : '#FFD76A';
 
   useEffect(() => {
     if (phase !== 'striking') return;
@@ -283,10 +287,18 @@ export function ForgePage() {
           )}
           {selected ? (
             <View style={styles.strikeScene}>
-              <View>
+              <View
+                style={[
+                  styles.heroAuraFrame,
+                  {
+                    borderColor: heroAuraColor,
+                    shadowColor: heroAuraColor,
+                  },
+                ]}
+              >
                 <MaxLevelAura
                   level={displayedLevel ?? 0}
-                  borderRadius={15}
+                  borderRadius={17}
                   color={cardOutlineColors[selected.grade]}
                 />
                 <View style={[styles.cardFrame, failed && styles.failedCardFrame]}>
