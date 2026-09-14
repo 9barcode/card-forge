@@ -1,5 +1,7 @@
-import rates from '../../assets/config/enhancement-rates.json';
 import type { CardGrade } from '../features/game-cache/gameCache';
+import { probabilityConfigCache } from '../features/game-cache/probabilityConfig';
+
+const rates = probabilityConfigCache.enhancementRates;
 
 export interface EnhancementResult {
   status: 'SUCCESS' | 'FAIL';
@@ -28,12 +30,7 @@ export function getEnhancementSuccessRate(
     rates.levels as Record<string, Record<CardGrade, GradeRate>>
   )[String(currentLevel + 1)];
   const rate = levelRates?.[grade]?.successRatePercent;
-  if (
-    rate === undefined ||
-    !Number.isFinite(rate) ||
-    rate < 0 ||
-    rate > 100
-  ) {
+  if (rate === undefined || !Number.isFinite(rate) || rate < 0 || rate > 100) {
     throw new Error('INVALID_ENHANCEMENT_RATE');
   }
   return rate;

@@ -1,24 +1,25 @@
-const successThresholds: Readonly<Record<number, number>> = {
-  2: 1_000_000,
-  3: 900_000,
-  4: 800_000,
-  5: 700_000,
-  6: 600_000,
-  7: 500_000,
-  8: 400_000,
-  9: 331_300,
-  10: 200_000,
-};
+import { probabilityConfigCache } from '../_shared/probability-config.ts';
+
+const ENHANCEMENT_CONFIG = probabilityConfigCache.enhancementRates;
+
+export type CardGrade = keyof (typeof ENHANCEMENT_CONFIG.levels)['2'];
+export const MAX_ENHANCEMENT_LEVEL = ENHANCEMENT_CONFIG.maxLevel;
 
 export function drawEnhancementResult(
   targetLevel: number,
+  grade: CardGrade,
   randomTicket: number,
 ): 'SUCCESS' | 'FAILURE' {
-  const threshold = successThresholds[targetLevel];
-  if (threshold === undefined) throw new Error('INVALID_TARGET_ENHANCEMENT_LEVEL');
+  const level = ENHANCEMENT_CONFIG.levels[
+    String(targetLevel) as keyof typeof ENHANCEMENT_CONFIG.levels
+  ];
+  if (level === undefined) throw new Error('INVALID_TARGET_ENHANCEMENT_LEVEL');
+  const rate = level[grade]?.successRatePercent;
+  if (rate === undefined) throw new Error('INVALID_CARD_GRADE');
   if (!Number.isInteger(randomTicket) || randomTicket < 0 || randomTicket >= 1_000_000) {
     throw new Error('INVALID_ENHANCEMENT_RANDOM_TICKET');
   }
+  const threshold = rate * 10_000;
   return randomTicket < threshold ? 'SUCCESS' : 'FAILURE';
 }
 
