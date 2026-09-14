@@ -6,10 +6,12 @@ import {
   View,
 } from 'react-native';
 
+export type DevRewardedAdMode = 'NO_AD' | boolean;
+
 type DevRewardedAdToggleProps = {
-  value: boolean;
+  value: DevRewardedAdMode;
   disabled?: boolean;
-  onChange(value: boolean): void;
+  onChange(value: DevRewardedAdMode): void;
 };
 
 /**
@@ -25,7 +27,7 @@ export function DevRewardedAdToggle({
     <View style={styles.container}>
       <Text style={styles.title}>DEV · userEarnedReward</Text>
       <View style={styles.options}>
-        {([true, false] as const).map((option) => {
+        {(['NO_AD', true, false] as const).map((option) => {
           const selected = value === option;
           return (
             <TouchableOpacity
@@ -37,7 +39,11 @@ export function DevRewardedAdToggle({
               style={[
                 styles.option,
                 selected &&
-                  (option ? styles.trueOption : styles.falseOption),
+                  (option === 'NO_AD'
+                    ? styles.noAdOption
+                    : option
+                      ? styles.trueOption
+                      : styles.falseOption),
                 disabled && styles.disabled,
               ]}
             >
@@ -47,14 +53,14 @@ export function DevRewardedAdToggle({
                   selected && styles.selectedOptionText,
                 ]}
               >
-                {String(option)}
+                {option === 'NO_AD' ? 'no ad' : String(option)}
               </Text>
             </TouchableOpacity>
           );
         })}
       </View>
       <Text style={styles.caption}>
-        광고 종료 후 선택한 값으로 후속 동작을 테스트해요.
+        no ad는 광고를 건너뛰고, true/false는 광고 종료 후 보상 값을 테스트해요.
       </Text>
     </View>
   );
@@ -89,6 +95,10 @@ const styles = StyleSheet.create({
     borderColor: '#586274',
     borderRadius: 9,
     backgroundColor: '#222C3A',
+  },
+  noAdOption: {
+    borderColor: '#D5B87F',
+    backgroundColor: '#5A4727',
   },
   trueOption: {
     borderColor: '#65C18C',
