@@ -174,7 +174,6 @@ export const styles = StyleSheet.create({
     height: 215,
     alignItems: 'center',
     zIndex: 8,
-    transformOrigin: '50% 88%',
   },
   hammerHandle: {
     position: 'absolute',
