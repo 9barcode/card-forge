@@ -46,12 +46,15 @@ it('원하는 카드 한 장을 강화하고 캐시의 해당 카드만 갱신�
   await waitFor(() =>
     expect(screen.getByText('여기는 배너광고 위젯입니다')).toBeTruthy(),
   );
+  expect(screen.getByLabelText('강화용 망치')).toBeTruthy();
+  expect(screen.getByLabelText('강화용 모루')).toBeTruthy();
   expect(screen.queryByText('강화 성공!')).toBeNull();
 
   await act(async () => {
     jest.advanceTimersByTime(4_999);
     await Promise.resolve();
   });
+  expect(screen.getByLabelText('카드 강화 중, 모루 타격 3/3')).toBeTruthy();
   expect(screen.queryByText('강화 성공!')).toBeNull();
 
   await act(async () => {
