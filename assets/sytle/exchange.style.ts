@@ -13,6 +13,7 @@ export const styles = StyleSheet.create({
   activeTab: { backgroundColor: '#D7BB7B' },
   tabText: { color: '#9EAEC1', fontWeight: '700', fontSize: 14 },
   activeTabText: { color: '#242015' },
+  cardExchangeBanner: { width: '100%' },
   sectionHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   heading: { color: '#F1F5F9', fontSize: 18, fontWeight: '700' },
   muted: { color: '#A3B1C3', fontSize: 13, lineHeight: 20 },
