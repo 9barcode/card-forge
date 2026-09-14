@@ -318,6 +318,9 @@ export function PacksPage() {
                 disabled={phase !== 'idle'}
                 onChange={setDevRewardedAdMode}
               />
+              <View style={styles.drawButtonBanner}>
+                <BannerAd />
+              </View>
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="카드 뽑기"
@@ -354,11 +357,6 @@ export function PacksPage() {
           )}
         </View>
 
-        {phase === 'drawing' ? (
-          <View style={styles.drawingBanner}>
-            <BannerAd />
-          </View>
-        ) : null}
       </ScrollView>
     </ImageBackground>
   );
