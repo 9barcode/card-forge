@@ -33,8 +33,8 @@ export const Route = createRoute('/', {
   component: HomePage,
 });
 
-const cardForgeIconUri =
-  'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/icons/card-forge.svg';
+const characterCardUri =
+  'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/characters/webp/night_girl.webp?v=1';
 
 const menuItems: MenuItem[] = [
   {
@@ -75,6 +75,7 @@ export function HomePage() {
   const navigation = useNavigation();
   const game = useGameCache();
   const [gameUserHash, setGameUserHash] = useState<string | null>(null);
+  const [isCharacterCardLoaded, setIsCharacterCardLoaded] = useState(false);
   const [isCollectionOpen, setIsCollectionOpen] = useState(false);
   const environment =
     getOperationalEnvironment() === 'sandbox' ? '샌드박스' : '디폴트';
@@ -109,7 +110,8 @@ export function HomePage() {
   const isInitialLoading =
     game.status === 'idle' ||
     game.status === 'loading' ||
-    gameUserHash === null;
+    gameUserHash === null ||
+    !isCharacterCardLoaded;
 
   if (isInitialLoading) {
     return (
@@ -125,6 +127,15 @@ export function HomePage() {
             <Text style={styles.loadingCardMark}>✦</Text>
           </View>
         </View>
+        {!isCharacterCardLoaded ? (
+          <Image
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            onLoadEnd={() => setIsCharacterCardLoaded(true)}
+            source={{ uri: characterCardUri }}
+            style={styles.characterPreload}
+          />
+        ) : null}
         <Text style={styles.loadingTitle}>카드의 세계로 들어가는 중…</Text>
         <ActivityIndicator color="#D5B87F" size="small" />
       </View>
@@ -147,13 +158,6 @@ export function HomePage() {
         <View style={styles.topBar}>
           <View style={styles.brand}>
             <Text style={styles.eyebrow}>CARD FORGE</Text>
-            <View
-              accessibilityRole="image"
-              accessibilityLabel="Card Forge 로고"
-              style={styles.brandLogo}
-            >
-              <SvgUri uri={cardForgeIconUri} width={88} height={88} />
-            </View>
           </View>
           <TouchableOpacity
             accessibilityRole="button"
@@ -192,9 +196,7 @@ export function HomePage() {
           </View>
           <View style={styles.characterWrap}>
             <Image
-              source={{
-                uri: 'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/characters/webp/night_girl.webp?v=1',
-              }}
+              source={{ uri: characterCardUri }}
               style={styles.character}
               resizeMode="cover"
             />

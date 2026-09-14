@@ -48,6 +48,12 @@ export const styles = StyleSheet.create({
     color: '#EAC681',
     fontSize: 31,
   },
+  characterPreload: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    opacity: 0,
+  },
   loadingTitle: {
     color: '#FFF5E3',
     fontSize: 18,
@@ -58,7 +64,6 @@ export const styles = StyleSheet.create({
   content: { paddingHorizontal: 20, paddingTop: 32, paddingBottom: 42 },
   topBar: { minHeight: 88, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  brandLogo: { width: 88, height: 88 },
   eyebrow: { color: '#D5B87F', fontSize: 11, lineHeight: 28, letterSpacing: 4, fontWeight: '700' },
   settingButton: { width: 28, height: 28, borderRadius: 8, borderWidth: 1, borderColor: '#3A4655', backgroundColor: '#192432', alignItems: 'center', justifyContent: 'center' },
   welcome: { color: '#FFF5E3', fontSize: 26, fontWeight: '800', marginTop: 12 },
