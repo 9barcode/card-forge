@@ -217,13 +217,13 @@ export function ForgePage() {
       {
         translateY: hammerProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: [-150, 20],
+          outputRange: [-120, 100],
         }),
       },
       {
         rotate: hammerProgress.interpolate({
           inputRange: [0, 1],
-          outputRange: ['-38deg', '8deg'],
+          outputRange: ['-28deg', '10deg'],
         }),
       },
     ],
@@ -427,28 +427,74 @@ export function ForgePage() {
           />
           <View style={styles.strikeBackdropShade} />
           <View style={styles.forgeVignette} />
-          <Text style={styles.forgeCaption}>CARD ENHANCEMENT</Text>
+          <View pointerEvents="none" style={styles.forgeHeader}>
+            <Text style={styles.forgeCaption}>ARCANE FORGE</Text>
+            <Text style={styles.forgeTitle}>카드의 힘을 제련하는 중</Text>
+          </View>
           <View style={styles.fullForgeScene}>
+            <View pointerEvents="none" style={styles.furnaceGlow} />
+            <View pointerEvents="none" style={styles.emberField}>
+              <Text style={[styles.ember, styles.emberOne]}>✦</Text>
+              <Text style={[styles.ember, styles.emberTwo]}>•</Text>
+              <Text style={[styles.ember, styles.emberThree]}>✦</Text>
+              <Text style={[styles.ember, styles.emberFour]}>•</Text>
+            </View>
             <Animated.View style={[styles.fullHammer, hammerStyle]}>
-              <Text style={styles.fullHammerIcon}>🔨</Text>
+              <View style={styles.hammerHandle}>
+                <View style={styles.handleHighlight} />
+                <View style={[styles.handleGrip, styles.handleGripOne]} />
+                <View style={[styles.handleGrip, styles.handleGripTwo]} />
+                <View style={[styles.handleGrip, styles.handleGripThree]} />
+              </View>
+              <View style={styles.hammerNeck} />
+              <View style={styles.hammerHead}>
+                <View style={styles.hammerHeadHighlight} />
+                <View style={styles.hammerHeadBand} />
+                <View style={styles.hammerFace} />
+              </View>
             </Animated.View>
             <View style={styles.anvil}>
-              <View style={styles.anvilTop} />
-              <View style={styles.heatedMetal} />
-              <View style={styles.anvilStem} />
-              <View style={styles.anvilBase} />
+              <View pointerEvents="none" style={styles.anvilGlow} />
+              <View style={styles.anvilTop}>
+                <View style={styles.anvilHorn} />
+                <View style={styles.anvilTopHighlight} />
+                <View style={styles.heatedMetal}>
+                  <View style={styles.heatedMetalCore} />
+                </View>
+              </View>
+              <View style={styles.anvilShoulder} />
+              <View style={styles.anvilStem}>
+                <View style={styles.anvilStemHighlight} />
+              </View>
+              <View style={styles.anvilBase}>
+                <View style={styles.anvilBaseHighlight} />
+              </View>
             </View>
             <Animated.View
               pointerEvents="none"
               style={[styles.fullImpact, impactStyle]}
             >
+              <View style={styles.impactRingOuter} />
+              <View style={styles.impactRingInner} />
               <Text style={styles.sparkText}>✦  ✦  ✦</Text>
-              <Text style={styles.bangText}>탕!</Text>
+              <Text style={styles.bangText}>CLANG</Text>
             </Animated.View>
           </View>
-          <Text style={styles.strikeProgress}>
-            강화 중 · {strikeCount}/3
-          </Text>
+          <View pointerEvents="none" style={styles.strikeStatus}>
+            <Text style={styles.strikeProgress}>강화 중</Text>
+            <View style={styles.strikeDots}>
+              {[1, 2, 3].map((step) => (
+                <View
+                  key={step}
+                  style={[
+                    styles.strikeDot,
+                    step === strikeCount && styles.strikeDotActive,
+                  ]}
+                />
+              ))}
+            </View>
+            <Text style={styles.strikeCount}>{strikeCount} / 3</Text>
+          </View>
           <View style={styles.strikeBanner}>
             <BannerAd />
           </View>
