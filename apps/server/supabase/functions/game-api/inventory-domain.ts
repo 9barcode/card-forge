@@ -1,5 +1,6 @@
 const elements = new Set(['EARTH', 'WATER', 'WIND', 'FIRE', 'LIGHT', 'DARK']);
 const grades = new Set(['NORMAL', 'MAGIC', 'RARE', 'SUPER_RARE', 'UNIQUE', 'LEGENDARY']);
+const statuses = new Set(['ENHANCEABLE', 'ENHANCEMENT_LOCKED', 'MAX_LEVEL']);
 const publicCardImageUrl =
   /^https:\/\/nmbdwukrvwfaxpasbppj[.]supabase[.]co\/storage\/v1\/object\/public\/images\/cards\/webp\/[a-z0-9_]+[.]webp(?:[?]v=\d+)?$/;
 
@@ -11,6 +12,7 @@ export type InventoryCard = {
   grade: string;
   imageKey: string;
   enhancementLevel: number;
+  status: 'ENHANCEABLE' | 'ENHANCEMENT_LOCKED' | 'MAX_LEVEL';
 };
 
 export type GameInventory = {
@@ -43,8 +45,10 @@ function parseCard(value: unknown): InventoryCard {
   const source = record(value, 'INVALID_INVENTORY_CARD');
   const element = text(source.element, 'INVALID_CARD_ELEMENT');
   const grade = text(source.grade, 'INVALID_CARD_GRADE');
+  const status = text(source.status, 'INVALID_CARD_STATUS') as InventoryCard['status'];
   if (!elements.has(element)) throw new Error('INVALID_CARD_ELEMENT');
   if (!grades.has(grade)) throw new Error('INVALID_CARD_GRADE');
+  if (!statuses.has(status)) throw new Error('INVALID_CARD_STATUS');
   return {
     cardId: positiveId(source.cardId, 'INVALID_CARD_ID'),
     templateId: positiveId(source.templateId, 'INVALID_TEMPLATE_ID'),
@@ -56,6 +60,7 @@ function parseCard(value: unknown): InventoryCard {
       source.enhancementLevel,
       'INVALID_ENHANCEMENT_LEVEL',
     ),
+    status,
   };
 }
 

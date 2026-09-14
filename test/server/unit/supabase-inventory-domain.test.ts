@@ -14,6 +14,7 @@ describe('Supabase inventory response', () => {
         grade: 'NORMAL',
         imageKey: 'cards/flame_knight.png',
         enhancementLevel: 2,
+        status: 'ENHANCEMENT_LOCKED',
       }],
     })).toEqual({
       userId: '7',
@@ -27,6 +28,7 @@ describe('Supabase inventory response', () => {
         grade: 'NORMAL',
         imageKey: 'cards/flame_knight.png',
         enhancementLevel: 2,
+        status: 'ENHANCEMENT_LOCKED',
       }],
     });
   });
@@ -57,6 +59,7 @@ describe('Supabase inventory response', () => {
       cards: [{
         cardId: '11', templateId: '4', name: '오류 카드',
         element: 'ICE', grade: 'NORMAL', imageKey: '', enhancementLevel: -1,
+        status: 'ENHANCEABLE',
       }],
     };
     expect(() => parseGameInventory(base)).toThrow('INVALID_CARD_ELEMENT');
@@ -69,10 +72,35 @@ describe('Supabase inventory response', () => {
         cardId: '11', templateId: '4', name: '불꽃 기사',
         element: 'FIRE', grade: 'NORMAL',
         imageKey: '/cards/flame_knight.png', enhancementLevel: 1,
+        status: 'ENHANCEABLE',
       }],
     };
     expect(() => parseGameInventory(inventory)).toThrow('INVALID_CARD_IMAGE');
     inventory.cards[0]!.imageKey = 'cards/../private.png';
     expect(() => parseGameInventory(inventory)).toThrow('INVALID_CARD_IMAGE');
+  });
+
+  it('DB의 강화 잠금 상태를 앱 인벤토리 응답에 보존한다', () => {
+    const result = parseGameInventory({
+      userId: '7', crystalBalance: '0', totalCrystalsEarned: '0',
+      cards: [{
+        cardId: '11', templateId: '4', name: '불꽃 기사',
+        element: 'FIRE', grade: 'NORMAL', imageKey: '',
+        enhancementLevel: 3, status: 'ENHANCEMENT_LOCKED',
+      }],
+    });
+
+    expect(result.cards[0]?.status).toBe('ENHANCEMENT_LOCKED');
+  });
+
+  it('정의되지 않은 강화 상태를 거절한다', () => {
+    expect(() => parseGameInventory({
+      userId: '7', crystalBalance: '0', totalCrystalsEarned: '0',
+      cards: [{
+        cardId: '11', templateId: '4', name: '불꽃 기사',
+        element: 'FIRE', grade: 'NORMAL', imageKey: '',
+        enhancementLevel: 3, status: 'BROKEN',
+      }],
+    })).toThrow('INVALID_CARD_STATUS');
   });
 });

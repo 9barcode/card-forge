@@ -26,10 +26,7 @@ import {
   gradeLabels,
   useGameCache,
 } from '../src/features/game-cache';
-import {
-  MAX_ENHANCEMENT_LEVEL,
-  getEnhancementSuccessRate,
-} from '../src/services/enhancementService';
+import { MAX_ENHANCEMENT_LEVEL } from '../src/services/enhancementService';
 import {
   isRewardedAdSuccess,
   rewardedAdService,
@@ -69,13 +66,6 @@ export function ForgePage() {
     !selected ||
     selected.status !== 'ENHANCEABLE' ||
     selected.enhancementLevel >= MAX_ENHANCEMENT_LEVEL;
-  const rate =
-    selected && !unavailable
-      ? getEnhancementSuccessRate(
-          selected.enhancementLevel,
-          selected.grade,
-        )
-      : null;
   const displayedLevel =
     phase === 'striking' && attemptedLevel !== null
       ? attemptedLevel
@@ -204,7 +194,11 @@ export function ForgePage() {
           : code === 'REWARDED_AD_DISMISSED_WITHOUT_REWARD' ||
               code === 'REWARDED_AD_REWARD_FAILED'
             ? '광고를 끝까지 시청해야 강화를 시도할 수 있어요.'
-            : '강화를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.',
+            : code === 'ENHANCEMENT_PERMANENTLY_LOCKED'
+              ? '이미 강화 실패로 잠긴 카드예요.'
+              : code === 'MAX_ENHANCEMENT_LEVEL'
+                ? '이미 최고 강화 단계에 도달한 카드예요.'
+                : '강화를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.',
       );
       setAttemptedLevel(null);
       setPhase('idle');
@@ -352,7 +346,7 @@ export function ForgePage() {
                     : selected?.status === 'MAX_LEVEL'
                       ? '최고 강화 단계에 도달했어요.'
                       : selected
-                        ? `${selected.enhancementLevel}강 → ${selected.enhancementLevel + 1}강 · 성공 확률 ${rate}%`
+                        ? `${selected.enhancementLevel}강 → ${selected.enhancementLevel + 1}강`
                         : '아래 보유 카드 중 원하는 카드 한 장을 골라주세요.'}
           </Text>
         </View>

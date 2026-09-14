@@ -4,6 +4,7 @@ import { Animated } from 'react-native';
 import { ForgePage } from '../../../pages/forge';
 import { gameCache } from '../../../src/features/game-cache';
 import { rewardedAdService } from '../../../src/services/rewardedAdService';
+import { appLogger } from '../../../src/utils/appLogger';
 import { configureTestRuntime, findTestCard } from './game-runtime.fixture';
 
 jest.mock('@granite-js/react-native', () => ({
@@ -19,6 +20,7 @@ const show = jest.mocked(rewardedAdService.show);
 beforeEach(async () => {
   jest.useFakeTimers();
   jest.clearAllMocks();
+  appLogger.clear();
   await configureTestRuntime();
   load.mockResolvedValue(undefined);
   show.mockResolvedValue({
@@ -92,4 +94,22 @@ it('강화 실패를 잠금 상태로 캐시에 반영한다', async () => {
     gameCache.getSnapshot().cards.find((card) => card.cardId === 'card-water')
       ?.status,
   ).toBe('ENHANCEMENT_LOCKED');
+});
+
+it('이미 잠긴 카드의 서버 오류를 로그와 안내 문구에 구체적으로 남긴다', async () => {
+  await configureTestRuntime({
+    enhanceCard: async () =>
+      Promise.reject(new Error('ENHANCEMENT_PERMANENTLY_LOCKED')),
+  });
+  const screen = render(React.createElement(ForgePage));
+  fireEvent.press(screen.getByLabelText('땅 노말 1강 카드 선택'));
+  fireEvent.press(screen.getByText('no ad'));
+  fireEvent.press(screen.getByLabelText('강화 시도'));
+
+  await waitFor(() =>
+    expect(screen.getByText('이미 강화 실패로 잠긴 카드예요.')).toBeTruthy(),
+  );
+  expect(appLogger.getText()).toContain(
+    '강화 처리 실패 | {"cardId":"card-earth","enhancementLevel":1,"devRewardedAdMode":"NO_AD","code":"ENHANCEMENT_PERMANENTLY_LOCKED"',
+  );
 });

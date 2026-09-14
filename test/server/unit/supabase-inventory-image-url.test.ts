@@ -13,6 +13,7 @@ const validInventory = {
     imageKey:
       'https://nmbdwukrvwfaxpasbppj.supabase.co/storage/v1/object/public/images/cards/webp/flame_knight.webp?v=3',
     enhancementLevel: 1,
+    status: 'ENHANCEABLE',
   }],
 };
 
