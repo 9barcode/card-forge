@@ -37,12 +37,20 @@ export function MaxLevelAura({
         style={[
           styles.wideGlow,
           {
-            borderRadius,
-            backgroundColor: withAlpha(auraColor, isMaxLevel ? 0.14 : 0.08),
+            borderRadius: borderRadius + 16,
+            backgroundColor: withAlpha(auraColor, isMaxLevel ? 0.16 : 0.12),
             shadowColor: auraColor,
-            shadowOpacity: isMaxLevel ? 1 : 0.82,
+            shadowOpacity: isMaxLevel ? 0.95 : 0.78,
             shadowRadius: isMaxLevel ? 28 : 20,
-            elevation: isMaxLevel ? 18 : 14,
+          },
+        ]}
+      />
+      <View
+        style={[
+          styles.middleGlow,
+          {
+            borderRadius: borderRadius + 9,
+            backgroundColor: withAlpha(auraColor, isMaxLevel ? 0.2 : 0.15),
           },
         ]}
       />
@@ -53,12 +61,8 @@ export function MaxLevelAura({
         style={[
           styles.coreGlow,
           {
-            borderRadius,
-            backgroundColor: withAlpha(auraColor, isMaxLevel ? 0.2 : 0.1),
-            shadowColor: auraColor,
-            shadowOpacity: isMaxLevel ? 0.9 : 0.68,
-            shadowRadius: isMaxLevel ? 12 : 10,
-            elevation: isMaxLevel ? 12 : 8,
+            borderRadius: borderRadius + 4,
+            backgroundColor: withAlpha(auraColor, isMaxLevel ? 0.24 : 0.18),
           },
         ]}
       />
@@ -72,11 +76,25 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   wideGlow: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: -16,
+    right: -16,
+    bottom: -16,
+    left: -16,
     shadowOffset: { width: 0, height: 0 },
   },
+  middleGlow: {
+    position: 'absolute',
+    top: -9,
+    right: -9,
+    bottom: -9,
+    left: -9,
+  },
   coreGlow: {
-    ...StyleSheet.absoluteFillObject,
-    shadowOffset: { width: 0, height: 0 },
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    bottom: -4,
+    left: -4,
   },
 });
