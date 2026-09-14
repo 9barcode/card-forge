@@ -20,6 +20,8 @@ const PAGE_SIZE = 1000;
 const CARD_WEBP_WIDTH = 512;
 const CARD_WEBP_HEIGHT = 720;
 const CARD_WEBP_QUALITY = 78;
+const CHARACTER_WEBP_WIDTH = 512;
+const CHARACTER_WEBP_QUALITY = 78;
 const CARD_IMAGE_CACHE_VERSION = '4';
 const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
@@ -110,6 +112,37 @@ async function createCardWebpFiles(localFiles) {
         position: 'centre',
       })
       .webp({ quality: CARD_WEBP_QUALITY })
+      .toBuffer();
+
+    webpFiles.push({
+      absolutePath: null,
+      buffer,
+      storagePath: webpPath,
+      size: buffer.length,
+    });
+  }
+
+  return webpFiles;
+}
+
+async function createCharacterWebpFiles(localFiles) {
+  const webpFiles = [];
+
+  for (const file of localFiles) {
+    if (
+      !file.storagePath.startsWith('characters/') ||
+      file.storagePath.startsWith('characters/webp/') ||
+      !/\.(avif|jpe?g|png|webp)$/i.test(file.storagePath)
+    ) {
+      continue;
+    }
+
+    const relativePath = file.storagePath.slice('characters/'.length);
+    const webpPath = `characters/webp/${relativePath.replace(/\.[^.]+$/, '.webp')}`;
+    const sourceBuffer = await readFile(file.absolutePath);
+    const buffer = await sharp(sourceBuffer)
+      .resize({ width: CHARACTER_WEBP_WIDTH, withoutEnlargement: true })
+      .webp({ quality: CHARACTER_WEBP_QUALITY })
       .toBuffer();
 
     webpFiles.push({
@@ -303,14 +336,17 @@ async function updateCardImageUrls(cardWebpFiles) {
 async function main() {
   const sourceFiles = await collectLocalFiles(assetsDir);
   const cardWebpFiles = await createCardWebpFiles(sourceFiles);
-  const localFiles = [...sourceFiles, ...cardWebpFiles].sort((left, right) =>
-    left.storagePath.localeCompare(right.storagePath),
-  );
+  const characterWebpFiles = await createCharacterWebpFiles(sourceFiles);
+  const localFiles = [
+    ...sourceFiles,
+    ...cardWebpFiles,
+    ...characterWebpFiles,
+  ].sort((left, right) => left.storagePath.localeCompare(right.storagePath));
   const remoteFiles = await collectRemoteFiles(localFiles);
   const summary = { uploaded: 0, updated: 0, skipped: 0, failed: 0 };
 
   console.log(
-    `로컬 이미지: ${sourceFiles.length}개 / 생성한 카드 WebP: ${cardWebpFiles.length}개`,
+    `로컬 이미지: ${sourceFiles.length}개 / 생성한 카드 WebP: ${cardWebpFiles.length}개 / 생성한 캐릭터 WebP: ${characterWebpFiles.length}개`,
   );
   console.log(`대상 버킷: ${bucket}`);
   if (dryRun) console.log('DRY-RUN: 실제 업로드는 하지 않습니다.');
