@@ -1,10 +1,9 @@
-import { createRoute, useNavigation } from '@granite-js/react-native';
+import { createRoute } from '@granite-js/react-native';
 import React from 'react';
 import {
   FlatList,
   ImageBackground,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { styles } from '../assets/sytle/cards.style';
@@ -32,7 +31,6 @@ const rarityColors: Record<CardGrade, string> = {
 };
 
 export function CardsPage() {
-  const navigation = useNavigation();
   const game = useGameCache();
   const cards = game.cards;
   const cardColumns = cards.length === 4 ? 2 : 3;
@@ -92,16 +90,10 @@ export function CardsPage() {
               </View>
             }
             renderItem={({ item }) => (
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessibilityLabel={`${elementLabels[item.element]} ${gradeLabels[item.grade]} ${item.enhancementLevel}강 카드 상세 보기`}
-                activeOpacity={0.82}
-                onPress={() =>
-                  // biome-ignore lint/suspicious/noExplicitAny: Granite generated route types are stale until the next build.
-                  navigation.navigate('/card-detail' as any, {
-                    id: item.cardId,
-                  })
-                }
+              <View
+                accessible
+                accessibilityRole="image"
+                accessibilityLabel={`${elementLabels[item.element]} ${gradeLabels[item.grade]} ${item.enhancementLevel}강 카드`}
                 style={[
                   styles.cardItem,
                   cardColumns === 2
@@ -143,7 +135,7 @@ export function CardsPage() {
                 <Text style={styles.elementText}>
                   {elementLabels[item.element]} 원소
                 </Text>
-              </TouchableOpacity>
+              </View>
             )}
           />
         }
